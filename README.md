@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # FPTAIEZ - Fullstack Web Application
 
 Dự án fullstack hiện đại kiểu FPTAIEZ với React + Node.js + MongoDB.
@@ -242,3 +243,6 @@ VITE_APP_NAME=FPTAIEZ
 ## License
 
 MIT License - FPTAIEZ Team 2026
+=======
+# exe202
+>>>>>>> e5c145e8ef0e633d8f3d595fedc28421c5c06c80
