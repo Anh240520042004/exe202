@@ -6,3 +6,4 @@ export { default as Skeleton, CardSkeleton, TableSkeleton, ProfileSkeleton } fro
 export { default as ThemeToggle } from './ThemeToggle';
 export { default as Badge } from './Badge';
 export { default as Select } from './Select';
+export { default as LoginRequired } from './LoginRequired';

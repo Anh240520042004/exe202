@@ -1,12 +1,44 @@
 import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchStudentDashboard } from '../../store/dashboardSlice';
-import { BookOpen, Users, MessageCircle, Download, Star, Flame, Zap, Calendar, TrendingUp, FolderOpen } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { BookOpen, Users, MessageCircle, Download, Star, Flame, Zap, Calendar, TrendingUp, FolderOpen, LogIn } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
 
 const StudentDashboard = () => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const { student, isLoading } = useSelector(state => state.dashboard);
+  const { isAuthenticated } = useSelector(state => state.auth);
+
+  // Guest view - show login prompt
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-primary-900 via-primary-800 to-accent-900 flex items-center justify-center p-4">
+        <div className="text-center max-w-md">
+          <div className="w-20 h-20 mx-auto rounded-2xl bg-white/10 backdrop-blur-lg flex items-center justify-center mb-6">
+            <span className="text-4xl font-bold text-white">F</span>
+          </div>
+          <h1 className="text-3xl font-bold text-white mb-4">FPTAIEZ</h1>
+          <p className="text-white/70 mb-8 text-lg">
+            Đăng nhập để truy cập dashboard và bắt đầu hành trình học tập của bạn
+          </p>
+          <button
+            onClick={() => navigate('/login')}
+            className="px-8 py-4 bg-gradient-to-r from-primary-500 to-accent-500 text-white rounded-xl font-bold text-lg hover:shadow-lg hover:shadow-primary-500/30 transition-all duration-300 flex items-center gap-3 mx-auto"
+          >
+            <LogIn className="w-5 h-5" />
+            Đăng nhập ngay
+          </button>
+          <p className="text-white/50 mt-6">
+            Chưa có tài khoản?{' '}
+            <Link to="/register" className="text-primary-300 hover:text-white font-semibold">
+              Đăng ký
+            </Link>
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   useEffect(() => {
     dispatch(fetchStudentDashboard());
@@ -70,29 +102,65 @@ const StudentDashboard = () => {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-          <div className="lg:col-span-2 bg-white dark:bg-gray-800 rounded-xl p-6">
-            <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
-              <TrendingUp className="text-primary-500" />
-              Hoạt Động Trong Tuần
-            </h2>
-            <div className="h-48 flex items-end justify-around gap-4">
-              {weeklyStudy?.map((day, i) => {
-                const maxCount = Math.max(...(weeklyStudy.map(d => d.count) || [1]));
-                const height = (day.count / maxCount) * 100;
-                return (
-                  <div key={i} className="flex flex-col items-center gap-2 flex-1">
-                    <div
-                      className="w-full bg-gradient-to-t from-primary-500 to-primary-400 rounded-t-lg transition-all hover:opacity-80 min-h-[4px]"
-                      style={{ height: `${Math.max(height, 5)}%` }}
-                    />
-                    <span className="text-xs text-gray-500">{day.day}</span>
-                  </div>
-                );
-              })}
-              {(!weeklyStudy || weeklyStudy.length === 0) && (
-                <div className="text-gray-400 text-center py-8 w-full">Chưa có dữ liệu hoạt động</div>
-              )}
+          <div className="lg:col-span-2 bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-bold flex items-center gap-2">
+                <TrendingUp className="text-primary-500" />
+                Hoạt Động Trong Tuần
+              </h2>
+              <span className="text-xs text-gray-400">
+                {weeklyStudy?.reduce((sum, d) => sum + d.count, 0) || 0} hoạt động
+              </span>
             </div>
+            {weeklyStudy && weeklyStudy.length > 0 && weeklyStudy.some(d => d.count > 0) ? (
+              <>
+                <div className="h-40 flex items-end justify-around gap-2 mb-3">
+                  {weeklyStudy.map((day, i) => {
+                    const maxCount = Math.max(...weeklyStudy.map(d => d.count), 1);
+                    const height = (day.count / maxCount) * 100;
+                    const isToday = i === 6;
+                    return (
+                      <div key={i} className="flex flex-col items-center gap-2 flex-1 group relative">
+                        <span className="text-xs font-medium text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity absolute -top-5">
+                          {day.count}
+                        </span>
+                        <div
+                          className={`w-full rounded-t-lg transition-all hover:opacity-80 min-h-[4px] ${
+                            day.count === 0
+                              ? 'bg-gray-100 dark:bg-gray-700'
+                              : isToday
+                              ? 'bg-gradient-to-t from-primary-600 to-primary-400 shadow-md shadow-primary-400/30'
+                              : 'bg-gradient-to-t from-primary-400 to-primary-300'
+                          }`}
+                          style={{ height: `${Math.max(height, 4)}%` }}
+                        />
+                        <span className={`text-xs font-semibold ${isToday ? 'text-primary-600 dark:text-primary-400' : 'text-gray-500'}`}>
+                          {day.day}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+                <div className="flex items-center justify-center gap-6 mt-4 pt-4 border-t dark:border-gray-700">
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 rounded bg-primary-400" />
+                    <span className="text-xs text-gray-500">Hoạt động</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 rounded bg-gray-200 dark:bg-gray-700" />
+                    <span className="text-xs text-gray-500">Không hoạt động</span>
+                  </div>
+                </div>
+              </>
+            ) : (
+              <div className="h-40 flex items-center justify-center">
+                <div className="text-center">
+                  <TrendingUp size={40} className="mx-auto text-gray-300 dark:text-gray-600 mb-3" />
+                  <p className="text-gray-400 text-sm">Chưa có hoạt động trong tuần này</p>
+                  <p className="text-gray-300 dark:text-gray-500 text-xs mt-1">Bắt đầu trò chuyện với AI để ghi nhận!</p>
+                </div>
+              </div>
+            )}
           </div>
 
           <div className="bg-white dark:bg-gray-800 rounded-xl p-6">

@@ -3,6 +3,7 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { Layout } from './components/layout';
 import { Login, Register, ForgotPassword, EmailVerification } from './pages/auth';
+import Homepage from './pages/Homepage';
 import { Dashboard, StudentDashboard } from './pages/dashboard';
 import { Profile, Settings, Notifications } from './pages/user';
 import { TransactionsList, CreateTransaction } from './pages/transactions';
@@ -15,30 +16,6 @@ import Gamification from './pages/gamification/Gamification';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import PaymentResult from './pages/payment/PaymentResult';
 import AdminPayments from './pages/admin/AdminPayments';
-
-function ProtectedRoute({ children, adminOnly = false }) {
-  const { isAuthenticated, user } = useSelector((state) => state.auth);
-  
-  if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
-  }
-  
-  if (adminOnly && user?.role !== 'admin') {
-    return <Navigate to="/dashboard" replace />;
-  }
-  
-  return children;
-}
-
-function PublicRoute({ children }) {
-  const { isAuthenticated } = useSelector((state) => state.auth);
-  
-  if (isAuthenticated) {
-    return <Navigate to="/dashboard" replace />;
-  }
-  
-  return children;
-}
 
 export default function App() {
   const dispatch = useDispatch();
@@ -55,30 +32,22 @@ export default function App() {
 
   return (
     <Routes>
+      {/* Redirect root to dashboard */}
+      <Route path="/" element={<Navigate to="/dashboard" replace />} />
+
+      {/* Auth pages */}
       <Route path="/login" element={
-        <PublicRoute>
-          <Login />
-        </PublicRoute>
+        !isAuthenticated ? <Login /> : <Navigate to="/dashboard" replace />
       } />
       <Route path="/register" element={
-        <PublicRoute>
-          <Register />
-        </PublicRoute>
+        !isAuthenticated ? <Register /> : <Navigate to="/dashboard" replace />
       } />
       <Route path="/forgot-password" element={
-        <PublicRoute>
-          <ForgotPassword />
-        </PublicRoute>
+        !isAuthenticated ? <ForgotPassword /> : <Navigate to="/dashboard" replace />
       } />
-      {/* Verify email is public - accessible after registration */}
       <Route path="/verify-email" element={<EmailVerification />} />
-      
-      <Route element={
-        <ProtectedRoute>
-          <Layout />
-        </ProtectedRoute>
-      }>
-        <Route path="/" element={<Navigate to="/dashboard" replace />} />
+
+      <Route element={<Layout />}>
         <Route path="/dashboard" element={<DashboardComponent />} />
         <Route path="/my-documents" element={<MyDocuments />} />
         <Route path="/download-history" element={<DownloadHistory />} />

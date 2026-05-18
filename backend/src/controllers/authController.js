@@ -6,11 +6,7 @@ class AuthController {
   async register(req, res, next) {
     try {
       const result = await authService.register(req.body);
-      
-      // Send welcome email (after verification in production)
-      // await emailService.sendWelcomeEmail(req.body);
-
-      ApiResponse.created(res, result, 'Đăng ký thành công. Vui lòng xác thực email.');
+      ApiResponse.created(res, result, 'Đăng ký thành công');
     } catch (error) {
       next(error);
     }

@@ -13,8 +13,10 @@ import {
   Card,
   Button,
   Badge,
-  Skeleton
+  Skeleton,
+  LoginRequired
 } from "../../components/ui";
+
 const typeConfig = {
   info: { icon: Info, color: 'blue', bg: 'bg-blue-100 dark:bg-blue-900/30', text: 'text-blue-600 dark:text-blue-400' },
   success: { icon: CheckCircle, color: 'green', bg: 'bg-green-100 dark:bg-green-900/30', text: 'text-green-600 dark:text-green-400' },
@@ -91,7 +93,8 @@ export default function Notifications() {
   }
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <LoginRequired title="Thông báo" message="Bạn cần đăng nhập để xem thông báo">
+      <div className="space-y-6 animate-fade-in">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Thông báo</h1>
@@ -183,6 +186,7 @@ export default function Notifications() {
           )}
         </div>
       </Card>
-    </div>
+      </div>
+    </LoginRequired>
   );
 }

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { gamificationService } from '../../services/api';
 import { Star, Trophy, Flame, Zap, Medal, Crown, ChevronRight, Award } from 'lucide-react';
+import { LoginRequired } from "../../components/ui";
 import toast from 'react-hot-toast';
 
 const Gamification = () => {
@@ -47,7 +48,8 @@ const Gamification = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <LoginRequired title="Thành tựu" message="Bạn cần đăng nhập để xem thành tựu và bảng xếp hạng">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <div className="bg-gradient-to-r from-yellow-500 via-orange-500 to-red-500 text-white py-12">
         <div className="container mx-auto px-4">
           <h1 className="text-4xl font-bold mb-4 flex items-center gap-3">
@@ -220,7 +222,8 @@ const Gamification = () => {
           </div>
         )}
       </div>
-    </div>
+      </div>
+    </LoginRequired>
   );
 };
 

@@ -8,6 +8,8 @@ export default function PaymentResult() {
   const status = searchParams.get('status');
   const orderId = searchParams.get('orderId');
   const errorCode = searchParams.get('code');
+  const method = searchParams.get('method');
+  const amount = searchParams.get('amount');
 
   const [loading, setLoading] = useState(true);
 
@@ -32,77 +34,108 @@ export default function PaymentResult() {
   }
 
   const isSuccess = status === 'success';
+  const isVNPay = method === 'vnpay';
+  const isSePay = method === 'sepay';
+
+  const getPaymentMethodName = () => {
+    if (isVNPay) return 'VNPay';
+    if (isSePay) return 'SePay/VietQR';
+    return 'Chuyển khoản ngân hàng';
+  };
+
+  const getSuccessMessage = () => {
+    if (isVNPay) return 'Thanh toán qua cổng VNPay đã được xác nhận thành công.';
+    if (isSePay) return 'Thanh toán qua SePay/VietQR đã được xác nhận thành công.';
+    return 'Cảm ơn bạn đã thanh toán. Mã xác nhận đã được gửi đến email của bạn.';
+  };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-primary-950 via-primary-900 to-accent-950 flex items-center justify-center p-4">
       <div className="max-w-md w-full">
-        <div className={`bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 text-center ${isSuccess ? 'border-2 border-green-500' : 'border-2 border-red-500'}`}>
+        <div className={`bg-white/10 backdrop-blur-xl rounded-2xl shadow-xl p-8 text-center border ${isSuccess ? 'border-green-500/50' : 'border-red-500/50'}`}>
           {/* Icon */}
-          <div className={`w-24 h-24 mx-auto rounded-full flex items-center justify-center mb-6 ${isSuccess ? 'bg-green-100' : 'bg-red-100'}`}>
+          <div className={`w-24 h-24 mx-auto rounded-full flex items-center justify-center mb-6 ${isSuccess ? 'bg-green-500/20' : 'bg-red-500/20'}`}>
             {isSuccess ? (
-              <CheckCircle className="w-16 h-16 text-green-500" />
+              <CheckCircle className="w-16 h-16 text-green-400" />
             ) : (
-              <XCircle className="w-16 h-16 text-red-500" />
+              <XCircle className="w-16 h-16 text-red-400" />
             )}
           </div>
 
           {/* Title */}
-          <h1 className={`text-3xl font-bold mb-4 ${isSuccess ? 'text-green-600' : 'text-red-600'}`}>
+          <h1 className={`text-3xl font-bold mb-4 ${isSuccess ? 'text-green-400' : 'text-red-400'}`}>
             {isSuccess ? 'Thanh toán thành công!' : 'Thanh toán thất bại'}
           </h1>
 
+          {/* Payment Method Badge */}
+          {(isVNPay || isSePay) && (
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/10 rounded-full mb-4">
+              <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${isVNPay ? 'bg-red-500 text-white' : 'bg-blue-500 text-white'}`}>
+                {isVNPay ? 'V' : 'S'}
+              </span>
+              <span className="text-white/80 text-sm font-medium">{getPaymentMethodName()}</span>
+            </div>
+          )}
+
           {/* Message */}
-          <p className="text-gray-600 dark:text-gray-400 mb-6">
-            {isSuccess 
-              ? 'Cảm ơn bạn đã thanh toán. Mã xác nhận đã được gửi đến email của bạn.'
-              : 'Rất tiếc, giao dịch của bạn không thành công. Vui lòng thử lại.'
-            }
+          <p className="text-white/70 mb-6">
+            {isSuccess ? getSuccessMessage() : 'Rất tiếc, giao dịch của bạn không thành công. Vui lòng thử lại.'}
           </p>
 
-          {/* Order ID */}
+          {/* Order ID & Amount */}
           {orderId && isSuccess && (
-            <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4 mb-6">
-              <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">Mã đơn hàng</p>
-              <p className="font-mono font-semibold text-lg">{orderId.slice(-8).toUpperCase()}</p>
+            <div className="bg-white/10 rounded-xl p-4 mb-6 space-y-2">
+              <div className="flex justify-between">
+                <span className="text-white/60">Mã đơn hàng</span>
+                <span className="font-mono font-semibold text-white">{orderId.slice(-8).toUpperCase()}</span>
+              </div>
+              {amount && (
+                <div className="flex justify-between">
+                  <span className="text-white/60">Số tiền</span>
+                  <span className="font-bold text-green-400">{parseInt(amount).toLocaleString('vi-VN')} VNĐ</span>
+                </div>
+              )}
             </div>
           )}
 
           {/* Error Code */}
           {errorCode && !isSuccess && (
-            <div className="bg-red-50 dark:bg-red-900/20 rounded-lg p-4 mb-6">
-              <p className="text-sm text-red-500 mb-1">Mã lỗi</p>
-              <p className="font-mono font-semibold">{errorCode}</p>
+            <div className="bg-red-500/20 rounded-xl p-4 mb-6">
+              <p className="text-red-400 text-sm mb-1">Mã lỗi</p>
+              <p className="font-mono font-semibold text-white">{errorCode}</p>
+              <p className="text-red-300/60 text-xs mt-2">
+                Vui lòng liên hệ support nếu cần hỗ trợ
+              </p>
             </div>
           )}
 
           {/* Actions */}
           <div className="space-y-3">
-            <Link
-              to="/profile"
-              className={`block w-full py-3 px-6 rounded-lg font-medium transition-colors flex items-center justify-center gap-2 ${
+            <button
+              onClick={() => navigate('/transactions')}
+              className={`block w-full py-3 px-6 rounded-xl font-medium transition-all duration-300 flex items-center justify-center gap-2 ${
                 isSuccess 
-                  ? 'bg-green-600 text-white hover:bg-green-700' 
-                  : 'bg-primary-600 text-white hover:bg-primary-700'
+                  ? 'bg-green-500 text-white hover:bg-green-600 hover:shadow-lg hover:shadow-green-500/25' 
+                  : 'bg-primary-500 text-white hover:bg-primary-600'
               }`}
             >
               <User className="w-5 h-5" />
               Xem lịch sử giao dịch
-            </Link>
+            </button>
 
-            <Link
-              to="/dashboard"
-              className="block w-full py-3 px-6 rounded-lg font-medium border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors flex items-center justify-center gap-2"
+            <button
+              onClick={() => navigate('/dashboard')}
+              className="block w-full py-3 px-6 rounded-xl font-medium border border-white/20 text-white hover:bg-white/10 transition-all duration-300 flex items-center justify-center gap-2"
             >
               <Home className="w-5 h-5" />
               Về trang chủ
-            </Link>
+            </button>
           </div>
         </div>
 
         {/* Note */}
-        <p className="text-center text-gray-500 dark:text-gray-400 text-sm mt-6">
+        <p className="text-center text-white/40 text-sm mt-6">
           Nếu bạn không nhận được email xác nhận trong 5 phút, vui lòng kiểm tra hộp thư spam 
-          hoặc liên hệ support@fptaiez.com
         </p>
       </div>
     </div>

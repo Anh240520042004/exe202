@@ -9,6 +9,9 @@ export const authService = {
       if (result.refreshToken) {
         localStorage.setItem('refreshToken', result.refreshToken);
       }
+      if (result.user) {
+        localStorage.setItem('user', JSON.stringify(result.user));
+      }
     }
     return result;
   },
@@ -20,6 +23,9 @@ export const authService = {
       localStorage.setItem('accessToken', result.accessToken);
       if (result.refreshToken) {
         localStorage.setItem('refreshToken', result.refreshToken);
+      }
+      if (result.user) {
+        localStorage.setItem('user', JSON.stringify(result.user));
       }
     }
     return result;

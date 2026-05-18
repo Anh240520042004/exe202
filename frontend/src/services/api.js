@@ -2,6 +2,38 @@ import axios from 'axios';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
+let isRefreshing = false;
+let refreshSubscribers = [];
+
+// Hàm đợi refresh token hoàn thành
+const subscribeTokenRefresh = (callback) => {
+  refreshSubscribers.push(callback);
+};
+
+// Hàm thông báo cho tất cả các request đang đợi khi refresh xong
+const onTokenRefreshed = (newAccessToken) => {
+  refreshSubscribers.forEach((callback) => callback(newAccessToken));
+  refreshSubscribers = [];
+};
+
+// Hàm refresh token
+const refreshAccessToken = async () => {
+  const refreshToken = localStorage.getItem('refreshToken');
+  if (!refreshToken) {
+    throw new Error('No refresh token');
+  }
+
+  const response = await axios.post(`${API_URL}/auth/refresh`, { refreshToken });
+  const { accessToken, refreshToken: newRefreshToken } = response.data.data;
+
+  localStorage.setItem('accessToken', accessToken);
+  if (newRefreshToken) {
+    localStorage.setItem('refreshToken', newRefreshToken);
+  }
+
+  return accessToken;
+};
+
 const api = axios.create({
   baseURL: API_URL,
   headers: {
@@ -22,12 +54,37 @@ api.interceptors.request.use(
 
 api.interceptors.response.use(
   (response) => response,
-  (error) => {
-    if (error.response?.status === 401) {
-      localStorage.removeItem('accessToken');
-      localStorage.removeItem('refreshToken');
-      localStorage.removeItem('user');
-      window.location.href = '/login';
+  async (error) => {
+    const originalRequest = error.config;
+
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      if (isRefreshing) {
+        // Đợi refresh hoàn thành rồi thử lại request
+        return new Promise((resolve) => {
+          subscribeTokenRefresh((newToken) => {
+            originalRequest.headers.Authorization = `Bearer ${newToken}`;
+            resolve(api(originalRequest));
+          });
+        });
+      }
+
+      originalRequest._retry = true;
+      isRefreshing = true;
+
+      try {
+        const newAccessToken = await refreshAccessToken();
+        onTokenRefreshed(newAccessToken);
+        isRefreshing = false;
+        originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+        return api(originalRequest);
+      } catch (refreshError) {
+        isRefreshing = false;
+        localStorage.removeItem('accessToken');
+        localStorage.removeItem('refreshToken');
+        localStorage.removeItem('user');
+        window.location.href = '/login';
+        return Promise.reject(refreshError);
+      }
     }
     return Promise.reject(error);
   }

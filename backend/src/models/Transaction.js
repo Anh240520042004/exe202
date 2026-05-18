@@ -64,7 +64,7 @@ const transactionSchema = new mongoose.Schema(
     },
     paymentMethod: {
       type: String,
-      enum: ['vnpay', 'momo', 'banking', 'credit', 'wallet'],
+      enum: ['sepay', 'vnpay', 'momo', 'banking', 'credit', 'wallet'],
     },
     items: [{
       itemId: mongoose.Schema.Types.ObjectId,

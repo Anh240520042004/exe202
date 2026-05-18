@@ -1,8 +1,12 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 import { courseService, documentService } from '../../services/api';
 import { Search, Grid, List, Star, Download, Heart, BookOpen, X, ChevronRight, Book } from 'lucide-react';
 
 const Marketplace = () => {
+  const navigate = useNavigate();
+  const { isAuthenticated } = useSelector((state) => state.auth);
   const [viewMode, setViewMode] = useState('grid');
   const [courses, setCourses] = useState([]);
   const [documents, setDocuments] = useState([]);
@@ -339,7 +343,7 @@ const Marketplace = () => {
             ) : documents.length > 0 ? (
               <div className={`grid gap-6 ${viewMode === 'grid' ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1'}`}>
                 {documents.map(doc => (
-                  <DocumentCard key={doc._id} document={doc} viewMode={viewMode} />
+                  <DocumentCard key={doc._id} document={doc} viewMode={viewMode} isAuthenticated={isAuthenticated} navigate={navigate} />
                 ))}
               </div>
             ) : (
@@ -361,7 +365,7 @@ const Marketplace = () => {
   );
 };
 
-const DocumentCard = ({ document, viewMode = 'grid' }) => {
+const DocumentCard = ({ document, viewMode = 'grid', isAuthenticated, navigate }) => {
   const typeLabels = {
     pdf: 'PDF',
     slide: 'Slide',
@@ -373,7 +377,11 @@ const DocumentCard = ({ document, viewMode = 'grid' }) => {
 
   const handleBuy = (e) => {
     e.stopPropagation();
-    window.location.href = `/checkout/document/${document._id}`;
+    if (!isAuthenticated) {
+      navigate('/login');
+      return;
+    }
+    navigate(`/checkout/document/${document._id}`);
   };
 
   return (

@@ -217,6 +217,12 @@ export default function AdminPayments() {
                     <Clock className="w-3 h-3 mr-1" />
                     Chờ xác nhận
                   </Badge>
+                  <Badge variant="info" className="mt-2">
+                    {order.paymentMethod === 'sepay' ? 'SePay/VietQR' : 
+                     order.paymentMethod === 'vnpay' ? 'VNPay' : 
+                     order.paymentMethod === 'momo' ? 'MoMo' : 
+                     order.paymentMethod === 'banking' ? 'Chuyển khoản' : 'Khác'}
+                  </Badge>
 
                   <div className="flex gap-2 mt-3">
                     <Button

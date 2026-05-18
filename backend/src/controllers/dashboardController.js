@@ -249,32 +249,33 @@ async function getUserGrowth() {
 }
 
 async function getWeeklyStudyData(userId) {
+  const now = new Date();
   const weekAgo = new Date();
-  weekAgo.setDate(weekAgo.getDate() - 7);
+  weekAgo.setDate(now.getDate() - 6);
+  weekAgo.setHours(0, 0, 0, 0);
 
   const chats = await AIChat.find({
     user: userId,
-    lastMessageAt: { $gte: weekAgo }
+    createdAt: { $gte: weekAgo }
   });
+
+  const dayNames = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
 
   const dailyActivity = {};
   for (let i = 0; i < 7; i++) {
-    const date = new Date();
-    date.setDate(date.getDate() - i);
-    const dayName = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][date.getDay()];
-    dailyActivity[dayName] = 0;
+    const d = new Date(weekAgo);
+    d.setDate(weekAgo.getDate() + i);
+    dailyActivity[d.toDateString()] = { day: dayNames[d.getDay()], count: 0 };
   }
 
   chats.forEach(chat => {
-    if (chat.lastMessageAt) {
-      const dayName = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][chat.lastMessageAt.getDay()];
-      if (dailyActivity[dayName !== undefined]) {
-        dailyActivity[dayName] += chat.messages.length;
-      }
+    const chatDate = new Date(chat.createdAt).toDateString();
+    if (dailyActivity[chatDate] !== undefined) {
+      dailyActivity[chatDate].count += 1;
     }
   });
 
-  return Object.entries(dailyActivity).reverse().map(([day, count]) => ({ day, count }));
+  return Object.values(dailyActivity);
 }
 
 async function getSubjectProgress(userId) {

@@ -9,7 +9,7 @@ import {
 
 import { toggleTheme } from "../../store/slices/uiSlice";
 
-import { Card, Button } from "../../components/ui";
+import { Card, Button, LoginRequired } from "../../components/ui";
 
 export default function Settings() {
   const dispatch = useDispatch();
@@ -54,7 +54,8 @@ export default function Settings() {
   );
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <LoginRequired title="Cài đặt" message="Bạn cần đăng nhập để xem cài đặt">
+      <div className="space-y-6 animate-fade-in">
       <div>
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Cài đặt</h1>
         <p className="text-gray-500 dark:text-gray-400 mt-1">Quản lý cài đặt ứng dụng</p>
@@ -222,5 +223,6 @@ export default function Settings() {
         </div>
       </Card>
     </div>
+    </LoginRequired>
   );
 }

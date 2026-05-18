@@ -15,7 +15,8 @@ import {
   Button,
   Input,
   Modal,
-  ProfileSkeleton
+  ProfileSkeleton,
+  LoginRequired
 } from "../../components/ui";
 
 const ACTIVITY_ICONS = {
@@ -176,16 +177,19 @@ export default function Profile() {
 
   if (isLoading && !profile) {
     return (
-      <div className="space-y-6">
-        <Card>
-          <ProfileSkeleton />
-        </Card>
-      </div>
+      <LoginRequired>
+        <div className="space-y-6">
+          <Card>
+            <ProfileSkeleton />
+          </Card>
+        </div>
+      </LoginRequired>
     );
   }
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <LoginRequired title="Hồ sơ cá nhân" message="Bạn cần đăng nhập để xem hồ sơ của mình">
+      <div className="space-y-6 animate-fade-in">
       <div>
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Hồ sơ cá nhân</h1>
         <p className="text-gray-500 dark:text-gray-400 mt-1">Quản lý thông tin tài khoản của bạn</p>
@@ -453,6 +457,7 @@ export default function Profile() {
           </div>
         </form>
       </Modal>
-    </div>
+      </div>
+    </LoginRequired>
   );
 }

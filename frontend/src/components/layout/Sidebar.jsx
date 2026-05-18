@@ -1,5 +1,5 @@
 import React from 'react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, Link } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import {
   LayoutDashboard,
@@ -17,6 +17,8 @@ import {
   Trophy,
   ShoppingBag,
   CreditCard,
+  LogIn,
+  UserPlus,
 } from 'lucide-react';
 
 const menuItems = [
@@ -25,6 +27,13 @@ const menuItems = [
   { path: '/mentors', icon: GraduationCap, label: 'Mentors' },
   { path: '/ai', icon: Bot, label: 'AI Assistant' },
   { path: '/gamification', icon: Trophy, label: 'Achievements' },
+];
+
+const protectedMenuItems = [
+  { path: '/transactions', icon: Receipt, label: 'Giao dịch' },
+  { path: '/profile', icon: User, label: 'Hồ sơ' },
+  { path: '/notifications', icon: Bell, label: 'Thông báo' },
+  { path: '/settings', icon: Settings, label: 'Cài đặt' },
 ];
 
 const mentorItems = [
@@ -39,7 +48,7 @@ const adminItems = [
 ];
 
 export default function Sidebar({ isOpen, onToggle }) {
-  const user = useSelector((state) => state.auth.user);
+  const { user, isAuthenticated } = useSelector((state) => state.auth);
   const isAdmin = user?.role === 'admin';
   const isMentor = user?.role === 'mentor' || user?.role === 'admin';
 
@@ -101,62 +110,63 @@ export default function Sidebar({ isOpen, onToggle }) {
                 Tài khoản
               </p>
             )}
-            <NavLink
-              to="/transactions"
-              className={({ isActive }) => `
-                flex items-center gap-3 px-3 py-2.5 rounded-lg
-                transition-all duration-200
-                ${isActive
-                  ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400'
-                  : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800'
-                }
-              `}
-            >
-              <Receipt className="w-5 h-5 flex-shrink-0" />
-              {isOpen && <span className="font-medium">Giao dịch</span>}
-            </NavLink>
-            <NavLink
-              to="/profile"
-              className={({ isActive }) => `
-                flex items-center gap-3 px-3 py-2.5 rounded-lg
-                transition-all duration-200
-                ${isActive
-                  ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400'
-                  : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800'
-                }
-              `}
-            >
-              <User className="w-5 h-5 flex-shrink-0" />
-              {isOpen && <span className="font-medium">Hồ sơ</span>}
-            </NavLink>
-            <NavLink
-              to="/notifications"
-              className={({ isActive }) => `
-                flex items-center gap-3 px-3 py-2.5 rounded-lg
-                transition-all duration-200
-                ${isActive
-                  ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400'
-                  : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800'
-                }
-              `}
-            >
-              <Bell className="w-5 h-5 flex-shrink-0" />
-              {isOpen && <span className="font-medium">Thông báo</span>}
-            </NavLink>
-            <NavLink
-              to="/settings"
-              className={({ isActive }) => `
-                flex items-center gap-3 px-3 py-2.5 rounded-lg
-                transition-all duration-200
-                ${isActive
-                  ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400'
-                  : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800'
-                }
-              `}
-            >
-              <Settings className="w-5 h-5 flex-shrink-0" />
-              {isOpen && <span className="font-medium">Cài đặt</span>}
-            </NavLink>
+            {isAuthenticated ? (
+              protectedMenuItems.map((item) => (
+                <NavLink
+                  key={item.path}
+                  to={item.path}
+                  className={({ isActive }) => `
+                    flex items-center gap-3 px-3 py-2.5 rounded-lg
+                    transition-all duration-200
+                    ${isActive
+                      ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400'
+                      : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800'
+                    }
+                  `}
+                >
+                  <item.icon className="w-5 h-5 flex-shrink-0" />
+                  {isOpen && <span className="font-medium">{item.label}</span>}
+                </NavLink>
+              ))
+            ) : (
+              <>
+                <NavLink
+                  to="/login"
+                  className={({ isActive }) => `
+                    flex items-center gap-3 px-3 py-2.5 rounded-lg
+                    transition-all duration-200
+                    ${isActive
+                      ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400'
+                      : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800'
+                    }
+                  `}
+                >
+                  <LogIn className="w-5 h-5 flex-shrink-0" />
+                  {isOpen && <span className="font-medium">Đăng nhập</span>}
+                </NavLink>
+                <NavLink
+                  to="/register"
+                  className={({ isActive }) => `
+                    flex items-center gap-3 px-3 py-2.5 rounded-lg
+                    transition-all duration-200
+                    ${isActive
+                      ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400'
+                      : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800'
+                    }
+                  `}
+                >
+                  <UserPlus className="w-5 h-5 flex-shrink-0" />
+                  {isOpen && <span className="font-medium">Đăng ký</span>}
+                </NavLink>
+                {isOpen && (
+                  <div className="mt-3 mx-3 p-3 bg-primary-50 dark:bg-primary-900/20 rounded-lg border border-primary-100 dark:border-primary-800">
+                    <p className="text-xs text-primary-700 dark:text-primary-300 text-center">
+                      Đăng nhập để truy cập đầy đủ tính năng
+                    </p>
+                  </div>
+                )}
+              </>
+            )}
           </div>
 
           {isMentor && !isAdmin && (

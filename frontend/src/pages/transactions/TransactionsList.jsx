@@ -14,6 +14,7 @@ import {
   CardSkeleton,
   Skeleton
 } from "../../components/ui";
+import { LoginRequired } from "../../components/ui";
 
 const formatCurrency = (amount) => {
   return new Intl.NumberFormat('vi-VN', {
@@ -154,7 +155,8 @@ export default function TransactionsList() {
   };
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <LoginRequired title="Giao dịch" message="Bạn cần đăng nhập để xem lịch sử giao dịch">
+      <div className="space-y-6 animate-fade-in">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Giao dịch</h1>
@@ -379,6 +381,7 @@ export default function TransactionsList() {
           </Button>
         </div>
       </Modal>
-    </div>
+      </div>
+    </LoginRequired>
   );
 }

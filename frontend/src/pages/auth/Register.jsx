@@ -53,10 +53,9 @@ export default function Register() {
         password: formData.password,
       })).unwrap();
       
-      if (result.requiresEmailVerification) {
-        toast.success('Đăng ký thành công! Vui lòng xác thực email.');
-        navigate('/verify-email', { state: { email: formData.email } });
-      }
+      // Registration successful - user is now logged in automatically
+      toast.success('Đăng ký thành công! Đang chuyển đến trang chính...');
+      navigate('/dashboard');
     } catch (err) {
       toast.error(err || 'Đăng ký thất bại');
     }

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { orderService, documentService } from '../../services/api';
 import { Search, Download, BookOpen, Calendar, CheckCircle, FileText, Grid, List, FolderOpen, Loader2, Eye, X } from 'lucide-react';
+import { LoginRequired } from "../../components/ui";
 import axios from 'axios';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
@@ -252,7 +253,8 @@ const MyDocuments = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <LoginRequired title="Tài liệu của tôi" message="Bạn cần đăng nhập để xem tài liệu đã mua">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <div className="bg-gradient-to-r from-primary-600 to-primary-800 text-white py-8">
         <div className="container mx-auto px-4">
           <div className="flex items-center gap-4 mb-6">
@@ -404,7 +406,8 @@ const MyDocuments = () => {
           </div>
         </div>
       )}
-    </div>
+      </div>
+    </LoginRequired>
   );
 };
 

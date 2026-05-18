@@ -13,21 +13,23 @@ class AuthService {
 
     const user = await User.create({ name, email, password });
 
-    // Generate verification token but DON'T auto-verify
-    const verificationCode = user.getEmailVerificationToken();
+    // Auto-verify email - skip email verification step
+    user.isEmailVerified = true;
+    user.emailVerificationToken = undefined;
+    user.emailVerificationExpire = undefined;
     await user.save();
 
-    // Send verification email
-    try {
-      await emailService.sendEmailVerification(user, verificationCode);
-    } catch (err) {
-      console.log('Email verification email could not be sent:', err.message);
-    }
+    // Generate tokens for immediate login
+    const accessToken = jwtHelper.generateAccessToken(user._id);
+    const refreshToken = jwtHelper.generateRefreshToken(user._id);
+
+    user.refreshToken = refreshToken;
+    await user.save();
 
     return {
-      requiresEmailVerification: true,
-      email: user.email,
-      message: 'Đăng ký thành công. Vui lòng xác thực email.'
+      user: this.sanitizeUser(user),
+      accessToken,
+      refreshToken,
     };
   }
 

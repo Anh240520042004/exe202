@@ -12,7 +12,8 @@ import {
   Mail,
   QrCode,
   Clock,
-  Copy
+  Copy,
+  ArrowRight
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { orderService, documentService, mentorService } from '../../services/api';
@@ -28,7 +29,8 @@ export default function Checkout() {
   const [paymentLoading, setPaymentLoading] = useState(false);
   const [orderCreated, setOrderCreated] = useState(false);
   const [orderDetails, setOrderDetails] = useState(null);
-  const [showPendingMessage, setShowPendingMessage] = useState(false);
+  const [sepayPaymentData, setSepayPaymentData] = useState(null);
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('sepay');
 
   useEffect(() => {
     fetchItemDetails();
@@ -81,29 +83,38 @@ export default function Checkout() {
         // Create order first
         const response = await orderService.create({
           documents: [{ documentId: itemDetails.id }],
-          paymentMethod: 'banking'
+          paymentMethod: selectedPaymentMethod
         });
         const order = response.data?.data || response.data;
         setOrderDetails(order);
         setOrderCreated(true);
 
-        // Initiate banking payment - this creates pending transaction
-        const bankingResponse = await fetch(`http://localhost:5000/api/orders/${order._id}/banking`, {
+        // Create payment based on selected method
+        const paymentResponse = await fetch(`http://localhost:5000/api/payments/create`, {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
             'Content-Type': 'application/json'
           },
-          body: JSON.stringify({})
+          body: JSON.stringify({
+            orderId: order._id,
+            paymentMethod: selectedPaymentMethod
+          })
         });
 
-        const bankingData = await bankingResponse.json();
+        const payData = await paymentResponse.json();
 
-        if (bankingData.success) {
-          setShowPendingMessage(true);
-          toast.success('Đã tạo yêu cầu thanh toán. Vui lòng quét mã QR để chuyển khoản.');
+        if (payData.success) {
+          setSepayPaymentData(payData.data);
+          
+          if (selectedPaymentMethod === 'vnpay') {
+            // Redirect to VNPay gateway
+            window.location.href = payData.data.paymentUrl;
+          } else if (selectedPaymentMethod === 'sepay') {
+            toast.success('Đã tạo yêu cầu thanh toán. Vui lòng quét mã QR để chuyển khoản.');
+          }
         } else {
-          toast.error(bankingData.message || 'Có lỗi xảy ra');
+          toast.error(payData.message || 'Có lỗi xảy ra');
         }
       } else if (itemDetails.type === 'mentor') {
         toast.success('Tính năng đặt mentor đang được phát triển');
@@ -125,12 +136,7 @@ export default function Checkout() {
     return new Intl.NumberFormat('vi-VN').format(price) + ' VNĐ';
   };
 
-  // Generate a simple VietQR-like content
-  const generateQRContent = () => {
-    const amount = orderDetails?.totalAmount || 0;
-    const orderCode = `FPTAIEZ${orderDetails?._id?.slice(-8) || Date.now()}`;
-    return `https://img.vietqr.io/image/fptaiez-1234567890-compact.png?amount=${amount}&addInfo=${encodeURIComponent(orderCode)}&accountName=FPTAIEZ`;
-  };
+  // QR will be loaded from backend sepay data
 
   if (loading) {
     return (
@@ -225,29 +231,66 @@ export default function Checkout() {
               </div>
             </div>
 
-            {/* Payment Method - VietQR */}
+            {/* Payment Method Selection */}
             {!orderCreated ? (
               <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
                 <h2 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">
                   Phương thức thanh toán
                 </h2>
-                <div className="flex items-center gap-4 p-4 border-2 border-primary-500 bg-primary-50 dark:bg-primary-900/20 rounded-xl">
-                  <div className="w-12 h-12 bg-green-500 rounded-lg flex items-center justify-center">
-                    <Building2 className="w-6 h-6 text-white" />
-                  </div>
-                  <div className="flex-1">
-                    <p className="font-medium text-gray-900 dark:text-white">
-                      Chuyển khoản ngân hàng (VietQR)
-                    </p>
-                    <p className="text-sm text-gray-500">Quét mã QR để thanh toán</p>
-                  </div>
-                  <CheckCircle className="w-6 h-6 text-primary-600" />
+                <div className="space-y-3">
+                  {/* SePay Option */}
+                  <label className={`flex items-center gap-4 p-4 border-2 rounded-xl cursor-pointer transition-all duration-200 ${selectedPaymentMethod === 'sepay' ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20' : 'border-gray-200 dark:border-gray-700 hover:border-gray-300'}`}>
+                    <input
+                      type="radio"
+                      name="paymentMethod"
+                      value="sepay"
+                      checked={selectedPaymentMethod === 'sepay'}
+                      onChange={(e) => setSelectedPaymentMethod(e.target.value)}
+                      className="sr-only"
+                    />
+                    <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-lg flex items-center justify-center">
+                      <span className="text-lg font-bold text-white">S</span>
+                    </div>
+                    <div className="flex-1">
+                      <p className="font-medium text-gray-900 dark:text-white">
+                        Chuyển khoản ngân hàng (SePay/VietQR)
+                      </p>
+                      <p className="text-sm text-gray-500">Quét mã QR, tự động xác nhận</p>
+                    </div>
+                    {selectedPaymentMethod === 'sepay' && (
+                      <CheckCircle className="w-6 h-6 text-primary-600" />
+                    )}
+                  </label>
+
+                  {/* VNPay Option */}
+                  <label className={`flex items-center gap-4 p-4 border-2 rounded-xl cursor-pointer transition-all duration-200 ${selectedPaymentMethod === 'vnpay' ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20' : 'border-gray-200 dark:border-gray-700 hover:border-gray-300'}`}>
+                    <input
+                      type="radio"
+                      name="paymentMethod"
+                      value="vnpay"
+                      checked={selectedPaymentMethod === 'vnpay'}
+                      onChange={(e) => setSelectedPaymentMethod(e.target.value)}
+                      className="sr-only"
+                    />
+                    <div className="w-12 h-12 bg-gradient-to-br from-red-500 to-orange-500 rounded-lg flex items-center justify-center">
+                      <span className="text-lg font-bold text-white">V</span>
+                    </div>
+                    <div className="flex-1">
+                      <p className="font-medium text-gray-900 dark:text-white">
+                        Thanh toán qua VNPay
+                      </p>
+                      <p className="text-sm text-gray-500">Thanh toán trực tiếp qua cổng VNPay</p>
+                    </div>
+                    {selectedPaymentMethod === 'vnpay' && (
+                      <CheckCircle className="w-6 h-6 text-primary-600" />
+                    )}
+                  </label>
                 </div>
               </div>
             ) : null}
 
             {/* VietQR Payment */}
-            {orderCreated && (
+            {orderCreated && sepayPaymentData && selectedPaymentMethod === 'sepay' && (
               <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
                 <h2 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">
                   Quét mã QR để thanh toán
@@ -258,10 +301,10 @@ export default function Checkout() {
                     <Clock className="w-5 h-5 text-yellow-600 mt-0.5" />
                     <div>
                       <p className="font-medium text-yellow-800 dark:text-yellow-200">
-                        Thanh toán chuyển khoản
+                        Thanh toán qua SePay/VietQR
                       </p>
                       <p className="text-sm text-yellow-700 dark:text-yellow-300 mt-1">
-                        Sau khi chuyển khoản, admin sẽ xác nhận trong vài phút. Bạn sẽ nhận được thông báo khi thanh toán được duyệt.
+                        Quét mã QR bằng ứng dụng ngân hàng. Hệ thống sẽ tự động xác nhận sau khi bạn chuyển khoản.
                       </p>
                     </div>
                   </div>
@@ -271,16 +314,21 @@ export default function Checkout() {
                   {/* QR Code */}
                   <div className="flex flex-col items-center">
                     <div className="bg-white p-4 rounded-xl border-2 border-dashed border-gray-300">
-                      <img 
-                        src={generateQRContent()} 
-                        alt="QR Code"
-                        className="w-48 h-48 object-contain"
+                      <img
+                        src={sepayPaymentData.qrUrl}
+                        alt="QR Code thanh toán BIDV"
+                        className="w-56 h-56 object-contain"
                         onError={(e) => {
-                          e.target.src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=FPTAIEZ${orderDetails?._id?.slice(-8) || ''}`;
+                          // Fallback: use VietQR.io generate API
+                          e.target.src = `https://api.vietqr.io/v2/generate?accountNumber=${sepayPaymentData.bankInfo?.accountNumber}&accountName=${encodeURIComponent(sepayPaymentData.bankInfo?.accountName)}&amount=${orderDetails?.totalAmount}&add=${encodeURIComponent(sepayPaymentData.transactionId)}&bankCode=${sepayPaymentData.bankInfo?.bankBin}`;
+                          e.target.onerror = () => {
+                            // Final fallback: use qrserver.com with raw data
+                            e.target.src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(sepayPaymentData.qrRaw || '')}`;
+                          };
                         }}
                       />
                     </div>
-                    <p className="text-sm text-gray-500 mt-3">Quét mã QR bằng ứng dụng ngân hàng</p>
+                    <p className="text-sm text-gray-500 mt-3">Quét mã QR bằng ứng dụng ngân hàng (BIDV)</p>
                   </div>
 
                   {/* Bank Info */}
@@ -293,16 +341,16 @@ export default function Checkout() {
                       <div className="flex justify-between items-center">
                         <span className="text-gray-500">Ngân hàng:</span>
                         <div className="flex items-center gap-2">
-                          <span className="font-medium">Vietcombank</span>
+                          <span className="font-medium">{sepayPaymentData.bankInfo?.bankName || 'BIDV - CN BA DINH'}</span>
                         </div>
                       </div>
                       
                       <div className="flex justify-between items-center">
                         <span className="text-gray-500">Số tài khoản:</span>
                         <div className="flex items-center gap-2">
-                          <span className="font-medium font-mono">1234567890</span>
+                          <span className="font-medium font-mono">{sepayPaymentData.bankInfo?.accountNumber || '1261101647'}</span>
                           <button 
-                            onClick={() => copyToClipboard('1234567890')}
+                            onClick={() => copyToClipboard(sepayPaymentData.bankInfo?.accountNumber || '1261101647')}
                             className="p-1 hover:bg-gray-200 dark:hover:bg-gray-600 rounded"
                           >
                             <Copy className="w-4 h-4" />
@@ -312,7 +360,7 @@ export default function Checkout() {
                       
                       <div className="flex justify-between items-center">
                         <span className="text-gray-500">Tên TK:</span>
-                        <span className="font-medium">TRAN VAN ADMIN</span>
+                        <span className="font-medium">{sepayPaymentData.bankInfo?.accountName || 'LE DUC ANH'}</span>
                       </div>
                       
                       <div className="flex justify-between items-center">
@@ -326,10 +374,10 @@ export default function Checkout() {
                         <span className="text-gray-500">Nội dung:</span>
                         <div className="flex items-center gap-2">
                           <span className="font-medium font-mono">
-                            FPTAIEZ{orderDetails?._id?.slice(-8) || Date.now()}
+                            {sepayPaymentData.transactionId || `FPTAIEZ${orderDetails?._id?.slice(-8) || Date.now()}`}
                           </span>
                           <button 
-                            onClick={() => copyToClipboard(`FPTAIEZ${orderDetails?._id?.slice(-8) || Date.now()}`)}
+                            onClick={() => copyToClipboard(sepayPaymentData.transactionId || `FPTAIEZ${orderDetails?._id?.slice(-8) || Date.now()}`)}
                             className="p-1 hover:bg-gray-200 dark:hover:bg-gray-600 rounded"
                           >
                             <Copy className="w-4 h-4" />
@@ -338,11 +386,18 @@ export default function Checkout() {
                       </div>
                     </div>
 
-                    <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-600">
-                      <p className="text-xs text-gray-500">
-                        <strong>Lưu ý:</strong> Vui lòng nhập đúng số tiền và nội dung chuyển khoản để hệ thống tự động xác nhận.
-                      </p>
-                    </div>
+                    {sepayPaymentData.instructions && (
+                      <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-600">
+                        <p className="text-xs text-gray-500">
+                          <strong>Hướng dẫn:</strong>
+                        </p>
+                        <ul className="text-xs text-gray-500 mt-1 space-y-1">
+                          {sepayPaymentData.instructions.slice(0, 4).map((instruction, i) => (
+                            <li key={i}>{instruction}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -358,6 +413,9 @@ export default function Checkout() {
                       </p>
                       <p className="text-sm text-gray-500">
                         Mã đơn: <code className="bg-gray-100 dark:bg-gray-700 px-1 rounded">{orderDetails?._id?.slice(-8).toUpperCase()}</code>
+                      </p>
+                      <p className="text-xs text-gray-400 mt-1">
+                        Hệ thống sẽ tự động xác nhận trong vài phút sau khi bạn chuyển khoản
                       </p>
                     </div>
                   </div>
@@ -378,6 +436,30 @@ export default function Checkout() {
                     <CheckCircle className="w-5 h-5" />
                     Quay về trang chủ
                   </button>
+                </div>
+              </div>
+            )}
+
+            {/* VNPay Redirect Message */}
+            {orderCreated && selectedPaymentMethod === 'vnpay' && (
+              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
+                <div className="text-center">
+                  <div className="w-16 h-16 mx-auto bg-red-100 dark:bg-red-900/20 rounded-full flex items-center justify-center mb-4">
+                    <span className="text-2xl font-bold text-red-600">V</span>
+                  </div>
+                  <h2 className="text-lg font-semibold mb-2 text-gray-900 dark:text-white">
+                    Đang chuyển hướng đến VNPay...
+                  </h2>
+                  <p className="text-gray-500 dark:text-gray-400 mb-4">
+                    Vui lòng chờ trong giây lát hoặc click nút bên dưới nếu không được chuyển hướng tự động.
+                  </p>
+                  <a
+                    href={sepayPaymentData?.paymentUrl}
+                    className="inline-flex items-center gap-2 px-6 py-3 bg-red-500 text-white rounded-lg font-medium hover:bg-red-600 transition-colors"
+                  >
+                    <span>Mở cổng thanh toán VNPay</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </a>
                 </div>
               </div>
             )}

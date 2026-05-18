@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { Mail, Lock, Eye, EyeOff } from 'lucide-react';
-import toast from 'react-hot-toast';
 import { login, clearError } from "../../store/slices/authSlice";
 import { Button, Input } from "../../components/ui";
 
@@ -10,35 +9,41 @@ export default function Login() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { isLoading, error } = useSelector((state) => state.auth);
-  
+
   const [formData, setFormData] = useState({
     email: '',
     password: '',
   });
   const [showPassword, setShowPassword] = useState(false);
+  const [localError, setLocalError] = useState('');
+  const [loginKey, setLoginKey] = useState(0);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
+    setLocalError('');
     if (error) dispatch(clearError());
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (!formData.email || !formData.password) {
-      toast.error('Vui lòng điền đầy đủ thông tin');
+      setLocalError('Vui lòng điền đầy đủ thông tin');
       return;
     }
 
     try {
       await dispatch(login(formData)).unwrap();
-      toast.success('Đăng nhập thành công!');
       navigate('/dashboard');
     } catch (err) {
-      toast.error(err || 'Đăng nhập thất bại');
+      setLocalError(err || 'Email hoặc mật khẩu không đúng');
+      setFormData((prev) => ({ ...prev, password: '' }));
+      setLoginKey((k) => k + 1);
     }
   };
+
+  const displayError = localError || error;
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-900 via-primary-800 to-accent-900 p-4">
@@ -65,6 +70,7 @@ export default function Login() {
 
             <div className="relative">
               <Input
+                key={loginKey}
                 type={showPassword ? 'text' : 'password'}
                 name="password"
                 label="Mật khẩu"
@@ -81,6 +87,12 @@ export default function Login() {
                 {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
               </button>
             </div>
+
+            {displayError && (
+              <div className="p-3 bg-red-500/20 border border-red-500/30 rounded-lg text-red-200 text-sm">
+                {displayError}
+              </div>
+            )}
 
             <div className="flex items-center justify-between text-sm">
               <label className="flex items-center gap-2 text-primary-200 cursor-pointer">
