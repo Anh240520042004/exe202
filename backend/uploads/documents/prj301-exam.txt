@@ -1,0 +1,76 @@
+# PRJ301 - Final Exam Preparation 2024
+## Previous Exams with Solutions
+
+### Exam 1: Project Management Basics
+
+**Question 1:** Explain the difference between project and operations.
+
+**Answer:** A project is a temporary endeavor undertaken to create a unique product, service, or result. It has a definite beginning and end. Operations are ongoing, repetitive work that continues indefinitely.
+
+---
+
+**Question 2:** What are the five process groups in project management?
+
+**Answer:**
+1. Initiating
+2. Planning
+3. Executing
+4. Monitoring and Controlling
+5. Closing
+
+---
+
+**Question 3:** Calculate the critical path for the following project:
+
+| Activity | Duration | Predecessors |
+|----------|----------|--------------|
+| A        | 3 days   | -            |
+| B        | 4 days   | A            |
+| C        | 2 days   | A            |
+| D        | 5 days   | B, C         |
+
+**Answer:** 
+- Path A-B-D: 3 + 4 + 5 = 12 days (CRITICAL PATH)
+- Path A-C-D: 3 + 2 + 5 = 10 days
+
+---
+
+### Exam 2: Agile & Scrum
+
+**Question 1:** What are the three pillars of Scrum?
+
+**Answer:**
+1. **Transparency** - Everyone shares a common understanding
+2. **Inspection** - Frequently check progress toward goals
+3. **Adaptation** - Adjust processes when issues are identified
+
+---
+
+**Question 2:** List the Scrum artifacts and events.
+
+**Artifacts:**
+- Product Backlog
+- Sprint Backlog
+- Increment
+
+**Events:**
+- Sprint
+- Sprint Planning
+- Daily Scrum
+- Sprint Review
+- Sprint Retrospective
+
+---
+
+### Exam 3: Risk Management
+
+**Question:** What are the 4 risk response strategies?
+
+**Answer:**
+1. **Avoid** - Eliminate the risk entirely
+2. **Transfer** - Shift the risk to a third party
+3. **Mitigate** - Reduce the probability or impact
+4. **Accept** - Acknowledge and prepare for impact
+
+---
+*Good luck with your exam!*

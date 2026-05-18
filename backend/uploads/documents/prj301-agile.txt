@@ -1,0 +1,160 @@
+# Agile & Scrum Complete Guide
+
+## Introduction to Agile
+
+Agile is an iterative approach to project management and software development that helps teams deliver value to their customers faster and with fewer headaches.
+
+### The Agile Manifesto
+
+**Individuals and interactions** over processes and tools
+**Working software** over comprehensive documentation
+**Customer collaboration** over contract negotiation
+**Responding to change** over following a plan
+
+### 12 Principles of Agile
+
+1. Customer satisfaction by early and continuous delivery of valuable software
+2. Welcome changing requirements, even late in development
+3. Deliver working software frequently
+4. Business people and developers must work together daily
+5. Build projects around motivated individuals
+6. Face-to-face conversation is the most effective method of communication
+7. Working software is the primary measure of progress
+8. Sustainable development pace
+9. Continuous attention to technical excellence
+10. Simplicity - maximize work not done
+11. Self-organizing teams
+12. Regular reflection and adjustment
+
+---
+
+## Scrum Framework
+
+Scrum is the most popular Agile framework for developing, delivering, and sustaining complex products.
+
+### The Scrum Team
+
+**Product Owner**
+- Maximizes the value of the product
+- Manages the Product Backlog
+- Makes decisions about features and priorities
+
+**Scrum Master**
+- Facilitates Scrum events
+- Removes impediments
+- Coaches the team
+
+**Development Team**
+- Self-organizing and cross-functional
+- Delivers increments of working software
+- Estimates and commits to work
+
+### Scrum Events
+
+**Sprint**
+- Time-boxed iteration (1-4 weeks)
+- Consistent duration for rhythm
+- No changes that endanger the Sprint Goal
+
+**Sprint Planning**
+- What can be delivered in the Sprint?
+- How will the work be accomplished?
+- Time-box: 8 hours for 1-month Sprint
+
+**Daily Scrum**
+- 15 minutes daily
+- What did I do yesterday?
+- What will I do today?
+- Any impediments?
+
+**Sprint Review**
+- Inspect the increment
+- Gather feedback
+- Adapt the Product Backlog
+
+**Sprint Retrospective**
+- Inspect the Sprint
+- Create improvement plan
+- Implement changes in next Sprint
+
+### Scrum Artifacts
+
+**Product Backlog**
+- Ordered list of everything in the product
+- Dynamic and evolving
+- Owned by the Product Owner
+
+**Sprint Backlog**
+- Product Backlog items selected for Sprint
+- Plus the plan for delivering them
+- Owned by the Development Team
+
+**Increment**
+- Sum of all completed Product Backlog items
+- Must be in usable condition
+- "Done" criteria must be met
+
+---
+
+## User Stories
+
+### Format
+"As a [type of user], I want [some goal] so that [some reason]."
+
+### Examples
+- "As a student, I want to search for documents so that I can find study materials quickly."
+- "As an admin, I want to manage users so that the platform stays organized."
+
+### Story Points
+
+| Size | Points | Description |
+|------|--------|-------------|
+| XS   | 1      | Very small task |
+| S    | 2      | Small task |
+| M    | 3      | Medium task |
+| L    | 5      | Large task |
+| XL   | 8      | Very large task |
+| XXL  | 13     | Too large, split it |
+
+---
+
+## Agile Metrics
+
+**Velocity**
+- Story points completed per Sprint
+- Used for forecasting
+
+**Burndown Chart**
+- Shows remaining work over time
+- Helps track progress
+
+**Burnup Chart**
+- Shows completed work vs total scope
+- Tracks scope changes
+
+---
+
+## Best Practices
+
+1. Keep Sprints short (1-2 weeks ideal)
+2. Hold Daily Standups at the same time
+3. Limit Work in Progress (WIP)
+4. Focus on continuous improvement
+5. Celebrate successes
+6. Address impediments immediately
+7. Maintain stable Sprint duration
+
+---
+
+## Common Pitfalls to Avoid
+
+- Adding work to Sprint mid-way
+- Skipping Daily Standups
+- Ignoring the Definition of Done
+- Not involving the Product Owner
+- Underestimating complexity
+- Ignoring technical debt
+
+---
+*Guide prepared by Nguyen Van Mentor*
+*Last updated: 2024*

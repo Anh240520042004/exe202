@@ -1,0 +1,192 @@
+# Design Patterns - GoF (Gang of Four)
+
+## Introduction
+
+Design patterns are typical solutions to commonly occurring problems in software design. They represent best practices evolved over time.
+
+---
+
+## Creational Patterns
+
+### 1. Singleton Pattern
+Ensures a class has only one instance and provides a global point of access to it.
+
+```typescript
+class Database {
+  private static instance: Database;
+  private constructor() {}
+  
+  public static getInstance(): Database {
+    if (!Database.instance) {
+      Database.instance = new Database();
+    }
+    return Database.instance;
+  }
+}
+```
+
+### 2. Factory Method
+Defines an interface for creating objects but lets subclasses decide which class to instantiate.
+
+```typescript
+abstract class Creator {
+  abstract createProduct(): Product;
+  
+  operation(): string {
+    const product = this.createProduct();
+    return product.operation();
+  }
+}
+```
+
+### 3. Abstract Factory
+Provides an interface for creating families of related objects.
+
+```typescript
+interface GUIFactory {
+  createButton(): Button;
+  createCheckbox(): Checkbox;
+}
+
+class WindowsFactory implements GUIFactory {
+  createButton() { return new WindowsButton(); }
+  createCheckbox() { return new WindowsCheckbox(); }
+}
+```
+
+---
+
+## Structural Patterns
+
+### 4. Adapter Pattern
+Allows incompatible interfaces to work together.
+
+```typescript
+class Adapter implements Target {
+  constructor(private adaptee: Adaptee) {}
+  
+  request(): string {
+    return this.adaptee.specificRequest();
+  }
+}
+```
+
+### 5. Decorator Pattern
+Attaches additional responsibilities to an object dynamically.
+
+```typescript
+class Coffee {
+  cost() { return 5; }
+}
+
+class MilkCoffee extends Coffee {
+  constructor(private coffee: Coffee) { super(); }
+  cost() { return this.coffee.cost() + 1.5; }
+}
+```
+
+### 6. Facade Pattern
+Provides a simplified interface to a complex subsystem.
+
+```typescript
+class ComputerFacade {
+  constructor(
+    private cpu: CPU,
+    private memory: Memory,
+    private disk: Disk
+  ) {}
+  
+  start() {
+    this.cpu.freeze();
+    this.memory.load(0, this.disk.read(0, 1024));
+    this.cpu.jump(0);
+    this.cpu.execute();
+  }
+}
+```
+
+---
+
+## Behavioral Patterns
+
+### 7. Observer Pattern
+Defines a one-to-many dependency between objects.
+
+```typescript
+interface Observer {
+  update(state: State): void;
+}
+
+class Subject {
+  private observers: Observer[] = [];
+  
+  attach(o: Observer) { this.observers.push(o); }
+  detach(o: Observer) { this.observers = this.observers.filter(x => x !== o); }
+  notify() { this.observers.forEach(o => o.update(this.state)); }
+}
+```
+
+### 8. Strategy Pattern
+Defines a family of algorithms and makes them interchangeable.
+
+```typescript
+interface PaymentStrategy {
+  pay(amount: number): void;
+}
+
+class CreditCardPayment implements PaymentStrategy {
+  pay(amount: number) { /* credit card logic */ }
+}
+
+class PayPalPayment implements PaymentStrategy {
+  pay(amount: number) { /* PayPal logic */ }
+}
+```
+
+### 9. Command Pattern
+Encapsulates a request as an object.
+
+```typescript
+interface Command {
+  execute(): void;
+}
+
+class LightOnCommand implements Command {
+  constructor(private light: Light) {}
+  execute() { this.light.on(); }
+}
+```
+
+### 10. State Pattern
+Allows an object to alter behavior when its internal state changes.
+
+```typescript
+class StateContext {
+  private state: State;
+  
+  setState(state: State) { this.state = state; }
+  request() { this.state.handle(); }
+}
+```
+
+---
+
+## Pattern Selection Guide
+
+| Problem | Pattern |
+|---------|---------|
+| Need single instance | Singleton |
+| Create objects without specifying class | Factory, Abstract Factory |
+| Convert interface of a class | Adapter |
+| Add responsibilities dynamically | Decorator |
+| Simplify complex subsystem | Facade |
+| One-to-many dependency | Observer |
+| Choose algorithm at runtime | Strategy |
+| Encapsulate requests | Command |
+| Change object state | State |
+| Build complex objects | Builder |
+
+---
+
+*Presentation slides - SWP391 Software Engineering*
+*Total: 120 slides*

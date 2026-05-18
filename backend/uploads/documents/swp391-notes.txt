@@ -1,0 +1,70 @@
+# SWP391 - Software Engineering Fundamentals
+## Complete Notes
+
+### Chapter 1: Introduction to Software Engineering
+
+Software Engineering is the application of engineering principles to software development. It involves a systematic, disciplined, quantifiable approach to development, operation, and maintenance of software.
+
+### Chapter 2: Software Development Life Cycle (SDLC)
+
+1. **Planning/Feasibility Study** - Analyze project requirements
+2. **Requirements Analysis** - Gather and document requirements
+3. **Design** - Create system architecture and design
+4. **Implementation** - Write actual code
+5. **Testing** - Verify the system works correctly
+6. **Deployment** - Release the system to users
+7. **Maintenance** - Fix bugs and add new features
+
+### Chapter 3: UML Diagrams
+
+**Types of UML Diagrams:**
+- **Structural**: Class, Object, Component, Deployment, Package
+- **Behavioral**: Use Case, Activity, State Machine, Sequence, Communication
+
+### Chapter 4: Design Patterns
+
+**Creational Patterns:**
+- Singleton
+- Factory Method
+- Abstract Factory
+- Builder
+- Prototype
+
+**Structural Patterns:**
+- Adapter
+- Bridge
+- Composite
+- Decorator
+- Facade
+- Flyweight
+- Proxy
+
+**Behavioral Patterns:**
+- Chain of Responsibility
+- Command
+- Iterator
+- Mediator
+- Memento
+- Observer
+- State
+- Strategy
+- Template Method
+- Visitor
+
+### Chapter 5: Testing
+
+**Testing Levels:**
+1. Unit Testing
+2. Integration Testing
+3. System Testing
+4. Acceptance Testing
+
+**Testing Types:**
+- White Box Testing
+- Black Box Testing
+- Performance Testing
+- Security Testing
+
+---
+*Document prepared by Nguyen Van Mentor*
+*Last updated: 2024*

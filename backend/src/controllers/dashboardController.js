@@ -1,0 +1,294 @@
+import User from '../models/User.js';
+import Document from '../models/Document.js';
+import Order from '../models/Order.js';
+import MentorBooking from '../models/MentorBooking.js';
+import Course from '../models/Course.js';
+import AIChat from '../models/AIChat.js';
+import { apiSuccess, apiError } from '../utils/apiResponse.js';
+
+export const getStudentDashboard = async (req, res, next) => {
+  try {
+    const user = await User.findById(req.user.id);
+
+    if (!user) {
+      return next(apiError('User not found', 404));
+    }
+
+    const [recentOrders, upcomingBookings, recentChats, recentDownloads] = await Promise.all([
+      Order.find({ user: req.user.id, paymentStatus: 'paid' })
+        .populate('documents.document', 'title subjectCode')
+        .sort({ createdAt: -1 })
+        .limit(5),
+      MentorBooking.find({
+        student: req.user.id,
+        status: { $in: ['pending', 'confirmed'] },
+        date: { $gte: new Date() }
+      })
+        .populate('mentor', 'name avatar mentorProfile')
+        .sort({ date: 1 })
+        .limit(3),
+      AIChat.find({ user: req.user.id })
+        .sort({ lastMessageAt: -1 })
+        .limit(5),
+      user.studentProfile?.downloadHistory?.slice(-10).reverse() || []
+    ]);
+
+    const populatedDownloads = await Promise.all(
+      recentDownloads.map(async (d) => {
+        const doc = await Document.findById(d.document).select('title subjectCode');
+        return { ...d.toObject(), document: doc };
+      })
+    );
+
+    const weeklyStudy = await getWeeklyStudyData(req.user.id);
+    const subjectProgress = await getSubjectProgress(req.user.id);
+
+    res.json(apiSuccess({
+      profile: {
+        name: user.name,
+        avatar: user.avatar,
+        email: user.email,
+        gpa: user.studentProfile?.gpa || 0,
+        level: user.studentProfile?.level || 1,
+        xp: user.studentProfile?.xp || 0,
+        studyStreak: user.studentProfile?.studyStreak || 0
+      },
+      stats: {
+        documentsOwned: await Order.countDocuments({ user: req.user.id, paymentStatus: 'paid' }),
+        mentorSessions: await MentorBooking.countDocuments({ student: req.user.id, status: 'completed' }),
+        aiChatsCount: await AIChat.countDocuments({ user: req.user.id }),
+        totalDownloads: user.studentProfile?.downloadHistory?.length || 0
+      },
+      recentOrders,
+      upcomingBookings,
+      recentChats,
+      recentDownloads: populatedDownloads,
+      weeklyStudy,
+      subjectProgress
+    }));
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getAdminDashboard = async (req, res, next) => {
+  try {
+    const [
+      userStats,
+      documentStats,
+      orderStats,
+      mentorStats,
+      recentOrders,
+      popularDocuments,
+      popularMentors,
+      monthlyRevenue,
+      userGrowth
+    ] = await Promise.all([
+      getUserStats(),
+      getDocumentStats(),
+      getOrderStats(),
+      getMentorStats(),
+      Order.find()
+        .populate('user', 'name avatar')
+        .populate('documents.document', 'title')
+        .sort({ createdAt: -1 })
+        .limit(10),
+      Document.find({ isActive: true })
+        .populate('author', 'name')
+        .sort({ salesCount: -1, downloads: -1 })
+        .limit(10),
+      User.find({ role: 'mentor' })
+        .select('name avatar mentorProfile')
+        .sort({ 'mentorProfile.totalSessions': -1 })
+        .limit(10),
+      getMonthlyRevenue(),
+      getUserGrowth()
+    ]);
+
+    res.json(apiSuccess({
+      overview: {
+        totalUsers: userStats.total,
+        activeUsers: userStats.active,
+        totalDocuments: documentStats.total,
+        totalOrders: orderStats.total,
+        totalMentors: mentorStats.total,
+        totalRevenue: orderStats.revenue
+      },
+      stats: {
+        userStats,
+        documentStats,
+        orderStats,
+        mentorStats
+      },
+      charts: {
+        monthlyRevenue,
+        userGrowth
+      },
+      recentOrders,
+      popularDocuments,
+      popularMentors
+    }));
+  } catch (error) {
+    next(error);
+  }
+};
+
+async function getUserStats() {
+  const [total, active, students, mentors] = await Promise.all([
+    User.countDocuments(),
+    User.countDocuments({ isActive: true }),
+    User.countDocuments({ role: 'student' }),
+    User.countDocuments({ role: 'mentor' })
+  ]);
+
+  return { total, active, students, mentors };
+}
+
+async function getDocumentStats() {
+  const [total, totalDownloads, totalSales] = await Promise.all([
+    Document.countDocuments({ isActive: true }),
+    Document.aggregate([
+      { $match: { isActive: true } },
+      { $group: { _id: null, total: { $sum: '$downloads' } } }
+    ]),
+    Document.aggregate([
+      { $match: { isActive: true } },
+      { $group: { _id: null, total: { $sum: '$salesCount' } } }
+    ])
+  ]);
+
+  return {
+    total,
+    totalDownloads: totalDownloads[0]?.total || 0,
+    totalSales: totalSales[0]?.total || 0
+  };
+}
+
+async function getOrderStats() {
+  const [total, completed, pending, revenue] = await Promise.all([
+    Order.countDocuments(),
+    Order.countDocuments({ status: 'completed' }),
+    Order.countDocuments({ status: 'pending', paymentStatus: 'pending' }),
+    Order.aggregate([
+      { $match: { status: 'completed', paymentStatus: 'paid' } },
+      { $group: { _id: null, total: { $sum: '$totalAmount' } } }
+    ])
+  ]);
+
+  return {
+    total,
+    completed,
+    pending,
+    revenue: revenue[0]?.total || 0
+  };
+}
+
+async function getMentorStats() {
+  const total = await User.countDocuments({ role: 'mentor' });
+  const sessions = await MentorBooking.countDocuments({ status: 'completed' });
+
+  return { total, sessions };
+}
+
+async function getMonthlyRevenue() {
+  const sixMonthsAgo = new Date();
+  sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+
+  const revenue = await Order.aggregate([
+    {
+      $match: {
+        status: 'completed',
+        paymentStatus: 'paid',
+        createdAt: { $gte: sixMonthsAgo }
+      }
+    },
+    {
+      $group: {
+        _id: {
+          month: { $month: '$createdAt' },
+          year: { $year: '$createdAt' }
+        },
+        revenue: { $sum: '$totalAmount' },
+        orders: { $sum: 1 }
+      }
+    },
+    { $sort: { '_id.year': 1, '_id.month': 1 } }
+  ]);
+
+  return revenue.map(r => ({
+    month: `${r._id.month}/${r._id.year}`,
+    revenue: r.revenue,
+    orders: r.orders
+  }));
+}
+
+async function getUserGrowth() {
+  const sixMonthsAgo = new Date();
+  sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+
+  const growth = await User.aggregate([
+    {
+      $match: { createdAt: { $gte: sixMonthsAgo } }
+    },
+    {
+      $group: {
+        _id: {
+          month: { $month: '$createdAt' },
+          year: { $year: '$createdAt' }
+        },
+        users: { $sum: 1 }
+      }
+    },
+    { $sort: { '_id.year': 1, '_id.month': 1 } }
+  ]);
+
+  return growth.map(g => ({
+    month: `${g._id.month}/${g._id.year}`,
+    users: g.users
+  }));
+}
+
+async function getWeeklyStudyData(userId) {
+  const weekAgo = new Date();
+  weekAgo.setDate(weekAgo.getDate() - 7);
+
+  const chats = await AIChat.find({
+    user: userId,
+    lastMessageAt: { $gte: weekAgo }
+  });
+
+  const dailyActivity = {};
+  for (let i = 0; i < 7; i++) {
+    const date = new Date();
+    date.setDate(date.getDate() - i);
+    const dayName = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][date.getDay()];
+    dailyActivity[dayName] = 0;
+  }
+
+  chats.forEach(chat => {
+    if (chat.lastMessageAt) {
+      const dayName = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][chat.lastMessageAt.getDay()];
+      if (dailyActivity[dayName !== undefined]) {
+        dailyActivity[dayName] += chat.messages.length;
+      }
+    }
+  });
+
+  return Object.entries(dailyActivity).reverse().map(([day, count]) => ({ day, count }));
+}
+
+async function getSubjectProgress(userId) {
+  const orders = await Order.find({ user: userId, paymentStatus: 'paid' })
+    .populate('documents.document', 'subjectCode');
+
+  const subjectCounts = {};
+  orders.forEach(order => {
+    order.documents.forEach(item => {
+      if (item.document?.subjectCode) {
+        subjectCounts[item.document.subjectCode] = (subjectCounts[item.document.subjectCode] || 0) + 1;
+      }
+    });
+  });
+
+  return Object.entries(subjectCounts).map(([subject, count]) => ({ subject, count }));
+}

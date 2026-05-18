@@ -1,0 +1,179 @@
+# DBI202 - SQL Quick Reference Cheat Sheet
+
+## Basic SQL Commands
+
+### SELECT
+```sql
+SELECT column1, column2 FROM table_name;
+SELECT * FROM table_name;
+SELECT DISTINCT column FROM table;
+```
+
+### WHERE Clause
+```sql
+SELECT * FROM table WHERE condition;
+SELECT * FROM table WHERE column = 'value';
+SELECT * FROM table WHERE id > 10;
+SELECT * FROM table WHERE name LIKE 'A%';
+```
+
+### ORDER BY
+```sql
+SELECT * FROM table ORDER BY column ASC;
+SELECT * FROM table ORDER BY column DESC;
+SELECT * FROM table ORDER BY col1 ASC, col2 DESC;
+```
+
+### LIMIT
+```sql
+SELECT * FROM table LIMIT 10;
+SELECT * FROM table LIMIT 5 OFFSET 10;
+```
+
+---
+
+## Aggregate Functions
+
+```sql
+COUNT(column)     -- Count rows
+SUM(column)        -- Sum of values
+AVG(column)        -- Average
+MIN(column)        -- Minimum
+MAX(column)        -- Maximum
+```
+
+### GROUP BY
+```sql
+SELECT department, COUNT(*) 
+FROM employees 
+GROUP BY department;
+
+SELECT category, SUM(amount)
+FROM orders
+GROUP BY category
+HAVING SUM(amount) > 1000;
+```
+
+---
+
+## JOINs
+
+### INNER JOIN
+```sql
+SELECT t1.name, t2.title
+FROM table1 t1
+INNER JOIN table2 t2 ON t1.id = t2.ref_id;
+```
+
+### LEFT JOIN
+```sql
+SELECT t1.name, t2.title
+FROM table1 t1
+LEFT JOIN table2 t2 ON t1.id = t2.ref_id;
+```
+
+### RIGHT JOIN
+```sql
+SELECT t1.name, t2.title
+FROM table1 t1
+RIGHT JOIN table2 t2 ON t1.id = t2.ref_id;
+```
+
+### Multiple JOINs
+```sql
+SELECT o.order_id, c.customer_name, p.product_name
+FROM orders o
+JOIN customers c ON o.customer_id = c.id
+JOIN products p ON o.product_id = p.id;
+```
+
+---
+
+## Subqueries
+
+```sql
+-- Subquery in WHERE
+SELECT * FROM products
+WHERE price > (SELECT AVG(price) FROM products);
+
+-- Subquery in FROM
+SELECT AVG(total) FROM (
+    SELECT SUM(amount) as total 
+    FROM orders 
+    GROUP BY customer_id
+) AS customer_totals;
+```
+
+---
+
+## Data Modification
+
+### INSERT
+```sql
+INSERT INTO table (col1, col2) VALUES ('value1', 'value2');
+INSERT INTO table VALUES (val1, val2, val3);
+```
+
+### UPDATE
+```sql
+UPDATE table SET column = 'new_value' WHERE condition;
+UPDATE table SET col1 = 'a', col2 = 'b' WHERE id = 1;
+```
+
+### DELETE
+```sql
+DELETE FROM table WHERE condition;
+DELETE FROM table; -- Deletes all rows
+```
+
+---
+
+## Table Operations
+
+```sql
+CREATE TABLE table_name (
+    id INT PRIMARY KEY,
+    name VARCHAR(100),
+    email VARCHAR(100) UNIQUE,
+    age INT DEFAULT 18,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+DROP TABLE table_name;
+ALTER TABLE table ADD COLUMN new_col TYPE;
+ALTER TABLE table DROP COLUMN old_col;
+```
+
+---
+
+## Indexes
+
+```sql
+CREATE INDEX idx_name ON table(column);
+CREATE UNIQUE INDEX idx_unique ON table(column);
+DROP INDEX idx_name;
+```
+
+---
+
+## Common Operators
+
+| Operator | Description |
+|----------|-------------|
+| =        | Equal |
+| <> or !=| Not equal |
+| >        | Greater than |
+| <        | Less than |
+| >=       | Greater or equal |
+| <=       | Less or equal |
+| BETWEEN  | Between range |
+| IN       | In list |
+| LIKE     | Pattern match |
+| IS NULL  | Is null value |
+| AND      | Both conditions |
+| OR       | Either condition |
+| NOT      | Negation |
+
+---
+
+*Quick Reference Card - DBI202 Database Systems*
