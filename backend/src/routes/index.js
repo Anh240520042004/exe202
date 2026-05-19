@@ -11,6 +11,7 @@ import mentorRoutes from './mentorRoutes.js';
 import aiRoutes from './aiRoutes.js';
 import gamificationRoutes from './gamificationRoutes.js';
 import paymentRoutes from './paymentRoutes.js';
+import rewardRoutes from './rewardRoutes.js';
 
 export {
   authRoutes,
@@ -26,4 +27,5 @@ export {
   aiRoutes,
   gamificationRoutes,
   paymentRoutes,
+  rewardRoutes,
 };

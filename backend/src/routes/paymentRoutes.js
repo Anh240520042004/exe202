@@ -1,8 +1,8 @@
 import express from 'express';
 import { protect, adminOnly } from '../middleware/auth.js';
-import { 
-  createVNPayUrl, 
-  verifyVNPayReturn, 
+import {
+  createVNPayUrl,
+  verifyVNPayReturn,
   createSePayPayment,
 } from '../services/paymentService.js';
 import Order from '../models/Order.js';
@@ -10,10 +10,31 @@ import Payment from '../models/Payment.js';
 import Transaction from '../models/Transaction.js';
 import Document from '../models/Document.js';
 import Notification from '../models/Notification.js';
-import { User } from '../models/index.js';
+import { User, RewardPoint } from '../models/index.js';
 import { apiSuccess, apiError } from '../utils/apiResponse.js';
 import emailService from '../services/emailService.js';
 import mongoose from 'mongoose';
+
+const POINTS_PER_VND = 0.01;
+const calculatePointsFromPurchase = (amountVnd) => Math.floor(amountVnd * POINTS_PER_VND);
+
+const earnPoints = async (userId, amountVnd, orderId) => {
+  const points = calculatePointsFromPurchase(amountVnd);
+  if (points <= 0) return null;
+  const user = await User.findById(userId);
+  if (!user || user.role !== 'student') return null;
+  const newBalance = (user.studentProfile?.rewardPoints || 0) + points;
+  await User.findByIdAndUpdate(userId, { 'studentProfile.rewardPoints': newBalance });
+  return RewardPoint.create({
+    user: userId,
+    type: 'earn',
+    points,
+    reason: 'purchase',
+    description: `Nhận ${points} điểm khi mua tài liệu`,
+    orderId,
+    balanceAfter: newBalance
+  });
+};
 
 const router = express.Router();
 
@@ -244,6 +265,25 @@ router.get('/vnpay-return', async (req, res, next) => {
           'Don hang cua ban da duoc xac nhan. Bay gio ban co the tai tai lieu.',
           'success'
         );
+
+        // Award reward points for purchase
+        try {
+          const pointsEarned = await earnPoints(
+            order.user.toString(),
+            payment.amount,
+            order._id
+          );
+          if (pointsEarned) {
+            await createNotification(
+              order.user.toString(),
+              'Nhận điểm thưởng!',
+              `Bạn đã nhận được ${pointsEarned.points} điểm thưởng khi mua tài liệu!`,
+              'success'
+            );
+          }
+        } catch (pointError) {
+          console.error('Failed to award points:', pointError);
+        }
       }
 
       // Redirect to success page
@@ -404,6 +444,25 @@ router.post('/sepay-webhook', async (req, res) => {
       });
     } catch (emailError) {
       console.error('Failed to send confirmation email:', emailError);
+    }
+
+    // Award reward points for purchase
+    try {
+      const pointsEarned = await earnPoints(
+        order.user.toString(),
+        transferAmount,
+        order._id
+      );
+      if (pointsEarned) {
+        await createNotification(
+          order.user.toString(),
+          'Nhận điểm thưởng!',
+          `Bạn đã nhận được ${pointsEarned.points} điểm thưởng khi mua tài liệu!`,
+          'success'
+        );
+      }
+    } catch (pointError) {
+      console.error('Failed to award points:', pointError);
     }
 
     res.status(200).json({ success: true, message: 'Payment confirmed' });

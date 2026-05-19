@@ -27,7 +27,7 @@ const orderSchema = new mongoose.Schema({
   },
   paymentMethod: {
     type: String,
-    enum: ['sepay', 'vnpay', 'momo', 'banking', 'credit'],
+    enum: ['sepay', 'vnpay', 'momo', 'banking', 'credit', 'points'],
     default: 'sepay'
   },
   paymentId: {
@@ -44,6 +44,10 @@ const orderSchema = new mongoose.Schema({
   },
   couponCode: String,
   discountAmount: {
+    type: Number,
+    default: 0
+  },
+  pointsPaid: {
     type: Number,
     default: 0
   },

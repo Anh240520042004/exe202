@@ -26,6 +26,7 @@ import {
   aiRoutes,
   gamificationRoutes,
   paymentRoutes,
+  rewardRoutes,
 } from './routes/index.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -68,6 +69,7 @@ app.use('/api/payments', paymentRoutes);
 app.use('/api/mentors', mentorRoutes);
 app.use('/api/ai', aiRoutes);
 app.use('/api/gamification', gamificationRoutes);
+app.use('/api/rewards', rewardRoutes);
 
 app.use(notFound);
 app.use(errorHandler);

@@ -3,10 +3,35 @@ import Document from '../models/Document.js';
 import Payment from '../models/Payment.js';
 import Transaction from '../models/Transaction.js';
 import Notification from '../models/Notification.js';
-import { User } from '../models/index.js';
+import { User, RewardPoint } from '../models/index.js';
 import { apiSuccess, apiError } from '../utils/apiResponse.js';
 import emailService from '../services/emailService.js';
 import mongoose from 'mongoose';
+
+const POINTS_PER_VND = 0.01;
+
+const calculatePointsFromPurchase = (amountVnd) => Math.floor(amountVnd * POINTS_PER_VND);
+
+const earnPoints = async (userId, amountVnd, orderId) => {
+  const points = calculatePointsFromPurchase(amountVnd);
+  if (points <= 0) return null;
+
+  const user = await User.findById(userId);
+  if (!user || user.role !== 'student') return null;
+
+  const newBalance = (user.studentProfile?.rewardPoints || 0) + points;
+  await User.findByIdAndUpdate(userId, { 'studentProfile.rewardPoints': newBalance });
+
+  return RewardPoint.create({
+    user: userId,
+    type: 'earn',
+    points,
+    reason: 'purchase',
+    description: `Nhận ${points} điểm khi mua tài liệu`,
+    orderId,
+    balanceAfter: newBalance
+  });
+};
 
 // Helper function to create notification
 const createNotification = async (userId, title, message, type = 'info') => {
@@ -324,6 +349,25 @@ export const handleVNPayCallback = async (req, res, next) => {
         console.error('Failed to send payment confirmation email:', emailError);
       }
 
+      // Award reward points for purchase
+      try {
+        const pointsEarned = await earnPoints(
+          order.user.toString(),
+          payment.amount,
+          order._id
+        );
+        if (pointsEarned) {
+          await createNotification(
+            order.user.toString(),
+            'Nhận điểm thưởng!',
+            `Bạn đã nhận được ${pointsEarned.points} điểm thưởng khi mua tài liệu!`,
+            'success'
+          );
+        }
+      } catch (pointError) {
+        console.error('Failed to award points:', pointError);
+      }
+
       // Redirect to frontend with success status
       const frontendUrl = `${process.env.CLIENT_URL || 'http://localhost:5173'}/payment/result?status=success&orderId=${order._id}`;
       res.redirect(frontendUrl);
@@ -426,6 +470,25 @@ export const confirmPayment = async (req, res, next) => {
       });
     } catch (emailError) {
       console.error('Failed to send payment confirmation email:', emailError);
+    }
+
+    // Award reward points for purchase
+    try {
+      const pointsEarned = await earnPoints(
+        order.user.toString(),
+        payment.amount,
+        order._id
+      );
+      if (pointsEarned) {
+        await createNotification(
+          order.user.toString(),
+          'Nhận điểm thưởng!',
+          `Bạn đã nhận được ${pointsEarned.points} điểm thưởng khi mua tài liệu!`,
+          'success'
+        );
+      }
+    } catch (pointError) {
+      console.error('Failed to award points:', pointError);
     }
 
     res.json(apiSuccess(order, 'Payment confirmed'));
@@ -736,6 +799,25 @@ export const approvePayment = async (req, res, next) => {
       });
     } catch (emailError) {
       console.error('Failed to send confirmation email:', emailError);
+    }
+
+    // Award reward points for purchase
+    try {
+      const pointsEarned = await earnPoints(
+        order.user._id.toString(),
+        order.totalAmount,
+        order._id
+      );
+      if (pointsEarned) {
+        await createNotification(
+          order.user._id.toString(),
+          'Nhận điểm thưởng!',
+          `Bạn đã nhận được ${pointsEarned.points} điểm thưởng khi mua tài liệu!`,
+          'success'
+        );
+      }
+    } catch (pointError) {
+      console.error('Failed to award points:', pointError);
     }
 
     res.json(apiSuccess(order, 'Payment approved successfully'));

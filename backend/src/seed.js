@@ -93,6 +93,7 @@ const seedUsers = async () => {
         studyStreak: 5,
         xp: 1250,
         level: 3,
+        rewardPoints: 500,
       },
     },
     {
@@ -111,6 +112,7 @@ const seedUsers = async () => {
         studyStreak: 12,
         xp: 2800,
         level: 5,
+        rewardPoints: 1200,
       },
     },
   ];

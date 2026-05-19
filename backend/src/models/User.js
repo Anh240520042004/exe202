@@ -204,6 +204,17 @@ const userSchema = new mongoose.Schema(
           },
         },
       ],
+
+      rewardPoints: {
+        type: Number,
+        default: 0,
+      },
+
+      rewardPointsClaimedMilestones: {
+        streaks: { type: [Number], default: [] },
+        levels: { type: [Number], default: [] },
+        xpMilestones: { type: [Number], default: [] },
+      },
     },
 
     // =========================

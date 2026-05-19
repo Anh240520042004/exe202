@@ -1,6 +1,15 @@
 import User from '../models/User.js';
 import Badge from '../models/Badge.js';
 import { apiSuccess, apiError } from '../utils/apiResponse.js';
+import {
+  awardStreakBonus,
+  awardLevelBonus,
+  awardBadgeBonus,
+  awardXpBonus,
+  getStreakBonus,
+  getLevelBonus,
+  getXpBonus
+} from './rewardController.js';
 
 export const getUserStats = async (req, res, next) => {
   try {
@@ -106,11 +115,36 @@ export const addXP = async (userId, amount, reason) => {
 
     if (!user || user.role !== 'student') return;
 
-    user.studentProfile.xp = (user.studentProfile.xp || 0) + amount;
+    const oldXP = user.studentProfile.xp || 0;
+    const oldLevel = user.studentProfile.level || 1;
 
-    const newLevel = calculateLevelFromXP(user.studentProfile.xp);
-    if (newLevel > (user.studentProfile.level || 1)) {
+    user.studentProfile.xp = (user.studentProfile.xp || 0) + amount;
+    const newXP = user.studentProfile.xp;
+
+    const newLevel = calculateLevelFromXP(newXP);
+
+    // Award XP milestone bonus
+    if (oldXP !== newXP) {
+      const milestones = [500, 1000, 2500, 5000, 10000];
+      const claimed = user.studentProfile.rewardPointsClaimedMilestones?.xpMilestones || [];
+      const reached = milestones.filter(m => newXP >= m && !claimed.includes(m));
+      if (reached.length > 0) {
+        const highestMilestone = reached[reached.length - 1];
+        await awardXpBonus(userId, highestMilestone);
+        user.studentProfile.rewardPointsClaimedMilestones = user.studentProfile.rewardPointsClaimedMilestones || { streaks: [], levels: [], xpMilestones: [] };
+        user.studentProfile.rewardPointsClaimedMilestones.xpMilestones.push(highestMilestone);
+      }
+    }
+
+    // Award level bonus
+    if (newLevel > oldLevel) {
       user.studentProfile.level = newLevel;
+      const claimedLevels = user.studentProfile.rewardPointsClaimedMilestones?.levels || [];
+      if (!claimedLevels.includes(newLevel)) {
+        await awardLevelBonus(userId, newLevel);
+        user.studentProfile.rewardPointsClaimedMilestones = user.studentProfile.rewardPointsClaimedMilestones || { streaks: [], levels: [], xpMilestones: [] };
+        user.studentProfile.rewardPointsClaimedMilestones.levels.push(newLevel);
+      }
       await checkAndAwardBadges(user);
     }
 
@@ -134,8 +168,11 @@ export const updateStreak = async (userId) => {
       ? new Date(user.studentProfile.lastStudyDate)
       : null;
 
+    const oldStreak = user.studentProfile.studyStreak || 0;
+    let newStreak = oldStreak;
+
     if (!lastStudy) {
-      user.studentProfile.studyStreak = 1;
+      newStreak = 1;
     } else {
       lastStudy.setHours(0, 0, 0, 0);
       const yesterday = new Date(today);
@@ -144,15 +181,26 @@ export const updateStreak = async (userId) => {
       if (lastStudy.getTime() === today.getTime()) {
         return user;
       } else if (lastStudy.getTime() === yesterday.getTime()) {
-        user.studentProfile.studyStreak += 1;
+        newStreak = oldStreak + 1;
       } else {
-        user.studentProfile.studyStreak = 1;
+        newStreak = 1;
       }
     }
 
+    user.studentProfile.studyStreak = newStreak;
     user.studentProfile.lastStudyDate = today;
-    await user.save();
 
+    // Award streak bonus if milestone reached
+    const claimedStreaks = user.studentProfile.rewardPointsClaimedMilestones?.streaks || [];
+    const streakMilestones = [7, 14, 21, 30, 60, 90];
+    const milestoneReached = streakMilestones.find(m => newStreak >= m && !claimedStreaks.includes(m));
+    if (milestoneReached) {
+      await awardStreakBonus(userId, newStreak);
+      user.studentProfile.rewardPointsClaimedMilestones = user.studentProfile.rewardPointsClaimedMilestones || { streaks: [], levels: [], xpMilestones: [] };
+      user.studentProfile.rewardPointsClaimedMilestones.streaks.push(milestoneReached);
+    }
+
+    await user.save();
     await checkAndAwardBadges(user);
 
     return user;
@@ -202,6 +250,9 @@ export const checkAndAwardBadges = async (user) => {
 
         user.studentProfile.xp = (user.studentProfile.xp || 0) + badge.xpReward;
         newBadges.push(badge);
+
+        // Award reward points for earning badge
+        await awardBadgeBonus(userId, badge);
       }
     }
 

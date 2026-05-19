@@ -51,7 +51,8 @@ export const getStudentDashboard = async (req, res, next) => {
         gpa: user.studentProfile?.gpa || 0,
         level: user.studentProfile?.level || 1,
         xp: user.studentProfile?.xp || 0,
-        studyStreak: user.studentProfile?.studyStreak || 0
+        studyStreak: user.studentProfile?.studyStreak || 0,
+        rewardPoints: user.studentProfile?.rewardPoints || 0
       },
       stats: {
         documentsOwned: await Order.countDocuments({ user: req.user.id, paymentStatus: 'paid' }),

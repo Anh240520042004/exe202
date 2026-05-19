@@ -166,6 +166,14 @@ export const gamificationService = {
   getBadgeByCode: (code) => api.get(`/gamification/badges/${code}`),
 };
 
+export const rewardService = {
+  getBalance: () => api.get('/rewards/balance'),
+  getHistory: (params) => api.get('/rewards/history', { params }),
+  getLeaderboard: (params) => api.get('/rewards/leaderboard', { params }),
+  getPointsRequired: (orderId) => api.get('/rewards/required', { params: { orderId } }),
+  redeem: (data) => api.post('/rewards/redeem', data),
+};
+
 export const dashboardService = {
   getStudentDashboard: () => api.get('/dashboard/student'),
   getAdminDashboard: () => api.get('/dashboard/admin'),

@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { 
-  Building2, 
-  CheckCircle, 
+import {
+  Building2,
+  CheckCircle,
   Loader2,
   ArrowLeft,
   FileText,
@@ -13,10 +13,13 @@ import {
   QrCode,
   Clock,
   Copy,
-  ArrowRight
+  ArrowRight,
+  Coins,
+  Gift,
+  Sparkles
 } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { orderService, documentService, mentorService } from '../../services/api';
+import { orderService, documentService, mentorService, rewardService } from '../../services/api';
 
 export default function Checkout() {
   const { type, id } = useParams();
@@ -32,9 +35,52 @@ export default function Checkout() {
   const [sepayPaymentData, setSepayPaymentData] = useState(null);
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('sepay');
 
+  // Reward points state
+  const [pointBalance, setPointBalance] = useState(0);
+  const [pointsLoading, setPointsLoading] = useState(false);
+  const [pointsRequired, setPointsRequired] = useState(null);
+  const [redeemingWithPoints, setRedeemingWithPoints] = useState(false);
+  const [showPointsSuccess, setShowPointsSuccess] = useState(false);
+
   useEffect(() => {
     fetchItemDetails();
   }, [type, id]);
+
+  useEffect(() => {
+    if (itemDetails && user) {
+      fetchPointBalance();
+    }
+  }, [itemDetails, user]);
+
+  // Fetch points balance when payment method changes
+  useEffect(() => {
+    if (selectedPaymentMethod === 'points' && orderDetails) {
+      fetchPointsRequired(orderDetails._id);
+    }
+  }, [selectedPaymentMethod, orderDetails, pointBalance]);
+
+  const fetchPointBalance = async () => {
+    try {
+      const response = await rewardService.getBalance();
+      const data = response.data?.data || response.data;
+      setPointBalance(data?.currentBalance || 0);
+    } catch (error) {
+      console.error('Failed to fetch point balance:', error);
+      setPointBalance(0);
+    }
+  };
+
+  const fetchPointsRequired = async (orderId) => {
+    if (!orderId) return;
+    try {
+      const response = await rewardService.getPointsRequired(orderId);
+      const data = response.data?.data || response.data;
+      setPointsRequired(data);
+    } catch (error) {
+      console.error('Failed to fetch points required:', error);
+      setPointsRequired(null);
+    }
+  };
 
   const fetchItemDetails = async () => {
     setLoading(true);
@@ -87,6 +133,33 @@ export default function Checkout() {
         });
         const order = response.data?.data || response.data;
         setOrderDetails(order);
+
+        // If using points, handle redemption immediately
+        if (selectedPaymentMethod === 'points') {
+          setRedeemingWithPoints(true);
+          const pointsToUse = pointsRequired?.canFullyRedeem
+            ? pointsRequired.pointsNeeded
+            : Math.min(pointBalance, pointsRequired?.maxPointsAllowed || 0);
+
+          try {
+            const redeemResponse = await rewardService.redeem({
+              orderId: order._id,
+              pointsToUse
+            });
+
+            if (redeemResponse.data?.success) {
+              setShowPointsSuccess(true);
+              setOrderCreated(true);
+              toast.success('Đổi điểm thành công! Tài liệu đã được thêm vào thư viện của bạn.');
+            }
+          } catch (redeemError) {
+            toast.error(redeemError.response?.data?.message || 'Không thể đổi điểm. Vui lòng thử lại.');
+            setRedeemingWithPoints(false);
+          }
+          setPaymentLoading(false);
+          return;
+        }
+
         setOrderCreated(true);
 
         // Create payment based on selected method
@@ -106,9 +179,8 @@ export default function Checkout() {
 
         if (payData.success) {
           setSepayPaymentData(payData.data);
-          
+
           if (selectedPaymentMethod === 'vnpay') {
-            // Redirect to VNPay gateway
             window.location.href = payData.data.paymentUrl;
           } else if (selectedPaymentMethod === 'sepay') {
             toast.success('Đã tạo yêu cầu thanh toán. Vui lòng quét mã QR để chuyển khoản.');
@@ -136,7 +208,13 @@ export default function Checkout() {
     return new Intl.NumberFormat('vi-VN').format(price) + ' VNĐ';
   };
 
-  // QR will be loaded from backend sepay data
+  const formatPoints = (points) => {
+    return new Intl.NumberFormat('vi-VN').format(points);
+  };
+
+  // Check if user can use points for this order
+  const canUsePoints = pointBalance >= 100; // minimum 100 points
+  const estimatedPointsEarned = Math.floor(itemDetails?.price * 0.01);
 
   if (loading) {
     return (
@@ -216,8 +294,8 @@ export default function Checkout() {
                       </h3>
                       {itemDetails.type === 'document' && (
                         <p className="text-sm text-gray-500 mt-1">
-                          {itemDetails.documentType === 'pdf' ? 'PDF' : 
-                           itemDetails.documentType === 'slide' ? 'Slide' : 
+                          {itemDetails.documentType === 'pdf' ? 'PDF' :
+                           itemDetails.documentType === 'slide' ? 'Slide' :
                            itemDetails.documentType}
                           {itemDetails.pageCount > 0 && ` - ${itemDetails.pageCount} trang`}
                         </p>
@@ -231,6 +309,23 @@ export default function Checkout() {
               </div>
             </div>
 
+            {/* Points Earned Info */}
+            <div className="bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 border border-amber-200 dark:border-amber-800 rounded-xl p-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-amber-100 dark:bg-amber-900/50 rounded-full flex items-center justify-center">
+                  <Sparkles className="w-5 h-5 text-amber-600" />
+                </div>
+                <div>
+                  <p className="font-medium text-amber-800 dark:text-amber-200">
+                    Mua tài liệu này, bạn sẽ nhận được <span className="font-bold">{formatPoints(estimatedPointsEarned)} điểm</span>
+                  </p>
+                  <p className="text-xs text-amber-600 dark:text-amber-400 mt-0.5">
+                    1 VNĐ = 0.01 điểm thưởng. Điểm có thể dùng để đổi tài liệu miễn phí!
+                  </p>
+                </div>
+              </div>
+            </div>
+
             {/* Payment Method Selection */}
             {!orderCreated ? (
               <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
@@ -238,6 +333,38 @@ export default function Checkout() {
                   Phương thức thanh toán
                 </h2>
                 <div className="space-y-3">
+
+                  {/* Đổi điểm Option */}
+                  <label className={`flex items-center gap-4 p-4 border-2 rounded-xl cursor-pointer transition-all duration-200 ${selectedPaymentMethod === 'points' ? 'border-amber-500 bg-amber-50 dark:bg-amber-900/20' : 'border-gray-200 dark:border-gray-700 hover:border-gray-300'}`}>
+                    <input
+                      type="radio"
+                      name="paymentMethod"
+                      value="points"
+                      checked={selectedPaymentMethod === 'points'}
+                      onChange={(e) => setSelectedPaymentMethod(e.target.value)}
+                      className="sr-only"
+                    />
+                    <div className="w-12 h-12 bg-gradient-to-br from-amber-400 to-orange-500 rounded-lg flex items-center justify-center">
+                      <Coins className="w-6 h-6 text-white" />
+                    </div>
+                    <div className="flex-1">
+                      <p className="font-medium text-gray-900 dark:text-white">
+                        Đổi điểm thưởng
+                      </p>
+                      <p className="text-sm text-gray-500">
+                        Dùng điểm thưởng để đổi tài liệu miễn phí
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <span className="text-amber-600 font-bold text-sm">
+                        {formatPoints(pointBalance)} điểm
+                      </span>
+                    </div>
+                    {selectedPaymentMethod === 'points' && (
+                      <CheckCircle className="w-6 h-6 text-amber-600" />
+                    )}
+                  </label>
+
                   {/* SePay Option */}
                   <label className={`flex items-center gap-4 p-4 border-2 rounded-xl cursor-pointer transition-all duration-200 ${selectedPaymentMethod === 'sepay' ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20' : 'border-gray-200 dark:border-gray-700 hover:border-gray-300'}`}>
                     <input
@@ -285,6 +412,7 @@ export default function Checkout() {
                       <CheckCircle className="w-6 h-6 text-primary-600" />
                     )}
                   </label>
+
                 </div>
               </div>
             ) : null}
@@ -319,10 +447,8 @@ export default function Checkout() {
                         alt="QR Code thanh toán BIDV"
                         className="w-56 h-56 object-contain"
                         onError={(e) => {
-                          // Fallback: use VietQR.io generate API
                           e.target.src = `https://api.vietqr.io/v2/generate?accountNumber=${sepayPaymentData.bankInfo?.accountNumber}&accountName=${encodeURIComponent(sepayPaymentData.bankInfo?.accountName)}&amount=${orderDetails?.totalAmount}&add=${encodeURIComponent(sepayPaymentData.transactionId)}&bankCode=${sepayPaymentData.bankInfo?.bankBin}`;
                           e.target.onerror = () => {
-                            // Final fallback: use qrserver.com with raw data
                             e.target.src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(sepayPaymentData.qrRaw || '')}`;
                           };
                         }}
@@ -336,7 +462,7 @@ export default function Checkout() {
                     <h3 className="font-semibold text-gray-900 dark:text-white mb-4">
                       Thông tin chuyển khoản
                     </h3>
-                    
+
                     <div className="space-y-3">
                       <div className="flex justify-between items-center">
                         <span className="text-gray-500">Ngân hàng:</span>
@@ -344,12 +470,12 @@ export default function Checkout() {
                           <span className="font-medium">{sepayPaymentData.bankInfo?.bankName || 'BIDV - CN BA DINH'}</span>
                         </div>
                       </div>
-                      
+
                       <div className="flex justify-between items-center">
                         <span className="text-gray-500">Số tài khoản:</span>
                         <div className="flex items-center gap-2">
                           <span className="font-medium font-mono">{sepayPaymentData.bankInfo?.accountNumber || '1261101647'}</span>
-                          <button 
+                          <button
                             onClick={() => copyToClipboard(sepayPaymentData.bankInfo?.accountNumber || '1261101647')}
                             className="p-1 hover:bg-gray-200 dark:hover:bg-gray-600 rounded"
                           >
@@ -357,26 +483,26 @@ export default function Checkout() {
                           </button>
                         </div>
                       </div>
-                      
+
                       <div className="flex justify-between items-center">
                         <span className="text-gray-500">Tên TK:</span>
                         <span className="font-medium">{sepayPaymentData.bankInfo?.accountName || 'LE DUC ANH'}</span>
                       </div>
-                      
+
                       <div className="flex justify-between items-center">
                         <span className="text-gray-500">Số tiền:</span>
                         <span className="font-bold text-primary-600 text-lg">
                           {formatPrice(orderDetails?.totalAmount)}
                         </span>
                       </div>
-                      
+
                       <div className="flex justify-between items-center">
                         <span className="text-gray-500">Nội dung:</span>
                         <div className="flex items-center gap-2">
                           <span className="font-medium font-mono">
                             {sepayPaymentData.transactionId || `FPTAIEZ${orderDetails?._id?.slice(-8) || Date.now()}`}
                           </span>
-                          <button 
+                          <button
                             onClick={() => copyToClipboard(sepayPaymentData.transactionId || `FPTAIEZ${orderDetails?._id?.slice(-8) || Date.now()}`)}
                             className="p-1 hover:bg-gray-200 dark:hover:bg-gray-600 rounded"
                           >
@@ -463,6 +589,42 @@ export default function Checkout() {
                 </div>
               </div>
             )}
+
+            {/* Points Redemption Success */}
+            {showPointsSuccess && (
+              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
+                <div className="text-center">
+                  <div className="w-16 h-16 mx-auto bg-amber-100 dark:bg-amber-900/20 rounded-full flex items-center justify-center mb-4">
+                    <Gift className="w-8 h-8 text-amber-600" />
+                  </div>
+                  <h2 className="text-lg font-semibold mb-2 text-gray-900 dark:text-white">
+                    Đổi điểm thành công!
+                  </h2>
+                  <p className="text-gray-500 dark:text-gray-400 mb-6">
+                    Bạn đã đổi <span className="font-bold text-amber-600">{formatPoints(pointsRequired?.pointsNeeded || 0)} điểm</span> để nhận tài liệu miễn phí!
+                  </p>
+                  <p className="text-sm text-gray-400 mb-6">
+                    Điểm còn lại: <span className="font-bold text-amber-600">{formatPoints(pointBalance - (pointsRequired?.pointsNeeded || 0))} điểm</span>
+                  </p>
+                  <div className="flex gap-3">
+                    <button
+                      onClick={() => navigate('/library')}
+                      className="flex-1 py-3 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg font-medium hover:bg-gray-200 dark:hover:bg-gray-600 flex items-center justify-center gap-2"
+                    >
+                      <FileText className="w-5 h-5" />
+                      Xem thư viện của tôi
+                    </button>
+                    <button
+                      onClick={() => navigate('/dashboard')}
+                      className="flex-1 py-3 bg-amber-500 text-white rounded-lg font-medium hover:bg-amber-600 flex items-center justify-center gap-2"
+                    >
+                      <CheckCircle className="w-5 h-5" />
+                      Quay về trang chủ
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Right Column - Order Summary */}
@@ -471,7 +633,7 @@ export default function Checkout() {
               <h2 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">
                 Tóm tắt đơn hàng
               </h2>
-              
+
               <div className="space-y-3 mb-6">
                 <div className="flex justify-between text-gray-600 dark:text-gray-400">
                   <span>Tài liệu</span>
@@ -481,6 +643,12 @@ export default function Checkout() {
                   <span>Phí dịch vụ</span>
                   <span>0đ</span>
                 </div>
+                {selectedPaymentMethod === 'points' && pointsRequired?.canFullyRedeem && (
+                  <div className="flex justify-between text-amber-600 dark:text-amber-400">
+                    <span>Giảm giá (điểm)</span>
+                    <span className="font-medium">-{formatPrice(itemDetails.price)}</span>
+                  </div>
+                )}
               </div>
 
               <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
@@ -488,26 +656,45 @@ export default function Checkout() {
                   <span className="text-lg font-medium text-gray-900 dark:text-white">
                     Tổng cộng
                   </span>
-                  <span className="text-2xl font-bold text-primary-600">
+                  <span className={`text-2xl font-bold ${selectedPaymentMethod === 'points' && pointsRequired?.canFullyRedeem ? 'text-amber-600 line-through' : 'text-primary-600'}`}>
                     {formatPrice(itemDetails.price)}
                   </span>
                 </div>
+                {selectedPaymentMethod === 'points' && pointsRequired?.canFullyRedeem && (
+                  <div className="flex justify-between items-center mb-4">
+                    <span className="text-sm text-gray-500">Thanh toán</span>
+                    <span className="text-lg font-bold text-amber-600">MIỄN PHÍ</span>
+                  </div>
+                )}
 
                 {!orderCreated ? (
                   <button
                     onClick={handleCreateOrder}
-                    disabled={paymentLoading}
-                    className="w-full py-3 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 disabled:opacity-50 flex items-center justify-center gap-2"
+                    disabled={paymentLoading || (selectedPaymentMethod === 'points' && !pointsRequired?.canFullyRedeem)}
+                    className={`w-full py-3 rounded-lg font-medium flex items-center justify-center gap-2 transition-colors ${
+                      selectedPaymentMethod === 'points'
+                        ? 'bg-amber-500 text-white hover:bg-amber-600 disabled:opacity-50'
+                        : 'bg-green-600 text-white hover:bg-green-700 disabled:opacity-50'
+                    }`}
                   >
-                    {paymentLoading ? (
+                    {paymentLoading || redeemingWithPoints ? (
                       <>
                         <Loader2 className="w-5 h-5 animate-spin" />
-                        Đang xử lý...
+                        {selectedPaymentMethod === 'points' ? 'Đang đổi điểm...' : 'Đang xử lý...'}
                       </>
                     ) : (
                       <>
-                        <QrCode className="w-5 h-5" />
-                        Tạo mã QR thanh toán
+                        {selectedPaymentMethod === 'points' ? (
+                          <>
+                            <Coins className="w-5 h-5" />
+                            Đổi điểm ngay
+                          </>
+                        ) : (
+                          <>
+                            <QrCode className="w-5 h-5" />
+                            Tạo mã QR thanh toán
+                          </>
+                        )}
                       </>
                     )}
                   </button>
@@ -523,6 +710,47 @@ export default function Checkout() {
                   </div>
                 )}
               </div>
+
+              {/* Points info box */}
+              {selectedPaymentMethod === 'points' && !orderCreated && (
+                <div className="mt-6 p-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg">
+                  <div className="flex items-start gap-3">
+                    <Coins className="w-5 h-5 text-amber-600 mt-0.5" />
+                    <div>
+                      <p className="font-medium text-amber-800 dark:text-amber-200 text-sm">
+                        Số điểm của bạn
+                      </p>
+                      <p className="text-2xl font-bold text-amber-600 mt-1">
+                        {formatPoints(pointBalance)}
+                      </p>
+                      {pointsRequired && (
+                        <div className="mt-3 space-y-1">
+                          {pointsRequired.canFullyRedeem ? (
+                            <>
+                              <p className="text-xs text-amber-600 dark:text-amber-400">
+                                Cần: <strong>{formatPoints(pointsRequired.pointsNeeded)} điểm</strong>
+                              </p>
+                              <p className="text-xs text-green-600 dark:text-green-400 flex items-center gap-1">
+                                <CheckCircle className="w-3 h-3" />
+                                Đủ điểm để đổi miễn phí!
+                              </p>
+                            </>
+                          ) : (
+                            <>
+                              <p className="text-xs text-amber-600 dark:text-amber-400">
+                                Cần: <strong>{formatPoints(pointsRequired.maxPointsAllowed)} điểm</strong>
+                              </p>
+                              <p className="text-xs text-red-600 dark:text-red-400">
+                                Bạn cần thêm {formatPoints(Math.max(0, pointsRequired.maxPointsAllowed - pointBalance))} điểm để đổi miễn phí
+                              </p>
+                            </>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
 
               {/* Email Notification */}
               <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
