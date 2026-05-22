@@ -111,6 +111,15 @@ const documentSchema = new mongoose.Schema({
   salesCount: {
     type: Number,
     default: 0
+  },
+  sourceType: {
+    type: String,
+    enum: ['upload', 'google_drive', 'external_link'],
+    default: 'upload'
+  },
+  externalUrl: {
+    type: String,
+    default: ''
   }
 }, {
   timestamps: true

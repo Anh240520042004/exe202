@@ -1,16 +1,14 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchStudentDashboard } from '../../store/dashboardSlice';
 import { BookOpen, Users, MessageCircle, Download, Star, Flame, Zap, Calendar, TrendingUp, FolderOpen, LogIn, Coins, Gift } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
-import { rewardService } from '../../services/api';
 
 const StudentDashboard = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { student, isLoading } = useSelector(state => state.dashboard);
   const { isAuthenticated } = useSelector(state => state.auth);
-  const [rewardPoints, setRewardPoints] = useState(0);
 
   // Guest view - show login prompt
   if (!isAuthenticated) {
@@ -44,18 +42,7 @@ const StudentDashboard = () => {
 
   useEffect(() => {
     dispatch(fetchStudentDashboard());
-    fetchRewardPoints();
   }, [dispatch]);
-
-  const fetchRewardPoints = async () => {
-    try {
-      const response = await rewardService.getBalance();
-      const data = response.data?.data || response.data;
-      setRewardPoints(data?.currentBalance || 0);
-    } catch (error) {
-      console.error('Failed to fetch reward points:', error);
-    }
-  };
 
   if (isLoading || !student) {
     return (
@@ -93,7 +80,7 @@ const StudentDashboard = () => {
             </div>
             <div className="text-center bg-white/10 rounded-xl px-6 py-4">
               <Coins className="mx-auto text-amber-400 mb-1" size={24} />
-              <p className="text-2xl font-bold">{new Intl.NumberFormat('vi-VN').format(rewardPoints)}</p>
+              <p className="text-2xl font-bold">{new Intl.NumberFormat('vi-VN').format(profile.rewardBalance || 0)}</p>
               <p className="text-xs text-primary-200">reward points</p>
             </div>
           </div>
@@ -117,7 +104,7 @@ const StudentDashboard = () => {
           <StatCard icon={<Users className="text-purple-500" />} label="Mentor Sessions" value={stats.mentorSessions} color="purple" />
           <StatCard icon={<MessageCircle className="text-green-500" />} label="AI Chats" value={stats.aiChatsCount} color="green" />
           <StatCard icon={<Download className="text-orange-500" />} label="Downloads" value={stats.totalDownloads} color="orange" />
-          <StatCard icon={<Coins className="text-amber-500" />} label="Reward Points" value={new Intl.NumberFormat('vi-VN').format(rewardPoints)} color="amber" />
+          <StatCard icon={<Coins className="text-amber-500" />} label="Reward Points" value={new Intl.NumberFormat('vi-VN').format(profile.rewardBalance || 0)} color="amber" />
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
@@ -294,7 +281,7 @@ const StudentDashboard = () => {
   );
 };
 
-const StatCard = ({ icon, label, value, color }) => {
+const StatCard = React.memo(({ icon, label, value, color }) => {
   const colorClasses = {
     blue: 'bg-blue-50 dark:bg-blue-900/20 text-blue-600',
     purple: 'bg-purple-50 dark:bg-purple-900/20 text-purple-600',
@@ -316,6 +303,6 @@ const StatCard = ({ icon, label, value, color }) => {
       </div>
     </div>
   );
-};
+});
 
 export default StudentDashboard;

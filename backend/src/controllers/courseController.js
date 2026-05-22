@@ -201,20 +201,37 @@ export const addDocumentToCourse = async (req, res, next) => {
       return next(apiError('Course not found', 404));
     }
 
-    // Check if user is the mentor of this course
     if (course.mentor.toString() !== req.user.id && req.user.role !== 'admin') {
       return next(apiError('You can only add documents to your own courses', 403));
     }
 
-    const { title, description, price, documentType, tags } = req.body;
+    const { title, description, price, documentType, tags, sourceType, externalUrl } = req.body;
     const file = req.file;
 
-    if (!file) {
-      return next(apiError('File is required', 400));
+    // Validate: must have either file or externalUrl
+    if (!file && !externalUrl) {
+      return next(apiError('File or external URL is required', 400));
     }
 
-    // Determine file type
-    const ext = file.originalname.split('.').pop().toLowerCase();
+    if (file && externalUrl) {
+      return next(apiError('Please provide either a file OR an external URL, not both', 400));
+    }
+
+    // Validate external URL format if provided
+    if (externalUrl) {
+      try {
+        const url = new URL(externalUrl);
+        const validHosts = ['drive.google.com', 'docs.google.com', 'www.dropbox.com', 'onedrive.live.com', 'sharepoint.com'];
+        if (!validHosts.some(host => url.hostname.includes(host))) {
+          return next(apiError('Please provide a valid Google Drive, Dropbox, OneDrive, or SharePoint link', 400));
+        }
+      } catch {
+        return next(apiError('Invalid URL format', 400));
+      }
+    }
+
+    // Determine file type from extension for uploads
+    const ext = file ? file.originalname.split('.').pop().toLowerCase() : null;
     const fileTypeMap = {
       'pdf': 'pdf',
       'doc': 'doc',
@@ -229,22 +246,42 @@ export const addDocumentToCourse = async (req, res, next) => {
       'txt': 'txt'
     };
 
+    // Determine source type
+    let docSourceType = 'upload';
+    let docExternalUrl = '';
+    let docFileUrl = '';
+    let docFileName = '';
+    let docFileSize = 0;
+    let docFileType = 'pdf';
+
+    if (externalUrl) {
+      docSourceType = externalUrl.includes('drive.google.com') ? 'google_drive' : 'external_link';
+      docExternalUrl = externalUrl;
+      docFileName = title || 'External Document';
+    } else {
+      docFileUrl = `/uploads/documents/${file.filename}`;
+      docFileName = file.originalname;
+      docFileSize = file.size;
+      docFileType = fileTypeMap[ext] || 'pdf';
+    }
+
     const document = await Document.create({
-      title: title || file.originalname,
+      title: title || (externalUrl ? 'External Document' : file.originalname),
       description,
       course: course._id,
       subjectCode: code,
       author: req.user.id,
       price: price || 0,
-      fileUrl: `/uploads/documents/${file.filename}`,
-      fileName: file.originalname,
-      fileType: fileTypeMap[ext] || 'pdf',
-      fileSize: file.size,
+      fileUrl: docFileUrl,
+      fileName: docFileName,
+      fileType: docFileType,
+      fileSize: docFileSize,
       documentType: documentType || 'pdf',
-      tags: tags ? tags.split(',').map(t => t.trim()) : []
+      tags: tags ? tags.split(',').map(t => t.trim()) : [],
+      sourceType: docSourceType,
+      externalUrl: docExternalUrl
     });
 
-    // Add document to course
     course.documents.push(document._id);
     course.documentCount = course.documents.length;
     await course.save();
@@ -264,7 +301,6 @@ export const updateCourseDocument = async (req, res, next) => {
       return next(apiError('Course not found', 404));
     }
 
-    // Check if user is the mentor of this course
     if (course.mentor.toString() !== req.user.id && req.user.role !== 'admin') {
       return next(apiError('You can only update documents in your own courses', 403));
     }
@@ -274,7 +310,7 @@ export const updateCourseDocument = async (req, res, next) => {
       return next(apiError('Document not found in this course', 404));
     }
 
-    const { title, description, price, documentType, tags } = req.body;
+    const { title, description, price, documentType, tags, sourceType, externalUrl } = req.body;
 
     if (title) document.title = title;
     if (description !== undefined) document.description = description;
@@ -286,6 +322,35 @@ export const updateCourseDocument = async (req, res, next) => {
       document.fileUrl = `/uploads/documents/${req.file.filename}`;
       document.fileName = req.file.originalname;
       document.fileSize = req.file.size;
+      document.sourceType = 'upload';
+      document.externalUrl = '';
+    }
+
+    if (sourceType !== undefined) {
+      document.sourceType = sourceType;
+      if (sourceType !== 'upload' && externalUrl) {
+        document.externalUrl = externalUrl;
+        document.fileUrl = '';
+      }
+    }
+
+    if (externalUrl !== undefined) {
+      if (externalUrl) {
+        try {
+          const url = new URL(externalUrl);
+          const validHosts = ['drive.google.com', 'docs.google.com', 'www.dropbox.com', 'onedrive.live.com', 'sharepoint.com'];
+          if (!validHosts.some(host => url.hostname.includes(host))) {
+            return next(apiError('Please provide a valid Google Drive, Dropbox, OneDrive, or SharePoint link', 400));
+          }
+        } catch {
+          return next(apiError('Invalid URL format', 400));
+        }
+        document.externalUrl = externalUrl;
+        document.sourceType = externalUrl.includes('drive.google.com') ? 'google_drive' : 'external_link';
+        document.fileUrl = '';
+      } else {
+        document.externalUrl = '';
+      }
     }
 
     await document.save();

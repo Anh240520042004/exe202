@@ -14,7 +14,17 @@ export const getStudentDashboard = async (req, res, next) => {
       return next(apiError('User not found', 404));
     }
 
-    const [recentOrders, upcomingBookings, recentChats, recentDownloads] = await Promise.all([
+    // Run all independent queries in parallel
+    const [
+      recentOrders,
+      upcomingBookings,
+      recentChats,
+      documentsOwnedCount,
+      mentorSessionsCount,
+      aiChatsCount,
+      weeklyStudy,
+      subjectProgress
+    ] = await Promise.all([
       Order.find({ user: req.user.id, paymentStatus: 'paid' })
         .populate('documents.document', 'title subjectCode')
         .sort({ createdAt: -1 })
@@ -30,18 +40,21 @@ export const getStudentDashboard = async (req, res, next) => {
       AIChat.find({ user: req.user.id })
         .sort({ lastMessageAt: -1 })
         .limit(5),
-      user.studentProfile?.downloadHistory?.slice(-10).reverse() || []
+      Order.countDocuments({ user: req.user.id, paymentStatus: 'paid' }),
+      MentorBooking.countDocuments({ student: req.user.id, status: 'completed' }),
+      AIChat.countDocuments({ user: req.user.id }),
+      getWeeklyStudyData(req.user.id),
+      getSubjectProgress(req.user.id)
     ]);
 
-    const populatedDownloads = await Promise.all(
-      recentDownloads.map(async (d) => {
+    // Populate download history documents in parallel
+    const downloadHistory = user.studentProfile?.downloadHistory?.slice(-10).reverse() || [];
+    const recentDownloads = await Promise.all(
+      downloadHistory.map(async (d) => {
         const doc = await Document.findById(d.document).select('title subjectCode');
         return { ...d.toObject(), document: doc };
       })
     );
-
-    const weeklyStudy = await getWeeklyStudyData(req.user.id);
-    const subjectProgress = await getSubjectProgress(req.user.id);
 
     res.json(apiSuccess({
       profile: {
@@ -51,19 +64,21 @@ export const getStudentDashboard = async (req, res, next) => {
         gpa: user.studentProfile?.gpa || 0,
         level: user.studentProfile?.level || 1,
         xp: user.studentProfile?.xp || 0,
+        xpForNextLevel: (user.studentProfile?.xp || 0) + 500,
         studyStreak: user.studentProfile?.studyStreak || 0,
-        rewardPoints: user.studentProfile?.rewardPoints || 0
+        rewardPoints: user.studentProfile?.rewardPoints || 0,
+        rewardBalance: user.studentProfile?.rewardBalance || 0
       },
       stats: {
-        documentsOwned: await Order.countDocuments({ user: req.user.id, paymentStatus: 'paid' }),
-        mentorSessions: await MentorBooking.countDocuments({ student: req.user.id, status: 'completed' }),
-        aiChatsCount: await AIChat.countDocuments({ user: req.user.id }),
-        totalDownloads: user.studentProfile?.downloadHistory?.length || 0
+        documentsOwned: documentsOwnedCount,
+        mentorSessions: mentorSessionsCount,
+        aiChatsCount: aiChatsCount,
+        totalDownloads: downloadHistory.length
       },
       recentOrders,
       upcomingBookings,
       recentChats,
-      recentDownloads: populatedDownloads,
+      recentDownloads,
       weeklyStudy,
       subjectProgress
     }));

@@ -55,8 +55,9 @@ router.put('/:code', protect, mentor, courseController.updateCourse);
 router.delete('/:code', protect, mentor, courseController.deleteCourse);
 
 // Document management within course
+// File upload is optional - can add document with external URL instead
 router.post('/:code/documents', protect, mentor, upload.single('file'), courseController.addDocumentToCourse);
-router.put('/:code/documents/:docId', protect, mentor, courseController.updateCourseDocument);
+router.put('/:code/documents/:docId', protect, mentor, upload.single('file'), courseController.updateCourseDocument);
 router.delete('/:code/documents/:docId', protect, mentor, courseController.removeDocumentFromCourse);
 
 // Admin routes (for management)

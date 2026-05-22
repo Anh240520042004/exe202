@@ -59,6 +59,8 @@ const MentorCourses = () => {
     tags: '',
   });
   const [selectedFile, setSelectedFile] = useState(null);
+  const [documentSourceType, setDocumentSourceType] = useState('upload'); // 'upload' | 'google_drive' | 'external_link'
+  const [externalUrl, setExternalUrl] = useState('');
 
   useEffect(() => {
     loadMyCourses();
@@ -114,16 +116,29 @@ const MentorCourses = () => {
 
   const handleAddDocument = async (e) => {
     e.preventDefault();
-    if (!selectedFile) {
-      alert('Vui lòng chọn file');
+
+    // Validate based on source type
+    if (documentSourceType === 'upload' && !selectedFile) {
+      alert('Vui lòng chọn file để tải lên');
+      return;
+    }
+    if (documentSourceType !== 'upload' && !externalUrl) {
+      alert('Vui lòng nhập đường dẫn');
       return;
     }
 
     try {
       setUploading(true);
       const formData = new FormData();
-      formData.append('file', selectedFile);
-      formData.append('title', documentForm.title || selectedFile.name);
+
+      if (documentSourceType === 'upload') {
+        formData.append('file', selectedFile);
+        formData.append('title', documentForm.title || selectedFile.name);
+      } else {
+        formData.append('title', documentForm.title || 'Tài liệu bên ngoài');
+        formData.append('externalUrl', externalUrl);
+      }
+
       formData.append('description', documentForm.description);
       formData.append('price', documentForm.price);
       formData.append('documentType', documentForm.documentType);
@@ -140,6 +155,8 @@ const MentorCourses = () => {
         tags: '',
       });
       setSelectedFile(null);
+      setExternalUrl('');
+      setDocumentSourceType('upload');
       loadMyCourses();
     } catch (error) {
       console.error('Failed to add document:', error);
@@ -546,6 +563,8 @@ const MentorCourses = () => {
                   onClick={() => {
                     setShowDocumentModal(false);
                     setSelectedCourse(null);
+                    setExternalUrl('');
+                    setDocumentSourceType('upload');
                   }}
                   className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
                 >
@@ -555,38 +574,123 @@ const MentorCourses = () => {
             </div>
 
             <form onSubmit={handleAddDocument} className="p-6 space-y-4">
-              {/* File Upload */}
+              {/* Source Type Toggle */}
               <div>
-                <label className="block text-sm font-medium mb-1">File *</label>
-                <div className="border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-lg p-6 text-center hover:border-primary-400 transition-colors">
-                  <input
-                    type="file"
-                    id="file-upload"
-                    onChange={(e) => setSelectedFile(e.target.files[0])}
-                    className="hidden"
-                    accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.zip,.rar,.pptx,.xlsx,.txt"
-                  />
-                  <label htmlFor="file-upload" className="cursor-pointer">
-                    {selectedFile ? (
-                      <div className="text-primary-600">
-                        <FileText size={32} className="mx-auto mb-2" />
-                        <p className="font-medium">{selectedFile.name}</p>
-                        <p className="text-sm text-gray-500">
-                          {formatFileSize(selectedFile.size)}
-                        </p>
-                      </div>
-                    ) : (
-                      <div className="text-gray-400">
-                        <Upload size={32} className="mx-auto mb-2" />
-                        <p>Click để chọn file</p>
-                        <p className="text-xs mt-1">
-                          PDF, DOC, DOCX, JPG, PNG, ZIP, RAR, PPTX, XLSX, TXT
-                        </p>
-                      </div>
-                    )}
-                  </label>
+                <label className="block text-sm font-medium mb-2">Nguồn Tài Liệu</label>
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setDocumentSourceType('upload');
+                      setExternalUrl('');
+                      setSelectedFile(null);
+                    }}
+                    className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-lg border-2 transition-colors ${
+                      documentSourceType === 'upload'
+                        ? 'border-primary-600 bg-primary-50 text-primary-700'
+                        : 'border-gray-200 dark:border-gray-700 hover:border-gray-300'
+                    }`}
+                  >
+                    <Upload size={18} />
+                    <span className="font-medium">Upload File</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setDocumentSourceType('google_drive');
+                      setSelectedFile(null);
+                    }}
+                    className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-lg border-2 transition-colors ${
+                      documentSourceType === 'google_drive'
+                        ? 'border-primary-600 bg-primary-50 text-primary-700'
+                        : 'border-gray-200 dark:border-gray-700 hover:border-gray-300'
+                    }`}
+                  >
+                    <svg className="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M12 0L6 4.5v6L12 24l6-13.5v-6L12 0zm0 2.25l4.5 1.5v4.5L12 12l-4.5-3.75v-4.5L12 2.25zm0 3.75l-3-1.5v9l3-1.5 3 1.5v-9l-3 1.5z"/>
+                    </svg>
+                    <span className="font-medium">Google Drive</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setDocumentSourceType('external_link');
+                      setSelectedFile(null);
+                    }}
+                    className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-lg border-2 transition-colors ${
+                      documentSourceType === 'external_link'
+                        ? 'border-primary-600 bg-primary-50 text-primary-700'
+                        : 'border-gray-200 dark:border-gray-700 hover:border-gray-300'
+                    }`}
+                  >
+                    <svg className="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
+                      <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+                    </svg>
+                    <span className="font-medium">Link Khác</span>
+                  </button>
                 </div>
               </div>
+
+              {/* File Upload Section */}
+              {documentSourceType === 'upload' && (
+                <div>
+                  <label className="block text-sm font-medium mb-1">File *</label>
+                  <div className="border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-lg p-6 text-center hover:border-primary-400 transition-colors">
+                    <input
+                      type="file"
+                      id="file-upload"
+                      onChange={(e) => setSelectedFile(e.target.files[0])}
+                      className="hidden"
+                      accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.zip,.rar,.pptx,.xlsx,.txt"
+                    />
+                    <label htmlFor="file-upload" className="cursor-pointer">
+                      {selectedFile ? (
+                        <div className="text-primary-600">
+                          <FileText size={32} className="mx-auto mb-2" />
+                          <p className="font-medium">{selectedFile.name}</p>
+                          <p className="text-sm text-gray-500">
+                            {formatFileSize(selectedFile.size)}
+                          </p>
+                        </div>
+                      ) : (
+                        <div className="text-gray-400">
+                          <Upload size={32} className="mx-auto mb-2" />
+                          <p>Click để chọn file</p>
+                          <p className="text-xs mt-1">
+                            PDF, DOC, DOCX, JPG, PNG, ZIP, RAR, PPTX, XLSX, TXT
+                          </p>
+                        </div>
+                      )}
+                    </label>
+                  </div>
+                </div>
+              )}
+
+              {/* External URL Section */}
+              {documentSourceType !== 'upload' && (
+                <div>
+                  <label className="block text-sm font-medium mb-1">
+                    {documentSourceType === 'google_drive' ? 'Link Google Drive *' : 'Đường Dẫn *'}
+                  </label>
+                  <input
+                    type="url"
+                    value={externalUrl}
+                    onChange={(e) => setExternalUrl(e.target.value)}
+                    className="w-full px-4 py-2 border border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-primary-500 dark:bg-gray-700"
+                    placeholder={
+                      documentSourceType === 'google_drive'
+                        ? 'https://drive.google.com/...'
+                        : 'https://...'
+                    }
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    {documentSourceType === 'google_drive'
+                      ? 'Hỗ trợ: Google Drive, Google Docs, Google Slides'
+                      : 'Hỗ trợ: Dropbox, OneDrive, SharePoint, hoặc bất kỳ link nào'}
+                  </p>
+                </div>
+              )}
 
               <div>
                 <label className="block text-sm font-medium mb-1">Tiêu Đề Tài Liệu</label>
@@ -655,6 +759,8 @@ const MentorCourses = () => {
                   onClick={() => {
                     setShowDocumentModal(false);
                     setSelectedCourse(null);
+                    setExternalUrl('');
+                    setDocumentSourceType('upload');
                   }}
                   className="flex-1 px-4 py-2 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700"
                 >
