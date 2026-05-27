@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { orderService, documentService, mentorService, rewardService } from '../../services/api';
+import paymentQrImage from '../../assets/c603a3e7-5873-4f75-9c1d-ff52490c2f8b.jpg';
 
 export default function Checkout() {
   const { type, id } = useParams();
@@ -443,18 +444,12 @@ export default function Checkout() {
                   <div className="flex flex-col items-center">
                     <div className="bg-white p-4 rounded-xl border-2 border-dashed border-gray-300">
                       <img
-                        src={sepayPaymentData.qrUrl}
-                        alt="QR Code thanh toán BIDV"
+                        src={paymentQrImage}
+                        alt="Mã QR thanh toán"
                         className="w-56 h-56 object-contain"
-                        onError={(e) => {
-                          e.target.src = `https://api.vietqr.io/v2/generate?accountNumber=${sepayPaymentData.bankInfo?.accountNumber}&accountName=${encodeURIComponent(sepayPaymentData.bankInfo?.accountName)}&amount=${orderDetails?.totalAmount}&add=${encodeURIComponent(sepayPaymentData.transactionId)}&bankCode=${sepayPaymentData.bankInfo?.bankBin}`;
-                          e.target.onerror = () => {
-                            e.target.src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(sepayPaymentData.qrRaw || '')}`;
-                          };
-                        }}
                       />
                     </div>
-                    <p className="text-sm text-gray-500 mt-3">Quét mã QR bằng ứng dụng ngân hàng (BIDV)</p>
+                    <p className="text-sm text-gray-500 mt-3">Quét mã QR bằng ứng dụng ngân hàng</p>
                   </div>
 
                   {/* Bank Info */}

@@ -66,8 +66,7 @@ export const getStudentDashboard = async (req, res, next) => {
         xp: user.studentProfile?.xp || 0,
         xpForNextLevel: (user.studentProfile?.xp || 0) + 500,
         studyStreak: user.studentProfile?.studyStreak || 0,
-        rewardPoints: user.studentProfile?.rewardPoints || 0,
-        rewardBalance: user.studentProfile?.rewardBalance || 0
+        rewardPoints: user.studentProfile?.rewardPoints || 0
       },
       stats: {
         documentsOwned: documentsOwnedCount,

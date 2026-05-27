@@ -80,7 +80,7 @@ const StudentDashboard = () => {
             </div>
             <div className="text-center bg-white/10 rounded-xl px-6 py-4">
               <Coins className="mx-auto text-amber-400 mb-1" size={24} />
-              <p className="text-2xl font-bold">{new Intl.NumberFormat('vi-VN').format(profile.rewardBalance || 0)}</p>
+              <p className="text-2xl font-bold">{new Intl.NumberFormat('vi-VN').format(profile.rewardPoints || 0)}</p>
               <p className="text-xs text-primary-200">reward points</p>
             </div>
           </div>
@@ -104,7 +104,7 @@ const StudentDashboard = () => {
           <StatCard icon={<Users className="text-purple-500" />} label="Mentor Sessions" value={stats.mentorSessions} color="purple" />
           <StatCard icon={<MessageCircle className="text-green-500" />} label="AI Chats" value={stats.aiChatsCount} color="green" />
           <StatCard icon={<Download className="text-orange-500" />} label="Downloads" value={stats.totalDownloads} color="orange" />
-          <StatCard icon={<Coins className="text-amber-500" />} label="Reward Points" value={new Intl.NumberFormat('vi-VN').format(profile.rewardBalance || 0)} color="amber" />
+          <StatCard icon={<Coins className="text-amber-500" />} label="Reward Points" value={new Intl.NumberFormat('vi-VN').format(profile.rewardPoints || 0)} color="amber" />
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
