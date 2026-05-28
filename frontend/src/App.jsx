@@ -46,6 +46,8 @@ export default function App() {
         !isAuthenticated ? <ForgotPassword /> : <Navigate to="/dashboard" replace />
       } />
       <Route path="/verify-email" element={<EmailVerification />} />
+      <Route path="/payment/result" element={<PaymentResult />} />
+      <Route path="/payment/vnpay-return" element={<PaymentResult />} />
 
       <Route element={<Layout />}>
         <Route path="/dashboard" element={<DashboardComponent />} />
@@ -53,7 +55,6 @@ export default function App() {
         <Route path="/download-history" element={<DownloadHistory />} />
         <Route path="/marketplace" element={<Marketplace />} />
         <Route path="/checkout/:type/:id" element={<Checkout />} />
-        <Route path="/payment/result" element={<PaymentResult />} />
         <Route path="/mentors" element={<MentorNetwork />} />
         <Route path="/mentor/courses" element={<MentorCourses />} />
         <Route path="/ai" element={<AIAssistant />} />

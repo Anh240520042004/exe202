@@ -5,6 +5,7 @@ import {
   verifyVNPayReturn,
   createSePayPayment,
 } from '../services/paymentService.js';
+import { VNPay, ProductCode, VnpLocale, dateFormat } from 'vnpay';
 import Order from '../models/Order.js';
 import Payment from '../models/Payment.js';
 import Transaction from '../models/Transaction.js';
@@ -38,40 +39,68 @@ const earnPoints = async (userId, amountVnd, orderId) => {
 
 const router = express.Router();
 
-// Helper function to create notification
 const createNotification = async (userId, title, message, type = 'info') => {
-  await Notification.create({
-    user: userId,
-    title,
-    message,
-    type
-  });
+  await Notification.create({ user: userId, title, message, type });
 };
 
-// Create payment for an order
+// ─── Create QR payment (VNPay direct) ─────────────────────────────────────────
+router.post('/create-qr', async (req, res, next) => {
+  try {
+    const { orderId } = req.body;
+    if (!orderId) return next(apiError('Order ID is required', 400));
+
+    const order = await Order.findById(orderId);
+    if (!order) return next(apiError('Order not found', 404));
+    if (order.user.toString() !== req.user.id) return next(apiError('Not authorized', 403));
+    if (order.paymentStatus === 'paid') return next(apiError('Order already paid', 400));
+
+    const date = new Date();
+    const tomorrow = new Date(date.getTime() + 24 * 60 * 60 * 1000);
+    const transactionId = `FPTAIEZ${order._id?.toString().slice(-8).toUpperCase() || Date.now()}`;
+
+    const vnpay = new VNPay({
+      tmnCode: process.env.VNPAY_TMN_CODE || 'OZE53AQG',
+      secureSecret: process.env.VNPAY_HASH_SECRET || 'NXZM3DWFRILC4R5VBK850JZS1UE9KI6F',
+      vnpayHost: 'https://sandbox.vnpayment.vn',
+      testMode: true,
+      hashAlgorithm: 'SHA512',
+      enableLog: false,
+    });
+
+    const paymentUrl = vnpay.buildPaymentUrl({
+      vnp_Amount: Math.round(order.totalAmount),
+      vnp_IpAddr: req.ip || '127.0.0.1',
+      vnp_TxnRef: transactionId,
+      vnp_OrderInfo: `S${transactionId}`,
+      vnp_OrderType: ProductCode.Other,
+      vnp_ReturnUrl: process.env.VNPAY_RETURN_URL || 'http://localhost:5173/payment/vnpay-return',
+      vnp_Locale: VnpLocale.VN,
+      vnp_CreateDate: dateFormat(date),
+      vnp_ExpireDate: dateFormat(tomorrow),
+    });
+
+    return res.json(apiSuccess({
+      paymentUrl,
+      transactionId,
+      amount: order.totalAmount,
+    }, 'VNPay QR payment URL created'));
+
+  } catch (error) {
+    next(error);
+  }
+});
+
+// ─── Create payment ──────────────────────────────────────────────────────────
 router.post('/create', protect, async (req, res, next) => {
   try {
     const { orderId, paymentMethod = 'vnpay' } = req.body;
-
-    if (!orderId) {
-      return next(apiError('Order ID is required', 400));
-    }
+    if (!orderId) return next(apiError('Order ID is required', 400));
 
     const order = await Order.findById(orderId);
+    if (!order) return next(apiError('Order not found', 404));
+    if (order.user.toString() !== req.user.id) return next(apiError('Not authorized', 403));
+    if (order.paymentStatus === 'paid') return next(apiError('Order already paid', 400));
 
-    if (!order) {
-      return next(apiError('Order not found', 404));
-    }
-
-    if (order.user.toString() !== req.user.id) {
-      return next(apiError('Not authorized', 403));
-    }
-
-    if (order.paymentStatus === 'paid') {
-      return next(apiError('Order already paid', 400));
-    }
-
-    // Create payment record
     const payment = await Payment.create({
       user: req.user.id,
       type: 'document',
@@ -81,28 +110,18 @@ router.post('/create', protect, async (req, res, next) => {
       status: 'pending'
     });
 
-    const transactionId = `FPTAIEZ${order._id?.toString().slice(-8) || Date.now()}`;
+    const transactionId = `FPTAIEZ${order._id?.toString().slice(-8).toUpperCase() || Date.now()}`;
     const orderInfo = `Thanh toan tai lieu FPTAIEZ - ${transactionId}`;
 
-    let paymentData;
-
     if (paymentMethod === 'vnpay') {
-      paymentData = createVNPayUrl({
-        amount: order.totalAmount,
-        orderId: order._id,
-        orderInfo,
-        transactionId,
-      });
-
+      const paymentData = createVNPayUrl({ amount: order.totalAmount, orderId: order._id, orderInfo, transactionId });
       payment.vnpayData = paymentData;
       await payment.save();
 
-      // Update order
       order.paymentId = payment._id;
       order.paymentMethod = 'vnpay';
       await order.save();
 
-      // Create pending transaction
       const transaction = await Transaction.create({
         user: req.user.id,
         amount: order.totalAmount,
@@ -125,7 +144,7 @@ router.post('/create', protect, async (req, res, next) => {
       order.transactionId = transaction._id;
       await order.save();
 
-      res.json(apiSuccess({
+      return res.json(apiSuccess({
         paymentId: payment._id,
         paymentUrl: paymentData.vnpUrl,
         transactionId,
@@ -133,22 +152,14 @@ router.post('/create', protect, async (req, res, next) => {
       }, 'VNPay payment URL created'));
 
     } else if (paymentMethod === 'sepay') {
-      paymentData = await createSePayPayment({
-        amount: order.totalAmount,
-        orderId: order._id,
-        orderInfo,
-        transactionId,
-      });
-
+      const paymentData = await createSePayPayment({ amount: order.totalAmount, orderId: order._id, orderInfo, transactionId });
       payment.sepayData = paymentData;
       await payment.save();
 
-      // Update order
       order.paymentId = payment._id;
       order.paymentMethod = 'sepay';
       await order.save();
 
-      // Create pending transaction
       const transaction = await Transaction.create({
         user: req.user.id,
         amount: order.totalAmount,
@@ -171,7 +182,7 @@ router.post('/create', protect, async (req, res, next) => {
       order.transactionId = transaction._id;
       await order.save();
 
-      res.json(apiSuccess({
+      return res.json(apiSuccess({
         paymentId: payment._id,
         ...paymentData,
         transactionId,
@@ -186,21 +197,17 @@ router.post('/create', protect, async (req, res, next) => {
   }
 });
 
-// VNPay return URL (from VNPay gateway)
+// ─── VNPay return URL ────────────────────────────────────────────────────────
 router.get('/vnpay-return', async (req, res, next) => {
   try {
     const result = verifyVNPayReturn(req.query);
 
     if (result.isSuccess) {
-      // Find payment by transaction ID
-      const payment = await Payment.findOne({ 
-        'vnpayData.vnp_TxnRef': result.vnp_TxnRef 
+      const payment = await Payment.findOne({
+        'vnpayData.vnp_TxnRef': result.vnp_TxnRef
       }).populate('user').populate({
         path: 'orderId',
-        populate: {
-          path: 'documents.document',
-          model: 'Document'
-        }
+        populate: { path: 'documents.document', model: 'Document' }
       });
 
       if (payment && payment.status !== 'completed') {
@@ -210,31 +217,19 @@ router.get('/vnpay-return', async (req, res, next) => {
         payment.vnpayData.vnp_TransactionStatus = result.vnp_TransactionStatus;
         await payment.save();
 
-        // Update order
         const order = await Order.findById(payment.orderId);
         order.status = 'completed';
         order.paymentStatus = 'paid';
         await order.save();
 
-        // Update documents sales count
         for (const item of order.documents) {
           if (!item.document) continue;
-          await Document.findByIdAndUpdate(item.document._id || item.document, {
-            $inc: { salesCount: 1 }
-          });
-
-          // Add to user download history
+          await Document.findByIdAndUpdate(item.document._id || item.document, { $inc: { salesCount: 1 } });
           await User.findByIdAndUpdate(order.user, {
-            $push: {
-              'studentProfile.downloadHistory': {
-                document: item.document._id || item.document,
-                downloadedAt: new Date()
-              }
-            }
+            $push: { 'studentProfile.downloadHistory': { document: item.document._id || item.document, downloadedAt: new Date() } }
           });
         }
 
-        // Update transaction
         if (order.transactionId) {
           await Transaction.findByIdAndUpdate(order.transactionId, {
             status: 'completed',
@@ -242,250 +237,239 @@ router.get('/vnpay-return', async (req, res, next) => {
           });
         }
 
-        // Send confirmation email
         try {
           await emailService.sendPaymentConfirmation(payment.user, {
-            orderId: order._id,
-            amount: payment.amount,
-            method: 'vnpay',
-            documents: order.documents.map(doc => ({
-              title: doc.document?.title || 'Tai lieu'
-            })),
-            transactionCode: `VNPAY${result.vnp_TxnRef}`,
-            paymentDate: new Date()
+            orderId: order._id, amount: payment.amount, method: 'vnpay',
+            documents: order.documents.map(doc => ({ title: doc.document?.title || 'Tai lieu' })),
+            transactionCode: `VNPAY${result.vnp_TxnRef}`, paymentDate: new Date()
           });
-        } catch (emailError) {
-          console.error('Failed to send confirmation email:', emailError);
-        }
+        } catch (e) { console.error('Email error:', e); }
 
-        // Notify user
-        await createNotification(
-          order.user,
-          'Thanh toan thanh cong!',
-          'Don hang cua ban da duoc xac nhan. Bay gio ban co the tai tai lieu.',
-          'success'
-        );
+        await createNotification(order.user, 'Thanh toan thanh cong!', 'Don hang cua ban da duoc xac nhan.', 'success');
 
-        // Award reward points for purchase
         try {
-          const pointsEarned = await earnPoints(
-            order.user.toString(),
-            payment.amount,
-            order._id
-          );
-          if (pointsEarned) {
-            await createNotification(
-              order.user.toString(),
-              'Nhận điểm thưởng!',
-              `Bạn đã nhận được ${pointsEarned.points} điểm thưởng khi mua tài liệu!`,
-              'success'
-            );
-          }
-        } catch (pointError) {
-          console.error('Failed to award points:', pointError);
-        }
+          const pts = await earnPoints(order.user.toString(), payment.amount, order._id);
+          if (pts) await createNotification(order.user.toString(), 'Nhận điểm thưởng!', `Bạn đã nhận được ${pts.points} điểm thưởng!`, 'success');
+        } catch (e) { console.error('Points error:', e); }
       }
 
-      // Redirect to success page
       const frontendUrl = `${process.env.CLIENT_URL || 'http://localhost:5173'}/payment/result?status=success&method=vnpay&orderId=${payment?.orderId?._id || ''}&amount=${result.vnp_Amount}`;
       return res.redirect(frontendUrl);
-    } else {
-      // Payment failed
-      const payment = await Payment.findOne({ 
-        'vnpayData.vnp_TxnRef': result.vnp_TxnRef 
-      });
 
+    } else {
+      const payment = await Payment.findOne({ 'vnpayData.vnp_TxnRef': result.vnp_TxnRef });
       if (payment) {
         payment.status = 'failed';
         await payment.save();
-
-        // Update order
         const order = await Order.findById(payment.orderId);
         if (order) {
           order.status = 'failed';
           await order.save();
-
-          // Notify user
-          await createNotification(
-            order.user,
-            'Thanh toan that bai',
-            `Thanh toan khong thanh cong. Ma loi: ${result.vnp_ResponseCode}`,
-            'error'
-          );
+          await createNotification(order.user, 'Thanh toan that bai', `Ma loi: ${result.vnp_ResponseCode}`, 'error');
         }
       }
-
-      const frontendUrl = `${process.env.CLIENT_URL || 'http://localhost:5173'}/payment/result?status=failed&method=vnpay&code=${result.vnp_ResponseCode}`;
-      res.redirect(frontendUrl);
+      return res.redirect(`${process.env.CLIENT_URL || 'http://localhost:5173'}/payment/result?status=failed&method=vnpay&code=${result.vnp_ResponseCode}`);
     }
   } catch (error) {
     console.error('VNPay return error:', error);
-    const frontendUrl = `${process.env.CLIENT_URL || 'http://localhost:5173'}/payment/result?status=error&method=vnpay`;
-    res.redirect(frontendUrl);
+    res.redirect(`${process.env.CLIENT_URL || 'http://localhost:5173'}/payment/result?status=error&method=vnpay`);
   }
 });
 
-// VNPay IPN (Instant Payment Notification) - for server-to-server callback
+// ─── VNPay IPN ───────────────────────────────────────────────────────────────
 router.post('/vnpay-ipn', async (req, res) => {
   try {
     const result = verifyVNPayReturn(req.query);
-
-    // Respond to VNPay server
-    if (result.isSuccess) {
-      res.status(200).json({ RspCode: '00', Message: 'Success' });
-    } else {
-      res.status(200).json({ RspCode: result.vnp_ResponseCode, Message: 'Error' });
-    }
+    res.status(200).json(result.isSuccess ? { RspCode: '00', Message: 'Success' } : { RspCode: result.vnp_ResponseCode, Message: 'Error' });
   } catch (error) {
     res.status(200).json({ RspCode: '99', Message: 'Unknown error' });
   }
 });
 
-// SePay webhook (for auto-confirmation)
+// ─── SePay webhook ───────────────────────────────────────────────────────────
+// Docs: https://sepay.vn/lap-trinh-webhook.html
 router.post('/sepay-webhook', async (req, res) => {
-  try {
-    const { transferType, transferAmount, transferContent, fromBankAccount, fromBankName, toBankAccount } = req.body;
+  console.log('\n========================================');
+  console.log('[SePay] WEBHOOK RECEIVED!');
+  console.log('[SePay] Body:', JSON.stringify(req.body, null, 2));
+  console.log('========================================\n');
 
-    // Extract order info from transfer content
-    const orderIdMatch = transferContent?.match(/FPTAIEZ([a-zA-Z0-9]+)/);
-    if (!orderIdMatch) {
-      return res.status(200).json({ success: false, message: 'Invalid transfer content' });
+  try {
+    // FIX 1: Xác thực API key trong Authorization header
+    const apiKey = process.env.SEPAY_API_KEY;
+    if (apiKey && apiKey !== 'your_sepay_api_key') {
+      const authHeader = req.headers['authorization'];
+      if (authHeader !== `Apikey ${apiKey}`) {
+        console.warn('[SePay] Unauthorized webhook request');
+        return res.status(200).json({ success: false, message: 'Unauthorized' });
+      }
     }
 
-    const transactionCode = orderIdMatch[0];
+    // FIX 2: Dùng đúng tên field theo SePay API docs
+    const {
+      id: sepayId,
+      gateway,
+      transactionDate,
+      accountNumber,
+      subAccount,
+      code,         // mã nội dung rút gọn
+      content,      // nội dung chuyển khoản đầy đủ
+      transferType, // 'in' = tiền vào, 'out' = tiền ra
+      description,
+      amount,       // số tiền, đơn vị VNĐ
+      accumulated,
+      referenceCode,
+    } = req.body;
 
-    // Find pending order
-    const transaction = await Transaction.findOne({ 
+    // Chỉ xử lý giao dịch tiền vào
+    if (transferType !== 'in') {
+      return res.status(200).json({ success: true, message: 'Ignored outgoing transfer' });
+    }
+
+    // FIX 3: Tìm mã đơn hàng trong tất cả field có thể chứa nội dung
+    const rawContent = content || code || description || '';
+    const orderIdMatch = rawContent.match(/FPTAIEZ([a-zA-Z0-9]+)/i);
+    if (!orderIdMatch) {
+      console.warn('[SePay] No FPTAIEZ code found in:', rawContent);
+      return res.status(200).json({ success: false, message: 'Order code not found in transfer content' });
+    }
+
+    const transactionCode = orderIdMatch[0].toUpperCase();
+
+    console.log('[SePay] ========== WEBHOOK RECEIVED ==========');
+    console.log('[SePay] Raw content:', rawContent);
+    console.log('[SePay] Transaction code:', transactionCode);
+    console.log('[SePay] Amount received:', amount);
+
+    let transaction = await Transaction.findOne({
       transactionCode,
       status: 'pending',
       paymentMethod: 'sepay'
     }).populate('orderId');
 
     if (!transaction) {
-      return res.status(200).json({ success: false, message: 'Transaction not found' });
+      console.warn('[SePay] No pending transaction for code:', transactionCode);
+      // Thử tìm với mã khác (không có prefix SEPAY_)
+      const fallbackTx = await Transaction.findOne({
+        transactionCode: { $regex: transactionCode, $options: 'i' },
+        status: 'pending',
+      }).populate('orderId');
+      if (fallbackTx) {
+        console.log('[SePay] Found via fallback search');
+        transaction = fallbackTx;
+      } else {
+        return res.status(200).json({ success: false, message: 'Transaction not found' });
+      }
     }
 
     const order = transaction.orderId;
+    console.log('[SePay] Order found:', order?._id);
+    console.log('[SePay] Order totalAmount:', order?.totalAmount);
+    console.log('[SePay] Order paymentStatus:', order?.paymentStatus);
+
     if (!order || order.paymentStatus === 'paid') {
+      console.log('[SePay] Order already processed or not found');
       return res.status(200).json({ success: true, message: 'Already processed' });
     }
 
-    // Verify amount matches
-    if (transferAmount < order.totalAmount) {
-      return res.status(200).json({ success: false, message: 'Amount mismatch' });
-    }
+    // Lấy số tiền từ webhook (SePay gửi string hoặc number)
+    const receivedAmount = parseFloat(amount);
+    console.log('[SePay] Received amount:', receivedAmount, '| Order amount:', order.totalAmount);
 
-    // Update payment
+    // Cập nhật Payment
     const payment = await Payment.findById(transaction.paymentId);
     if (payment) {
       payment.status = 'completed';
       payment.paymentStatus = 'paid';
       payment.sepayData = {
         ...payment.sepayData,
+        sepayId,
+        gateway,
         transferType,
-        transferAmount,
-        transferContent,
-        fromBankAccount,
-        fromBankName,
-        toBankAccount,
-        transferredAt: new Date(),
+        transferAmount: receivedAmount,
+        transferContent: rawContent,
+        accountNumber,
+        subAccount,
+        referenceCode,
+        transferredAt: transactionDate || new Date(),
       };
       await payment.save();
     }
 
-    // Update order
+    // Cập nhật Order
     order.status = 'completed';
     order.paymentStatus = 'paid';
     await order.save();
+    console.log('[SePay] Order updated:', order._id, '| Status:', order.paymentStatus);
 
-    // Update transaction
+    // Cập nhật Transaction
     transaction.status = 'completed';
-    transaction.transactionCode = `SEPAY${transactionCode}`;
+    // Lưu SePay transaction code riêng (không đổi transactionCode gốc để frontend polling tìm được)
+    transaction.providerTransactionCode = `SEPAY_${transactionCode}`;
     await transaction.save();
+    console.log('[SePay] Transaction updated:', transaction._id, '| Status:', transaction.status);
 
-    // Update documents sales count
+    // Tăng salesCount + download history
+    console.log('[SePay] Processing', order.documents.length, 'documents');
     for (const item of order.documents) {
+      console.log('[SePay] - Document:', item.document, '| Type:', typeof item.document);
       if (!item.document) continue;
-      await Document.findByIdAndUpdate(item.document, {
-        $inc: { salesCount: 1 }
-      });
-
-      // Add to user download history
+      const docId = typeof item.document === 'object' ? item.document._id : item.document;
+      await Document.findByIdAndUpdate(docId, { $inc: { salesCount: 1 } });
       await User.findByIdAndUpdate(order.user, {
-        $push: {
-          'studentProfile.downloadHistory': {
-            document: item.document,
-            downloadedAt: new Date()
-          }
-        }
+        $push: { 'studentProfile.downloadHistory': { document: docId, downloadedAt: new Date() } }
       });
+      console.log('[SePay] Added document to download history:', docId);
     }
 
     // Notify user
-    await createNotification(
-      order.user,
-      'Thanh toan thanh cong!',
-      'Don hang cua ban da duoc xac nhan. Bay gio ban co the tai tai lieu.',
-      'success'
-    );
+    await createNotification(order.user, 'Thanh toán thành công!', 'Đơn hàng đã được xác nhận. Bạn có thể tải tài liệu ngay.', 'success');
 
-    // Send confirmation email
+    // Notify admins
+    try {
+      const admins = await User.find({ role: 'admin', isActive: true });
+      await Promise.all(admins.map(admin =>
+        createNotification(
+          admin._id,
+          'Thanh toán SePay thành công!',
+          `Nhận ${Number(receivedAmount).toLocaleString('vi-VN')} VNĐ. Nội dung: ${rawContent}. Tài liệu đã kích hoạt tự động.`,
+          'payment'
+        )
+      ));
+    } catch (e) { console.error('Admin notify error:', e); }
+
+    // Send email
     try {
       const user = await User.findById(order.user);
       await emailService.sendPaymentConfirmation(user, {
-        orderId: order._id,
-        amount: transferAmount,
-        method: 'sepay',
-        documents: order.documents.map(doc => ({
-          title: doc.document?.title || 'Tai lieu'
-        })),
-        transactionCode: `SEPAY${transactionCode}`,
-        paymentDate: new Date()
+        orderId: order._id, amount: receivedAmount, method: 'sepay',
+        documents: order.documents.map(doc => ({ title: doc.document?.title || 'Tai lieu' })),
+        transactionCode: `SEPAY_${transactionCode}`, paymentDate: new Date()
       });
-    } catch (emailError) {
-      console.error('Failed to send confirmation email:', emailError);
-    }
+    } catch (e) { console.error('Email error:', e); }
 
-    // Award reward points for purchase
+    // Award points
     try {
-      const pointsEarned = await earnPoints(
-        order.user.toString(),
-        transferAmount,
-        order._id
-      );
-      if (pointsEarned) {
-        await createNotification(
-          order.user.toString(),
-          'Nhận điểm thưởng!',
-          `Bạn đã nhận được ${pointsEarned.points} điểm thưởng khi mua tài liệu!`,
-          'success'
-        );
-      }
-    } catch (pointError) {
-      console.error('Failed to award points:', pointError);
-    }
+      const pts = await earnPoints(order.user.toString(), receivedAmount, order._id);
+      if (pts) await createNotification(order.user.toString(), 'Nhận điểm thưởng!', `Bạn đã nhận được ${pts.points} điểm thưởng!`, 'success');
+    } catch (e) { console.error('Points error:', e); }
 
-    res.status(200).json({ success: true, message: 'Payment confirmed' });
+    return res.status(200).json({ success: true, message: 'Payment confirmed' });
+
   } catch (error) {
-    console.error('SePay webhook error:', error);
-    res.status(200).json({ success: false, message: 'Error processing webhook' });
+    console.error('[SePay webhook] Unhandled error:', error);
+    return res.status(200).json({ success: false, message: 'Internal error' });
   }
 });
 
-// Get payment status
+// ─── Get payment status ──────────────────────────────────────────────────────
 router.get('/status/:paymentId', protect, async (req, res, next) => {
   try {
-    const payment = await Payment.findById(req.params.paymentId)
-      .populate('orderId');
-
-    if (!payment) {
-      return next(apiError('Payment not found', 404));
-    }
-
+    const payment = await Payment.findById(req.params.paymentId).populate('orderId');
+    if (!payment) return next(apiError('Payment not found', 404));
     if (payment.user.toString() !== req.user.id && req.user.role !== 'admin') {
       return next(apiError('Not authorized', 403));
     }
-
     res.json(apiSuccess({
       paymentId: payment._id,
       status: payment.status,
@@ -499,23 +483,23 @@ router.get('/status/:paymentId', protect, async (req, res, next) => {
   }
 });
 
-// Check payment by transaction code (for polling)
+// ─── Check payment by transaction code (polling) ─────────────────────────────
 router.get('/check/:transactionCode', protect, async (req, res, next) => {
   try {
+    const { transactionCode } = req.params;
+    console.log('[Check] Looking for transaction:', transactionCode, '| User:', req.user.id);
+
     const transaction = await Transaction.findOne({
-      transactionCode: req.params.transactionCode,
+      transactionCode,
       user: req.user.id
     }).populate({
       path: 'orderId',
-      populate: {
-        path: 'documents.document',
-        model: 'Document'
-      }
+      populate: { path: 'documents.document', model: 'Document' }
     });
 
-    if (!transaction) {
-      return next(apiError('Transaction not found', 404));
-    }
+    console.log('[Check] Transaction found:', transaction?._id, '| Status:', transaction?.status);
+
+    if (!transaction) return next(apiError('Transaction not found', 404));
 
     const payment = await Payment.findById(transaction.paymentId);
 
@@ -530,6 +514,80 @@ router.get('/check/:transactionCode', protect, async (req, res, next) => {
   } catch (error) {
     next(error);
   }
+});
+
+// ─── Debug: Test webhook manually ─────────────────────────────────────────────
+router.post('/test-webhook', async (req, res) => {
+  console.log('[Test] Simulating SePay webhook...');
+  console.log('[Test] Body:', JSON.stringify(req.body, null, 2));
+
+  // Gọi webhook logic tương tự
+  const {
+    transferType = 'in',
+    amount = '50000',
+    content = 'FPTAIEZ12345678',
+    code = 'FPTAIEZ12345678',
+    description = '',
+  } = req.body;
+
+  const rawContent = content || code || description || '';
+  const orderIdMatch = rawContent.match(/FPTAIEZ([a-zA-Z0-9]+)/i);
+
+  if (!orderIdMatch) {
+    return res.json({ success: false, message: 'No FPTAIEZ code found' });
+  }
+
+  const transactionCode = orderIdMatch[0].toUpperCase();
+  console.log('[Test] Looking for transaction:', transactionCode);
+
+  const transaction = await Transaction.findOne({
+    transactionCode,
+    status: 'pending',
+    paymentMethod: 'sepay'
+  }).populate('orderId');
+
+  if (!transaction) {
+    return res.json({ success: false, message: 'Transaction not found', transactionCode });
+  }
+
+  console.log('[Test] Found transaction:', transaction._id);
+  console.log('[Test] Order:', transaction.orderId?._id);
+  console.log('[Test] Order status:', transaction.orderId?.paymentStatus);
+
+  // Simulate update
+  const order = transaction.orderId;
+  order.paymentStatus = 'paid';
+  order.status = 'completed';
+  await order.save();
+
+  transaction.status = 'completed';
+  await transaction.save();
+
+  return res.json({
+    success: true,
+    message: 'Test successful!',
+    transactionId: transaction._id,
+    orderId: order._id
+  });
+});
+
+// ─── Debug: Get all pending transactions ──────────────────────────────────────
+router.get('/debug-transactions', protect, async (req, res) => {
+  const transactions = await Transaction.find({
+    user: req.user.id,
+    paymentMethod: 'sepay'
+  }).sort({ createdAt: -1 }).limit(10);
+
+  res.json({
+    success: true,
+    data: transactions.map(t => ({
+      _id: t._id,
+      transactionCode: t.transactionCode,
+      status: t.status,
+      amount: t.amount,
+      createdAt: t.createdAt
+    }))
+  });
 });
 
 export default router;

@@ -1,11 +1,10 @@
 import crypto from 'crypto';
-import { URL } from 'url';
-import querystring from 'querystring';
+import { VNPay, ProductCode, VnpLocale, dateFormat } from 'vnpay';
 
 // VNPay Configuration
 const VNPAY_CONFIG = {
-  vnp_TmnCode: process.env.VNPAY_TMN_CODE || 'YOUR_TMN_CODE',
-  vnp_HashSecret: process.env.VNPAY_HASH_SECRET || 'YOUR_HASH_SECRET',
+  vnp_TmnCode: process.env.VNPAY_TMN_CODE || 'OZE53AQG',
+  vnp_HashSecret: process.env.VNPAY_HASH_SECRET || 'NXZM3DWFRILC4R5VBK850JZS1UE9KI6F',
   vnp_Url: process.env.VNPAY_URL || 'https://sandbox.vnpayment.vn/paymentv2/vpcpay.html',
   vnp_Api: process.env.VNPAY_API_URL || 'https://sandbox.vnpayment.vn/merchant_webapi/api/transaction',
   vnp_ReturnUrl: process.env.VNPAY_RETURN_URL || 'http://localhost:5173/payment/vnpay-return',
@@ -14,95 +13,51 @@ const VNPAY_CONFIG = {
 // SePay Configuration
 const SEPAY_CONFIG = {
   apiKey: process.env.SEPAY_API_KEY || 'YOUR_SEPAY_API_KEY',
-  webhookUrl: process.env.SEPAY_WEBHOOK_URL || 'http://localhost:5000/api/payments/sepay/webhook',
+  webhookUrl: process.env.SEPAY_WEBHOOK_URL || 'http://localhost:5000/api/payments/sepay-webhook',
   baseUrl: process.env.SEPAY_BASE_URL || 'https://api.sepay.vn',
 };
 
 // =========================
-// VNPay Functions
+// VNPay Functions (SDK)
 // =========================
-
-function sortObject(obj) {
-  const sorted = {};
-  const keys = Object.keys(obj).sort();
-  keys.forEach((key) => {
-    if (obj[key] !== null && obj[key] !== undefined && obj[key] !== '') {
-      sorted[key] = obj[key];
-    }
-  });
-  return sorted;
-}
 
 export function createVNPayUrl(paymentData) {
   const { amount, orderId, orderInfo, transactionId } = paymentData;
 
-  const date = new Date();
-  const createDate = `${String(date.getFullYear())}${String(date.getMonth() + 1).padStart(2, '0')}${String(date.getDate()).padStart(2, '0')}${String(date.getHours()).padStart(2, '0')}${String(date.getMinutes()).padStart(2, '0')}${String(date.getSeconds()).padStart(2, '0')}`;
-  const expireDate = new Date(date.getTime() + 15 * 60 * 1000);
-  const expireDateStr = `${String(expireDate.getFullYear())}${String(expireDate.getMonth() + 1).padStart(2, '0')}${String(expireDate.getDate()).padStart(2, '0')}${String(expireDate.getHours()).padStart(2, '0')}${String(expireDate.getMinutes()).padStart(2, '0')}${String(expireDate.getSeconds()).padStart(2, '0')}`;
-
-  const vnp_Params = {
-    vnp_Version: '2.1.0',
-    vnp_Command: 'pay',
-    vnp_TmnCode: VNPAY_CONFIG.vnp_TmnCode,
-    vnp_Locale: 'vn',
-    vnp_CurrCode: 'VND',
-    vnp_TxnRef: transactionId || orderId?.toString() || Date.now().toString(),
-    vnp_OrderInfo: orderInfo || `Thanh toan don hang ${orderId}`,
-    vnp_OrderType: 'billpayment',
-    vnp_Amount: Math.round(amount) * 100, // Amount in VND (cents)
-    vnp_SubAmount: Math.round(amount) * 100,
-    vnp_ReturnUrl: VNPAY_CONFIG.vnp_ReturnUrl,
-    vnp_CallbackUrl: VNPAY_CONFIG.vnp_ReturnUrl,
-    vnp_CreateDate: createDate,
-    vnp_ExpireDate: expireDateStr,
-    vnp_IpAddr: '127.0.0.1',
-  };
-
-  // Sort and create hash data
-  const sortedParams = sortObject(vnp_Params);
-  const signData = Object.keys(sortedParams)
-    .map((key) => `${key}=${sortedParams[key]}`)
-    .join('&');
-
-  const hmac = crypto.createHmac('sha512', VNPAY_CONFIG.vnp_HashSecret);
-  const vnp_SecureHash = hmac.update(Buffer.from(signData, 'utf-8')).digest('hex');
-
-  // Build URL
-  const vnpUrl = new URL(VNPAY_CONFIG.vnp_Url);
-  Object.keys(sortedParams).forEach((key) => {
-    vnpUrl.searchParams.append(key, sortedParams[key]);
+  const vnpay = new VNPay({
+    tmnCode: process.env.VNPAY_TMN_CODE || 'OZE53AQG',
+    secureSecret: process.env.VNPAY_HASH_SECRET || 'NXZM3DWFRILC4R5VBK850JZS1UE9KI6F',
+    vnpayHost: 'https://sandbox.vnpayment.vn',
+    testMode: true,
+    hashAlgorithm: 'SHA512',
   });
-  vnpUrl.searchParams.append('vnp_SecureHash', vnp_SecureHash);
+
+  const date = new Date();
+  const tomorrow = new Date(date.getTime() + 24 * 60 * 60 * 1000);
+
+  // amount phải là số nguyên VNĐ (không ×100, SDK tự nhân)
+  const paymentUrl = vnpay.buildPaymentUrl({
+    vnp_Amount: Math.round(amount),
+    vnp_IpAddr: '127.0.0.1',
+    vnp_TxnRef: transactionId || orderId?.toString() || Date.now().toString(),
+    vnp_OrderInfo: orderInfo || `Thanh toan tai lieu ${orderId}`,
+    vnp_OrderType: ProductCode.Other,
+    vnp_ReturnUrl: process.env.VNPAY_RETURN_URL || 'http://localhost:5173/payment/vnpay-return',
+    vnp_Locale: VnpLocale.VN,
+    vnp_CreateDate: dateFormat(date),
+    vnp_ExpireDate: dateFormat(tomorrow),
+  });
 
   return {
-    vnpUrl: vnpUrl.toString(),
-    vnp_TxnRef: vnp_Params.vnp_TxnRef,
-    vnp_Amount: vnp_Params.vnp_Amount,
-    vnp_OrderInfo: vnp_Params.vnp_OrderInfo,
-    vnp_CreateDate: createDate,
-    vnp_ExpireDate: expireDateStr,
-    transactionId: vnp_Params.vnp_TxnRef,
+    vnpUrl: paymentUrl,
+    vnp_TxnRef: transactionId || orderId?.toString(),
+    vnp_Amount: amount,
+    vnp_OrderInfo: orderInfo,
+    provider: 'vnpay',
   };
 }
 
-export function verifyVNPaySignature(queryString, vnp_SecureHash) {
-  // Remove vnp_SecureHash from query to verify
-  const params = querystring.parse(queryString);
-  delete params.vnp_SecureHash;
-  delete params.vnp_SecureHashType;
-
-  const sortedParams = sortObject(params);
-  const signData = Object.keys(sortedParams)
-    .map((key) => `${key}=${sortedParams[key]}`)
-    .join('&');
-
-  const hmac = crypto.createHmac('sha512', VNPAY_CONFIG.vnp_HashSecret);
-  const vnp_SecureHashCheck = hmac.update(Buffer.from(signData, 'utf-8')).digest('hex');
-
-  return vnp_SecureHashCheck === vnp_SecureHash;
-}
-
+// VNPay return verification (for vnpay-return route)
 export function verifyVNPayReturn(query) {
   const {
     vnp_ResponseCode,
@@ -122,13 +77,40 @@ export function verifyVNPayReturn(query) {
     vnp_ResponseCode,
     vnp_TransactionStatus,
     vnp_TxnRef,
-    vnp_Amount: parseInt(vnp_Amount) / 100,
+    vnp_Amount: parseInt(vnp_Amount),
     vnp_OrderInfo,
     vnp_PayDate,
     transactionId: vnp_TxnRef,
     provider: 'vnpay',
     rest,
   };
+}
+
+// VNPay IPN verification
+export function verifyVNPaySignature(queryString, vnp_SecureHash) {
+  const params = {};
+  queryString.split('&').forEach(pair => {
+    const [key, value] = pair.split('=');
+    if (key && value) params[decodeURIComponent(key)] = decodeURIComponent(value);
+  });
+  delete params.vnp_SecureHash;
+  delete params.vnp_SecureHashType;
+
+  const sortedParams = {};
+  Object.keys(params).sort().forEach((key) => {
+    if (params[key] !== null && params[key] !== undefined && params[key] !== '') {
+      sortedParams[key] = params[key];
+    }
+  });
+
+  const signData = Object.keys(sortedParams)
+    .map((key) => `${key}=${sortedParams[key]}`)
+    .join('&');
+
+  const hmac = crypto.createHmac('sha512', VNPAY_CONFIG.vnp_HashSecret);
+  const vnp_SecureHashCheck = hmac.update(Buffer.from(signData, 'utf-8')).digest('hex');
+
+  return vnp_SecureHashCheck === vnp_SecureHash;
 }
 
 // =========================
@@ -142,19 +124,19 @@ export async function createSePayPayment(paymentData) {
 
   // Bank info from environment
   const bankBin = process.env.SEPAY_BANK_BIN || '970438';
-  const accountNumber = process.env.SEPAY_ACCOUNT_NUMBER || '1261101647';
+  const accountNumber = process.env.SEPAY_ACCOUNT_NUMBER || '96247ANH2004';
   const accountName = process.env.SEPAY_ACCOUNT_NAME || 'LE DUC ANH';
-  const transferContent = orderInfo || `FPTAIEZ${orderId?.slice(-8) || sepayOrderId.slice(-8)}`;
+  const transferContent = transactionId || `FPTAIEZ${orderId?.slice(-8) || sepayOrderId.slice(-8)}`;
 
-  // VietQR.io image URL - uses compact template matching your BIDV QR design
-  const vietqrUrl = `https://img.vietqr.io/image/${bankBin}-${accountNumber}-compact.png?amount=${amount}&addInfo=${encodeURIComponent(transferContent)}&accountName=${encodeURIComponent(accountName)}&logo=true&border=true`;
+  // SePay QR URL
+  const qrUrl = `https://qr.sepay.vn/img?acc=${accountNumber}&bank=BIDV&amount=${Math.round(amount)}&des=${encodeURIComponent(transferContent)}`;
 
   // VietQR raw data string (EMVco format for local QR generation)
   const qrRaw = `${bankBin}${accountNumber}${Math.round(amount)}${transferContent}`;
 
   return {
     sepayOrderId,
-    qrUrl: vietqrUrl,
+    qrUrl,
     qrRaw,
     amount,
     orderInfo: orderInfo || `Thanh toan don hang ${orderId}`,
@@ -164,7 +146,7 @@ export async function createSePayPayment(paymentData) {
       bankBin,
       accountNumber,
       accountName,
-      bankName: 'BIDV - CN BA DINH',
+      bankName: 'BIDV - VietinBank',
     },
     instructions: [
       '1. Mo ung dung ngan hang hoac vi dien tu cua ban',
@@ -182,7 +164,6 @@ export async function verifySePayWebhook(webhookData) {
 
   // SePay webhook signature verification (if API key is set)
   if (SEPAY_CONFIG.apiKey && SEPAY_CONFIG.apiKey !== 'YOUR_SEPAY_API_KEY') {
-    // Verify webhook signature
     const signature = webhookData.signature;
     if (!signature) {
       return { valid: false, reason: 'Missing signature' };

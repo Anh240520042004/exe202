@@ -1,26 +1,34 @@
 import React, { useEffect, useState } from 'react';
-import { useSearchParams, useNavigate, Link } from 'react-router-dom';
+import { useSearchParams, useNavigate, useLocation } from 'react-router-dom';
 import { CheckCircle, XCircle, Loader2, Home, User, ArrowRight } from 'lucide-react';
 
 export default function PaymentResult() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const status = searchParams.get('status');
   const orderId = searchParams.get('orderId');
   const errorCode = searchParams.get('code');
   const method = searchParams.get('method');
   const amount = searchParams.get('amount');
+  const isVNPayReturnRoute = location.pathname === '/payment/vnpay-return';
 
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Simulate loading
+    if (isVNPayReturnRoute) {
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+      const query = searchParams.toString();
+      window.location.replace(`${apiUrl}/payments/vnpay-return${query ? `?${query}` : ''}`);
+      return;
+    }
+
     const timer = setTimeout(() => {
       setLoading(false);
     }, 1500);
 
     return () => clearTimeout(timer);
-  }, []);
+  }, [isVNPayReturnRoute, searchParams]);
 
   if (loading) {
     return (
@@ -114,14 +122,25 @@ export default function PaymentResult() {
             <button
               onClick={() => navigate('/transactions')}
               className={`block w-full py-3 px-6 rounded-xl font-medium transition-all duration-300 flex items-center justify-center gap-2 ${
-                isSuccess 
-                  ? 'bg-green-500 text-white hover:bg-green-600 hover:shadow-lg hover:shadow-green-500/25' 
+                isSuccess
+                  ? 'bg-green-500 text-white hover:bg-green-600 hover:shadow-lg hover:shadow-green-500/25'
                   : 'bg-primary-500 text-white hover:bg-primary-600'
               }`}
             >
               <User className="w-5 h-5" />
               Xem lịch sử giao dịch
             </button>
+
+            {/* Nút xem tài liệu đã mua */}
+            {isSuccess && (
+              <button
+                onClick={() => navigate('/my-documents')}
+                className="block w-full py-3 px-6 rounded-xl font-medium bg-blue-500 text-white hover:bg-blue-600 transition-all duration-300 flex items-center justify-center gap-2"
+              >
+                <ArrowRight className="w-5 h-5" />
+                Xem tài liệu đã mua
+              </button>
+            )}
 
             <button
               onClick={() => navigate('/dashboard')}

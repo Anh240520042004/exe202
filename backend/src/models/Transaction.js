@@ -62,6 +62,9 @@ const transactionSchema = new mongoose.Schema(
     transactionCode: {
       type: String,
     },
+    providerTransactionCode: {
+      type: String,
+    },
     paymentMethod: {
       type: String,
       enum: ['sepay', 'vnpay', 'momo', 'banking', 'credit', 'wallet'],
