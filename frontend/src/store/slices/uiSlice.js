@@ -1,13 +1,14 @@
 import { createSlice } from '@reduxjs/toolkit';
 
-const getInitialTheme = () => {
-  const saved = localStorage.getItem('theme');
-  if (saved) return saved;
-  return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+const applyDarkTheme = () => {
+  document.documentElement.classList.add('dark');
+  localStorage.setItem('theme', 'dark');
 };
 
+applyDarkTheme();
+
 const initialState = {
-  theme: getInitialTheme(),
+  theme: 'dark',
   sidebarOpen: true,
   isMobileMenuOpen: false,
 };
@@ -17,14 +18,12 @@ const uiSlice = createSlice({
   initialState,
   reducers: {
     toggleTheme: (state) => {
-      state.theme = state.theme === 'dark' ? 'light' : 'dark';
-      localStorage.setItem('theme', state.theme);
-      document.documentElement.classList.toggle('dark', state.theme === 'dark');
+      state.theme = 'dark';
+      applyDarkTheme();
     },
-    setTheme: (state, action) => {
-      state.theme = action.payload;
-      localStorage.setItem('theme', action.payload);
-      document.documentElement.classList.toggle('dark', action.payload === 'dark');
+    setTheme: (state) => {
+      state.theme = 'dark';
+      applyDarkTheme();
     },
     toggleSidebar: (state) => {
       state.sidebarOpen = !state.sidebarOpen;

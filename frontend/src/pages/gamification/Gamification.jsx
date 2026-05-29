@@ -50,13 +50,13 @@ const Gamification = () => {
   return (
     <LoginRequired title="Thành tựu" message="Bạn cần đăng nhập để xem thành tựu và bảng xếp hạng">
       <div className="min-h-screen">
-      <div className="bg-gradient-to-r from-yellow-500 via-orange-500 to-red-500 text-white py-12">
-        <div className="container mx-auto px-4">
-          <h1 className="text-4xl font-bold mb-4 flex items-center gap-3">
-            <Trophy />
+      <div className="glass-hero glass-hero-accent mx-4 mt-2 px-6 py-10 md:px-10">
+        <div className="max-w-7xl mx-auto">
+          <h1 className="text-4xl font-bold mb-3 flex items-center gap-3 text-white">
+            <Trophy className="text-amber-400" />
             Gamification & Achievements
           </h1>
-          <p className="text-lg text-white/90">Track your progress, earn badges, and climb the leaderboard!</p>
+          <p className="text-lg text-gray-400">Theo dõi tiến độ, nhận huy hiệu và leo bảng xếp hạng!</p>
         </div>
       </div>
 
@@ -66,10 +66,10 @@ const Gamification = () => {
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`px-6 py-3 rounded-2xl font-medium capitalize transition-colors ${
+              className={`glass-nav-link px-6 py-3 rounded-2xl font-medium capitalize transition-all ${
                 activeTab === tab
-                  ? 'bg-orange-500 text-white'
-                  : 'glass-card hover:bg-orange-100 dark:hover:bg-orange-900'
+                  ? 'glass-nav-active text-primary-300'
+                  : 'glass-subtle text-gray-400 hover:text-gray-200'
               }`}
             >
               {tab}
@@ -117,20 +117,20 @@ const Gamification = () => {
             </div>
 
             {stats.progress !== undefined && (
-              <div className="glass-card rounded-2xl p-6 mb-8">
-                <h3 className="font-bold mb-4">Level Progress</h3>
+              <div className="glass-card glass-hover-card rounded-2xl p-6 mb-8">
+                <h3 className="font-bold mb-4 text-white">Level Progress</h3>
                 <div className="flex items-center gap-4">
-                  <div className="w-16 h-16 rounded-full bg-gradient-to-br from-orange-400 to-red-500 flex items-center justify-center text-white text-2xl font-bold">
+                  <div className="w-16 h-16 rounded-full bg-primary-400/30 backdrop-blur-sm border border-primary-400/30 flex items-center justify-center text-white text-2xl font-bold">
                     {stats.level}
                   </div>
                   <div className="flex-1">
-                    <div className="flex justify-between text-sm mb-2">
+                    <div className="flex justify-between text-sm mb-2 text-gray-400">
                       <span>Level {stats.level}</span>
                       <span>Level {stats.level + 1}</span>
                     </div>
-                    <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                    <div className="h-3 glass-subtle rounded-full overflow-hidden">
                       <div
-                        className="h-full bg-gradient-to-r from-orange-400 to-red-500 transition-all"
+                        className="h-full bg-gradient-to-r from-primary-400/80 to-accent-400/80 transition-all rounded-full"
                         style={{ width: `${stats.progress}%` }}
                       />
                     </div>
@@ -146,25 +146,25 @@ const Gamification = () => {
 
         {activeTab === 'leaderboard' && (
           <div className="glass-card rounded-2xl overflow-hidden">
-            <div className="p-6 border-b dark:border-gray-700">
-              <h2 className="text-xl font-bold flex items-center gap-2">
-                <Trophy className="text-yellow-500" />
+            <div className="p-6 border-b glass-divider">
+              <h2 className="text-xl font-bold flex items-center gap-2 text-white">
+                <Trophy className="text-amber-400" />
                 Leaderboard
               </h2>
             </div>
-            <div className="divide-y dark:divide-gray-700">
+            <div className="divide-y glass-divider">
               {leaderboard.map((user, index) => (
                 <div
                   key={user._id}
-                  className={`p-4 flex items-center gap-4 ${
-                    index < 3 ? 'bg-gradient-to-r from-yellow-50 to-orange-50 dark:from-yellow-900/20 dark:to-orange-900/20' : ''
+                  className={`p-4 flex items-center gap-4 glass-nav-hover ${
+                    index < 3 ? 'bg-primary-400/8' : ''
                   }`}
                 >
                   <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold ${
-                    index === 0 ? 'bg-yellow-500 text-white' :
-                    index === 1 ? 'bg-gray-400 text-white' :
-                    index === 2 ? 'bg-orange-600 text-white' :
-                    'bg-gray-200 dark:bg-gray-700'
+                    index === 0 ? 'bg-amber-400/80 text-white' :
+                    index === 1 ? 'bg-gray-400/60 text-white' :
+                    index === 2 ? 'bg-orange-500/70 text-white' :
+                    'glass-subtle text-gray-400'
                   }`}>
                     {index + 1}
                   </div>
@@ -174,7 +174,7 @@ const Gamification = () => {
                     <p className="text-sm text-gray-500">Level {user.level}</p>
                   </div>
                   <div className="text-right">
-                    <p className="font-bold text-orange-500">{user.xp.toLocaleString()} XP</p>
+                    <p className="font-bold text-primary-400">{user.xp.toLocaleString()} XP</p>
                     <p className="text-sm text-gray-500">{user.studyStreak} day streak</p>
                   </div>
                 </div>
@@ -193,12 +193,12 @@ const Gamification = () => {
             {badges.map(badge => (
               <div
                 key={badge._id}
-                className={`glass-card rounded-2xl p-6 text-center relative overflow-hidden ${
-                  badge.earned ? 'ring-2 ring-green-500' : 'opacity-60'
+                className={`glass-card glass-hover-card rounded-2xl p-6 text-center relative overflow-hidden ${
+                  badge.earned ? 'ring-2 ring-emerald-400/50' : 'opacity-50'
                 }`}
               >
-                <div className={`absolute top-0 right-0 px-2 py-1 text-xs font-medium rounded-bl-lg ${
-                  badge.earned ? 'bg-green-500 text-white' : 'bg-gray-200 dark:bg-gray-700'
+                <div className={`absolute top-0 right-0 px-2 py-1 text-xs font-medium rounded-bl-xl ${
+                  badge.earned ? 'bg-emerald-500/80 text-white' : 'glass-subtle text-gray-400'
                 }`}>
                   {badge.earned ? 'Earned' : 'Locked'}
                 </div>
@@ -227,16 +227,9 @@ const Gamification = () => {
   );
 };
 
-const StatCard = ({ icon, label, value, subtext, color }) => {
-  const colorClasses = {
-    yellow: 'border-yellow-200 dark:border-yellow-800',
-    purple: 'border-purple-200 dark:border-purple-800',
-    blue: 'border-blue-200 dark:border-blue-800',
-    red: 'border-red-200 dark:border-red-800',
-  };
-
+const StatCard = ({ icon, label, value, subtext }) => {
   return (
-    <div className={`glass-card rounded-2xl p-6 border ${colorClasses[color]}`}>
+    <div className={`glass-card glass-hover-card rounded-2xl p-6 border border-white/5`}>
       <div className="flex items-center gap-4">
         <div className="w-12 h-12 rounded-2xl glass-subtle flex items-center justify-center">
           {icon}

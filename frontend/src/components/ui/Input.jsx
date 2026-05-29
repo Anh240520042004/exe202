@@ -19,7 +19,7 @@ const Input = forwardRef(({
       {label && (
         <label className={`block text-sm font-medium mb-1.5 ${
           variant === 'auth'
-            ? 'text-primary-100'
+            ? 'text-gray-300'
             : 'text-gray-700 dark:text-gray-300'
         }`}>
           {label}

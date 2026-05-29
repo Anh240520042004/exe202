@@ -51,8 +51,8 @@ const MessageBubble = ({ message, currentUserId }) => {
         ) : (
           <div className={`px-4 py-2.5 rounded-2xl text-sm leading-relaxed ${
             isOwn
-              ? 'bg-gradient-to-r from-primary-500 to-accent-500 text-white rounded-br-sm'
-              : 'bg-white/10 border border-white/10 text-white/80 rounded-bl-sm'
+              ? 'chat-bubble-user text-white'
+              : 'chat-bubble-ai text-gray-200'
           }`}>
             {message.content}
           </div>
@@ -71,7 +71,7 @@ const ConversationItem = ({ conv, isActive, onClick, currentUserId }) => {
   return (
     <button
       onClick={onClick}
-      className={`w-full flex items-center gap-3 px-4 py-3 hover:bg-white/5 transition-colors text-left ${isActive ? 'bg-white/5' : ''}`}
+      className={`w-full flex items-center gap-3 px-4 py-3 glass-nav-hover rounded-xl transition-all text-left ${isActive ? 'glass-nav-active' : ''}`}
     >
       {other?.avatar || conv.displayAvatar ? (
         <img
@@ -327,21 +327,22 @@ export default function ChatPage() {
   }
 
   return (
-    <div className="flex h-[calc(100vh-4rem)] bg-black text-white">
+    <div className="p-4 lg:p-6">
+      <div className="chat-shell flex h-[calc(100vh-7rem)] max-w-[1400px] mx-auto text-white">
       {/* Conversation List */}
-      <div className={`w-80 border-r border-white/5 flex flex-col flex-shrink-0 ${activeConv ? 'hidden md:flex' : 'flex'}`}>
-        <div className="p-4 border-b border-white/5">
+      <div className={`chat-sidebar w-80 flex flex-col flex-shrink-0 rounded-l-[inherit] ${activeConv ? 'hidden md:flex' : 'flex'}`}>
+        <div className="p-4 border-b glass-divider">
           <div className="flex items-center justify-between mb-3">
-            <h2 className="text-lg font-bold text-white">Tin nhan</h2>
+            <h2 className="text-lg font-bold text-white">Tin nhắn</h2>
           </div>
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
             <input
               type="text"
-              placeholder="Tim cuoc tro chuyen..."
+              placeholder="Tìm cuộc trò chuyện..."
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-3 py-2 bg-white/5 border border-white/10 rounded-xl text-white placeholder-white/30 text-sm outline-none focus:border-primary-500/50"
+              className="glass-input w-full pl-9 pr-3 py-2 text-gray-200 placeholder-gray-500 text-sm"
             />
           </div>
         </div>
@@ -366,9 +367,9 @@ export default function ChatPage() {
 
       {/* Chat Window */}
       {activeConv ? (
-        <div className="flex-1 flex flex-col min-w-0">
+        <div className="flex-1 flex flex-col min-w-0 rounded-r-[inherit]">
           {/* Header */}
-          <div className="flex items-center gap-3 px-4 py-3 border-b border-white/5 bg-black/50">
+          <div className="flex items-center gap-3 px-4 py-3 border-b glass-divider glass-subtle/30">
             <button
               onClick={() => setActiveConv(null)}
               className="md:hidden w-8 h-8 flex items-center justify-center text-white/50"
@@ -422,8 +423,8 @@ export default function ChatPage() {
           </div>
 
           {/* Input */}
-          <div className="p-4 border-t border-white/5 bg-black/50">
-            <div className="flex items-end gap-2 bg-white/5 border border-white/10 rounded-2xl px-4 py-2">
+          <div className="p-4 border-t glass-divider">
+            <div className="chat-input-bar flex items-end gap-2 px-4 py-2">
               <textarea
                 value={input}
                 onChange={handleInputChange}
@@ -436,7 +437,7 @@ export default function ChatPage() {
               <button
                 onClick={handleSend}
                 disabled={!input.trim()}
-                className="p-2 bg-primary-500 rounded-xl text-white hover:bg-primary-600 disabled:opacity-40 disabled:cursor-not-allowed transition-colors flex-shrink-0"
+                className="p-2 bg-primary-400/60 rounded-xl text-white hover:bg-primary-500/70 disabled:opacity-40 disabled:cursor-not-allowed transition-colors flex-shrink-0 border border-white/10"
               >
                 <Send className="w-4 h-4" />
               </button>
@@ -444,16 +445,17 @@ export default function ChatPage() {
           </div>
         </div>
       ) : (
-        <div className="hidden md:flex flex-1 items-center justify-center">
-          <div className="text-center">
-            <div className="w-20 h-20 mx-auto rounded-full bg-white/5 flex items-center justify-center mb-4">
-              <Send className="w-8 h-8 text-white/20" />
+        <div className="hidden md:flex flex-1 items-center justify-center rounded-r-[inherit]">
+          <div className="text-center glass-subtle rounded-2xl p-10 mx-6">
+            <div className="w-20 h-20 mx-auto rounded-full glass-chip flex items-center justify-center mb-4">
+              <Send className="w-8 h-8 text-gray-500" />
             </div>
-            <p className="text-white/40 text-lg mb-2">Chon cuoc tro chuyen</p>
-            <p className="text-white/20 text-sm">Chon mot cuoc tro chuyen tu danh sach ben trai</p>
+            <p className="text-gray-400 text-lg mb-2">Chọn cuộc trò chuyện</p>
+            <p className="text-gray-500 text-sm">Chọn một cuộc trò chuyện từ danh sách bên trái</p>
           </div>
         </div>
       )}
+      </div>
     </div>
   );
 }

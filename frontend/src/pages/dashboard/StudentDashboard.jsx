@@ -13,25 +13,25 @@ const StudentDashboard = () => {
   // Guest view - show login prompt
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-primary-400/90 via-primary-300/90 to-accent-300/90 flex items-center justify-center p-4">
-        <div className="text-center max-w-md">
-          <div className="w-20 h-20 mx-auto rounded-3xl bg-white/10 backdrop-blur-lg flex items-center justify-center mb-6">
-            <span className="text-4xl font-bold text-white">F</span>
+      <div className="auth-page min-h-[60vh] flex items-center justify-center p-4">
+        <div className="text-center max-w-md auth-form-panel rounded-[1.75rem] p-8">
+          <div className="auth-logo w-20 h-20 mx-auto flex items-center justify-center mb-6">
+            <span className="text-3xl font-bold text-white">F.</span>
           </div>
           <h1 className="text-3xl font-bold text-white mb-4">F.EdTech</h1>
-          <p className="text-white/70 mb-8 text-lg">
-            Đăng nhập để truy cập dashboard và bắt đầu hành trình học tập của bạn
+          <p className="text-gray-400 mb-8 text-lg">
+            Đăng nhập để truy cập dashboard và bắt đầu hành trình học tập
           </p>
           <button
             onClick={() => navigate('/login')}
-            className="px-8 py-4 bg-gradient-to-r from-primary-500 to-accent-500 text-white rounded-2xl font-bold text-lg hover:shadow-lg hover:shadow-primary-500/30 transition-all duration-300 flex items-center gap-3 mx-auto"
+            className="glass-nav-link px-8 py-4 bg-primary-400/60 text-white rounded-2xl font-bold text-lg hover:bg-primary-500/70 transition-all flex items-center gap-3 mx-auto border border-white/15"
           >
             <LogIn className="w-5 h-5" />
             Đăng nhập ngay
           </button>
-          <p className="text-white/50 mt-6">
+          <p className="text-gray-500 mt-6">
             Chưa có tài khoản?{' '}
-            <Link to="/register" className="text-primary-300 hover:text-white font-semibold">
+            <Link to="/register" className="text-primary-300 hover:text-primary-200 font-semibold">
               Đăng ký
             </Link>
           </p>
@@ -65,23 +65,23 @@ const StudentDashboard = () => {
 
   return (
     <div className="min-h-screen">
-      <div className="bg-gradient-to-r from-primary-400/75 to-primary-500/75 text-white py-8">
-        <div className="container mx-auto px-4">
-          <div className="flex items-center gap-6">
-            <img src={profile.avatar} alt={profile.name} className="w-20 h-20 rounded-full border-4 border-white/30" />
-            <div className="flex-1">
-              <h1 className="text-3xl font-bold">Welcome back, {profile.name}!</h1>
-              <p className="text-primary-100">GPA: {profile.gpa} | Level {profile.level}</p>
+      <div className="glass-hero glass-hero-accent mx-4 mt-2 px-6 py-8 md:px-10">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex flex-wrap items-center gap-6">
+            <img src={profile.avatar} alt={profile.name} className="w-20 h-20 rounded-full border-4 border-white/20 object-cover" />
+            <div className="flex-1 min-w-[200px]">
+              <h1 className="text-3xl font-bold text-white">Welcome back, {profile.name}!</h1>
+              <p className="text-gray-400 mt-1">GPA: {profile.gpa} | Level {profile.level}</p>
             </div>
-            <div className="text-center bg-white/10 rounded-2xl px-6 py-4">
+            <div className="text-center glass-chip px-6 py-4 rounded-2xl">
               <Flame className="mx-auto text-orange-400 mb-1" size={24} />
-              <p className="text-2xl font-bold">{profile.studyStreak}</p>
-              <p className="text-xs text-primary-200">day streak</p>
+              <p className="text-2xl font-bold text-white">{profile.studyStreak}</p>
+              <p className="text-xs text-gray-400">day streak</p>
             </div>
-            <div className="text-center bg-white/10 rounded-2xl px-6 py-4">
+            <div className="text-center glass-chip px-6 py-4 rounded-2xl">
               <Coins className="mx-auto text-amber-400 mb-1" size={24} />
-              <p className="text-2xl font-bold">{new Intl.NumberFormat('vi-VN').format(profile.rewardPoints || 0)}</p>
-              <p className="text-xs text-primary-200">reward points</p>
+              <p className="text-2xl font-bold text-white">{new Intl.NumberFormat('vi-VN').format(profile.rewardPoints || 0)}</p>
+              <p className="text-xs text-gray-400">reward points</p>
             </div>
           </div>
         </div>

@@ -232,17 +232,108 @@ body {
     border-color: var(--glass-border-subtle);
   }
 
+  .glass-toast {
+    background: var(--glass-bg-elevated) !important;
+    backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+    border: 1px solid var(--glass-border) !important;
+    border-radius: var(--glass-radius) !important;
+    color: inherit !important;
+    box-shadow: var(--glass-shadow) !important;
+  }
+
+  /* Auth pages — dark only, dễ đọc */
+  .auth-page {
+    background: #0d0d14;
+    position: relative;
+    isolation: isolate;
+  }
+
+  .auth-page::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background:
+      radial-gradient(ellipse 70% 50% at 20% 20%, color-mix(in srgb, #7c5ce8 22%, transparent), transparent 55%),
+      radial-gradient(ellipse 60% 45% at 80% 80%, color-mix(in srgb, #4ab8d4 18%, transparent), transparent 50%);
+    filter: blur(48px);
+  }
+
+  .auth-logo {
+    background: linear-gradient(135deg, rgba(139, 108, 240, 0.45), rgba(74, 184, 212, 0.35));
+    backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    box-shadow: 0 8px 32px rgba(124, 92, 232, 0.2);
+  }
+
+  .auth-form-panel {
+    background: rgba(22, 22, 32, 0.55);
+    backdrop-filter: blur(28px) saturate(160%);
+    -webkit-backdrop-filter: blur(28px) saturate(160%);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  }
+
+  .auth-error {
+    background: rgba(239, 68, 68, 0.15);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    color: #fca5a5;
+  }
+
   .glass-input-auth {
-    background: rgba(255, 255, 255, 0.08);
-    backdrop-filter: blur(20px) saturate(160%);
-    -webkit-backdrop-filter: blur(20px) saturate(160%);
-    border: 1px solid rgba(255, 255, 255, 0.18);
+    background: rgba(255, 255, 255, 0.06);
+    backdrop-filter: blur(16px) saturate(160%);
+    -webkit-backdrop-filter: blur(16px) saturate(160%);
+    border: 1px solid rgba(255, 255, 255, 0.12);
     border-radius: var(--glass-radius-sm);
-    color: #fff;
+    color: #f3f4f6;
   }
 
   .glass-input-auth::placeholder {
-    color: rgba(255, 255, 255, 0.45);
+    color: rgba(156, 163, 175, 0.8);
+  }
+
+  .glass-input-auth:focus {
+    border-color: rgba(167, 139, 250, 0.45);
+    box-shadow: 0 0 0 3px rgba(167, 139, 250, 0.15);
+  }
+
+  /* Chat container — bo góc, trong suốt */
+  .chat-shell {
+    @apply glass-base;
+    background: var(--glass-bg-subtle);
+    border-radius: var(--glass-radius-lg);
+    overflow: hidden;
+    border-color: var(--glass-border-subtle);
+  }
+
+  .chat-sidebar {
+    background: var(--glass-sidebar-bg);
+    backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+    border-right: 1px solid var(--glass-border-subtle);
+  }
+
+  .chat-bubble-user {
+    background: linear-gradient(135deg, rgba(139, 108, 240, 0.75), rgba(74, 184, 212, 0.65));
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 1.25rem 1.25rem 0.375rem 1.25rem;
+  }
+
+  .chat-bubble-ai {
+    @apply glass-subtle;
+    border-radius: 1.25rem 1.25rem 1.25rem 0.375rem;
+  }
+
+  .chat-input-bar {
+    background: var(--glass-bg-subtle);
+    backdrop-filter: blur(var(--glass-blur));
+    -webkit-backdrop-filter: blur(var(--glass-blur));
+    border: 1px solid var(--glass-border-subtle);
+    border-radius: var(--glass-radius);
   }
 
   .glass-modal {

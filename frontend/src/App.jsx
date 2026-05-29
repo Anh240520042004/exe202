@@ -26,10 +26,10 @@ import ChatPage from './pages/chat/ChatPage';
 export default function App() {
   const dispatch = useDispatch();
   const { isAuthenticated, user } = useSelector((state) => state.auth);
-  const theme = useSelector((state) => state.auth.theme);
+  const theme = useSelector((state) => state.ui.theme);
 
   useEffect(() => {
-    document.documentElement.classList.toggle('dark', theme === 'dark');
+    document.documentElement.classList.add('dark');
   }, [theme]);
 
   const DashboardComponent = user?.role === 'admin' ? AdminDashboard :

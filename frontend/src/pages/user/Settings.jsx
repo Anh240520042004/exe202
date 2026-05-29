@@ -1,20 +1,17 @@
 import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { Bell, Moon, Globe, Shield, Palette } from 'lucide-react';
+import { Bell, Globe, Shield } from 'lucide-react';
 import toast from 'react-hot-toast';
 import {
   fetchSettings,
   updateSettings
 } from "../../store/slices/userSlice";
 
-import { toggleTheme } from "../../store/slices/uiSlice";
-
 import { Card, Button, LoginRequired } from "../../components/ui";
 
 export default function Settings() {
   const dispatch = useDispatch();
   const { settings, isLoading } = useSelector((state) => state.user);
-  const theme = useSelector((state) => state.ui.theme);
 
   useEffect(() => {
     dispatch(fetchSettings());
@@ -32,10 +29,6 @@ export default function Settings() {
     } catch (err) {
       toast.error('Cập nhật thất bại');
     }
-  };
-
-  const handleThemeChange = async (newTheme) => {
-    dispatch(toggleTheme());
   };
 
   const SettingItem = ({ icon: Icon, title, description, children }) => (
@@ -60,27 +53,6 @@ export default function Settings() {
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Cài đặt</h1>
         <p className="text-gray-500 dark:text-gray-400 mt-1">Quản lý cài đặt ứng dụng</p>
       </div>
-
-      <Card title="Giao diện">
-        <div className="space-y-4">
-          <SettingItem
-            icon={Palette}
-            title="Chế độ tối"
-            description="Bật chế độ tối cho ứng dụng"
-          >
-            <button
-              onClick={() => dispatch(toggleTheme())}
-              className={`relative w-12 h-6 rounded-full transition-colors ${theme === 'dark' ? 'bg-primary-500' : 'bg-gray-300'
-                }`}
-            >
-              <div
-                className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-transform ${theme === 'dark' ? 'translate-x-7' : 'translate-x-1'
-                  }`}
-              />
-            </button>
-          </SettingItem>
-        </div>
-      </Card>
 
       <Card title="Thông báo">
         <div className="space-y-4">

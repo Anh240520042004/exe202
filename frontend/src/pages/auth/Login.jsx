@@ -4,16 +4,14 @@ import { useDispatch, useSelector } from 'react-redux';
 import { Mail, Lock, Eye, EyeOff } from 'lucide-react';
 import { login, clearError } from "../../store/slices/authSlice";
 import { Button, Input } from "../../components/ui";
+import AuthLayout from '../../components/auth/AuthLayout';
 
 export default function Login() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { isLoading, error } = useSelector((state) => state.auth);
 
-  const [formData, setFormData] = useState({
-    email: '',
-    password: '',
-  });
+  const [formData, setFormData] = useState({ email: '', password: '' });
   const [showPassword, setShowPassword] = useState(false);
   const [localError, setLocalError] = useState('');
   const [loginKey, setLoginKey] = useState(0);
@@ -27,12 +25,10 @@ export default function Login() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     if (!formData.email || !formData.password) {
       setLocalError('Vui lòng điền đầy đủ thông tin');
       return;
     }
-
     try {
       await dispatch(login(formData)).unwrap();
       navigate('/dashboard');
@@ -46,90 +42,65 @@ export default function Login() {
   const displayError = localError || error;
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-400/90 via-primary-300/90 to-accent-300/90 p-4">
-      <div className="w-full max-w-md">
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-3xl bg-white/10 backdrop-blur-lg mb-4">
-            <span className="text-2xl font-bold text-white">F.</span>
-          </div>
-          <h1 className="text-3xl font-bold text-white mb-2">F.EdTech</h1>
-          <p className="text-primary-200">Đăng nhập để tiếp tục</p>
+    <AuthLayout
+      subtitle="Đăng nhập để tiếp tục"
+      title="Chào mừng trở lại"
+      footer="Chưa có tài khoản?"
+      footerLink={{ to: '/register', label: 'Đăng ký ngay' }}
+    >
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <Input
+          type="email"
+          name="email"
+          label="Email"
+          placeholder="name@example.com"
+          icon={Mail}
+          variant="auth"
+          value={formData.email}
+          onChange={handleChange}
+        />
+
+        <div className="relative">
+          <Input
+            key={loginKey}
+            type={showPassword ? 'text' : 'password'}
+            name="password"
+            label="Mật khẩu"
+            placeholder="••••••••"
+            icon={Lock}
+            variant="auth"
+            value={formData.password}
+            onChange={handleChange}
+          />
+          <button
+            type="button"
+            onClick={() => setShowPassword(!showPassword)}
+            className="absolute right-3 top-[2.15rem] text-gray-400 hover:text-white transition-colors"
+          >
+            {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+          </button>
         </div>
 
-        <div className="glass-panel rounded-ios-lg p-8 border-white/25">
-          <form onSubmit={handleSubmit} className="space-y-5">
-            <Input
-              type="email"
-              name="email"
-              label="Email"
-              placeholder="Nhập email của bạn"
-              icon={Mail}
-              variant="auth"
-              value={formData.email}
-              onChange={handleChange}
-            />
-
-            <div className="relative">
-              <Input
-                key={loginKey}
-                type={showPassword ? 'text' : 'password'}
-                name="password"
-                label="Mật khẩu"
-                placeholder="Nhập mật khẩu"
-                icon={Lock}
-                variant="auth"
-                value={formData.password}
-                onChange={handleChange}
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-9 text-gray-400 hover:text-gray-600"
-              >
-                {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-              </button>
-            </div>
-
-            {displayError && (
-              <div className="p-3 bg-red-500/20 border border-red-500/30 rounded-xl text-red-200 text-sm">
-                {displayError}
-              </div>
-            )}
-
-            <div className="flex items-center justify-between text-sm">
-              <label className="flex items-center gap-2 text-primary-200 cursor-pointer">
-                <input type="checkbox" className="rounded border-primary-300" />
-                Ghi nhớ đăng nhập
-              </label>
-              <Link to="/forgot-password" className="text-primary-200 hover:text-white transition-colors">
-                Quên mật khẩu?
-              </Link>
-            </div>
-
-            <Button
-              type="submit"
-              className="w-full"
-              size="lg"
-              isLoading={isLoading}
-            >
-              Đăng nhập
-            </Button>
-          </form>
-
-          <div className="mt-6 text-center">
-            <p className="text-primary-200">
-              Chưa có tài khoản?{' '}
-              <Link to="/register" className="text-white font-semibold hover:underline">
-                Đăng ký ngay
-              </Link>
-            </p>
+        {displayError && (
+          <div className="auth-error p-3 rounded-xl text-sm">
+            {displayError}
           </div>
+        )}
+
+        <div className="flex items-center justify-between text-sm pt-1">
+          <label className="flex items-center gap-2 text-gray-400 cursor-pointer select-none">
+            <input type="checkbox" className="rounded border-white/20 bg-white/5 accent-primary-400" />
+            Ghi nhớ đăng nhập
+          </label>
+          <Link to="/forgot-password" className="text-primary-300 hover:text-primary-200 transition-colors">
+            Quên mật khẩu?
+          </Link>
         </div>
 
-        <p className="text-center text-primary-200 text-sm mt-6">
-          F.EdTech - Quản lý tài chính thông minh
-        </p>
-      </div>
-    </div>
+        <Button type="submit" className="w-full mt-2" size="lg" isLoading={isLoading}>
+          Đăng nhập
+        </Button>
+      </form>
+    </AuthLayout>
   );
 }
