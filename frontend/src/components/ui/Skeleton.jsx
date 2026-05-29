@@ -2,16 +2,16 @@ import React from 'react';
 
 export default function Skeleton({ className = '' }) {
   return (
-    <div className={`skeleton rounded-lg ${className}`} />
+    <div className={`skeleton rounded-xl ${className}`} />
   );
 }
 
 export function CardSkeleton() {
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg border border-gray-100 dark:border-gray-700">
+    <div className="glass-card rounded-2xl p-6 shadow-lg border glass-divider border">
       <div className="flex items-center justify-between mb-4">
         <Skeleton className="h-4 w-32" />
-        <Skeleton className="h-10 w-10 rounded-xl" />
+        <Skeleton className="h-10 w-10 rounded-2xl" />
       </div>
       <Skeleton className="h-8 w-24 mb-2" />
       <Skeleton className="h-3 w-20" />
@@ -22,7 +22,7 @@ export function CardSkeleton() {
 export function TableSkeleton({ rows = 5, cols = 4 }) {
   return (
     <div className="space-y-3">
-      <div className="flex gap-4 pb-3 border-b border-gray-200 dark:border-gray-700">
+      <div className="flex gap-4 pb-3 border-b glass-divider border">
         {Array.from({ length: cols }).map((_, i) => (
           <Skeleton key={i} className="h-4 flex-1" />
         ))}

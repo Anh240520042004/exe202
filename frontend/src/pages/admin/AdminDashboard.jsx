@@ -25,7 +25,7 @@ const AdminDashboard = () => {
 
   if (isLoading || !admin) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-8">
+      <div className="min-h-screen p-8">
         <div className="animate-pulse space-y-8">
           <div className="h-8 w-64 bg-gray-300 dark:bg-gray-700 rounded" />
 
@@ -33,7 +33,7 @@ const AdminDashboard = () => {
             {[...Array(4)].map((_, i) => (
               <div
                 key={i}
-                className="h-32 bg-gray-300 dark:bg-gray-700 rounded-xl"
+                className="h-32 bg-gray-300 dark:bg-gray-700 rounded-2xl"
               />
             ))}
           </div>
@@ -51,9 +51,9 @@ const AdminDashboard = () => {
   } = admin;
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen">
       {/* Header */}
-      <div className="bg-white dark:bg-gray-800 border-b dark:border-gray-700 px-8 py-6">
+      <div className="glass-card border-b dark:border-gray-700 px-8 py-6">
         <h1 className="text-2xl font-bold">Admin Dashboard</h1>
         <p className="text-gray-500">
           Overview of your platform
@@ -109,7 +109,7 @@ const AdminDashboard = () => {
         {/* Charts */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
           {/* Revenue Chart */}
-          <div className="bg-white dark:bg-gray-800 rounded-xl p-6">
+          <div className="glass-card rounded-2xl p-6">
             <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
               <TrendingUp className="text-green-500" />
               Revenue (Last 6 Months)
@@ -148,7 +148,7 @@ const AdminDashboard = () => {
           </div>
 
           {/* User Growth Chart */}
-          <div className="bg-white dark:bg-gray-800 rounded-xl p-6">
+          <div className="glass-card rounded-2xl p-6">
             <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
               <Users className="text-blue-500" />
               User Growth (Last 6 Months)
@@ -190,7 +190,7 @@ const AdminDashboard = () => {
         {/* Tables */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Recent Orders */}
-          <div className="bg-white dark:bg-gray-800 rounded-xl overflow-hidden">
+          <div className="glass-card rounded-2xl overflow-hidden">
             <div className="p-6 border-b dark:border-gray-700">
               <h2 className="font-bold">Recent Orders</h2>
             </div>
@@ -248,7 +248,7 @@ const AdminDashboard = () => {
           </div>
 
           {/* Popular Documents */}
-          <div className="bg-white dark:bg-gray-800 rounded-xl overflow-hidden">
+          <div className="glass-card rounded-2xl overflow-hidden">
             <div className="p-6 border-b dark:border-gray-700">
               <h2 className="font-bold">
                 Popular Documents
@@ -273,7 +273,7 @@ const AdminDashboard = () => {
                         `https://picsum.photos/seed/${doc._id}/50/50`
                       }
                       alt=""
-                      className="w-12 h-12 rounded-lg object-cover"
+                      className="w-12 h-12 rounded-xl object-cover"
                     />
 
                     <div className="flex-1">
@@ -329,10 +329,10 @@ const OverviewCard = ({
   };
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm">
+    <div className="glass-card rounded-2xl p-6 shadow-sm">
       <div className="flex items-center gap-4">
         <div
-          className={`w-14 h-14 rounded-xl bg-gradient-to-br ${colorClasses[color]} flex items-center justify-center`}
+          className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${colorClasses[color]} flex items-center justify-center`}
         >
           {React.cloneElement(icon, {
             className: 'text-white',

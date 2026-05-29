@@ -1,12 +1,12 @@
 import React from 'react';
 
 const variants = {
-  primary: 'bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800 text-white shadow-lg shadow-primary-500/25',
-  secondary: 'bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200',
-  success: 'bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white shadow-lg shadow-green-500/25',
-  danger: 'bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white shadow-lg shadow-red-500/25',
-  outline: 'border-2 border-primary-500 text-primary-600 dark:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-900/20',
-  ghost: 'hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300',
+  primary: 'bg-gradient-to-r from-primary-400/75 to-primary-500/75 hover:from-primary-500/85 hover:to-primary-600/85 text-white shadow-md shadow-primary-400/15 backdrop-blur-md border border-white/25',
+  secondary: 'glass-subtle hover:opacity-95 text-gray-700 dark:text-gray-200',
+  success: 'bg-gradient-to-r from-emerald-400/70 to-teal-400/70 hover:from-emerald-500/80 hover:to-teal-500/80 text-white shadow-md shadow-emerald-400/15 backdrop-blur-md border border-white/25',
+  danger: 'bg-gradient-to-r from-rose-400/70 to-pink-400/70 hover:from-rose-500/80 hover:to-pink-500/80 text-white shadow-md shadow-rose-400/15 backdrop-blur-md border border-white/25',
+  outline: 'glass-subtle border border-primary-400/35 text-primary-500 dark:text-primary-300 hover:bg-primary-400/8',
+  ghost: 'hover:bg-white/15 dark:hover:bg-white/8 text-gray-600 dark:text-gray-300 backdrop-blur-sm',
 };
 
 const sizes = {
@@ -31,7 +31,7 @@ export default function Button({
       disabled={disabled || isLoading}
       className={`
         inline-flex items-center justify-center gap-2
-        font-medium rounded-lg
+        font-medium rounded-ios
         transition-all duration-200 ease-in-out
         transform hover:scale-[1.02] active:scale-[0.98]
         disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100

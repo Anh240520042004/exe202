@@ -18,22 +18,22 @@ export default function Header() {
   };
 
   return (
-    <header className="sticky top-0 z-30 bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border-b border-gray-200 dark:border-gray-700">
+    <header className="sticky top-0 z-30 glass-header border-b glass-divider">
       <div className="flex items-center justify-between px-4 lg:px-6 py-4">
         <div className="flex items-center gap-4">
           <button
             onClick={() => dispatch(toggleMobileMenu())}
-            className="lg:hidden p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
+            className="glass-nav-link lg:hidden p-2 rounded-ios glass-nav-hover"
           >
             <Menu className="w-6 h-6" />
           </button>
 
-          <div className="hidden sm:flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-800 rounded-lg">
+          <div className="hidden sm:flex items-center gap-2 px-4 py-2 glass-search">
             <Search className="w-4 h-4 text-gray-400" />
             <input
               type="text"
               placeholder="Tìm kiếm..."
-              className="bg-transparent border-none outline-none text-sm w-64"
+              className="bg-transparent border-none outline-none text-sm w-64 text-gray-900 dark:text-gray-100 placeholder-gray-500"
             />
           </div>
         </div>
@@ -45,7 +45,7 @@ export default function Header() {
             <>
               <Link
                 to="/notifications"
-                className="relative p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                className="glass-nav-link relative p-2 rounded-ios glass-nav-hover transition-colors"
               >
                 <Bell className="w-5 h-5 text-gray-600 dark:text-gray-400" />
                 {unreadCount > 0 && (
@@ -55,12 +55,12 @@ export default function Header() {
                 )}
               </Link>
 
-              <div className="flex items-center gap-3 pl-2 border-l border-gray-200 dark:border-gray-700">
+              <div className="flex items-center gap-3 pl-2 border-l glass-divider">
                 <Link to="/profile" className="flex items-center gap-3">
                   <img
                     src={user?.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.name}`}
                     alt={user?.name}
-                    className="w-9 h-9 rounded-full object-cover border-2 border-primary-200 dark:border-primary-800"
+                    className="w-9 h-9 rounded-full object-cover border-2 border-primary-300/50 dark:border-primary-600/50"
                   />
                   <div className="hidden md:block">
                     <p className="text-sm font-medium text-gray-900 dark:text-white">
@@ -72,7 +72,7 @@ export default function Header() {
 
                 <button
                   onClick={handleLogout}
-                  className="p-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 text-gray-500 hover:text-red-500 transition-colors"
+                  className="p-2 rounded-ios hover:bg-red-500/15 text-gray-500 hover:text-red-500 transition-colors"
                   title="Đăng xuất"
                 >
                   <LogOut className="w-5 h-5" />
@@ -80,17 +80,17 @@ export default function Header() {
               </div>
             </>
           ) : (
-            <div className="flex items-center gap-2 pl-2 border-l border-gray-200 dark:border-gray-700">
+            <div className="flex items-center gap-2 pl-2 border-l glass-divider">
               <Link
                 to="/login"
-                className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-primary-600 dark:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-lg transition-colors"
+                className="glass-nav-link flex items-center gap-2 px-4 py-2 text-sm font-medium text-primary-600 dark:text-primary-400 glass-nav-hover rounded-ios transition-colors"
               >
                 <LogIn className="w-4 h-4" />
                 <span>Đăng nhập</span>
               </Link>
               <Link
                 to="/register"
-                className="flex items-center gap-2 px-4 py-2 text-sm font-medium bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
+                className="glass-nav-link flex items-center gap-2 px-4 py-2 text-sm font-medium bg-primary-400/55 backdrop-blur-md text-white rounded-ios hover:bg-primary-500/65 transition-colors border border-white/25"
               >
                 <UserPlus className="w-4 h-4" />
                 <span>Đăng ký</span>

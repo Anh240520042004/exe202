@@ -143,7 +143,7 @@ const MyDocuments = () => {
   const renderDownloadButton = (doc) => {
     if (doc.downloaded) {
       return (
-        <span className="flex items-center gap-1.5 px-3 py-1.5 bg-green-100 text-green-700 text-xs font-medium rounded-lg">
+        <span className="flex items-center gap-1.5 px-3 py-1.5 bg-green-100 text-green-700 text-xs font-medium rounded-xl">
           <CheckCircle size={14} />
           Đã tải
         </span>
@@ -154,7 +154,7 @@ const MyDocuments = () => {
     
     if (isDownloading) {
       return (
-        <button disabled className="flex items-center gap-1.5 px-3 py-1.5 bg-primary-600 text-white text-xs font-medium rounded-lg opacity-50">
+        <button disabled className="flex items-center gap-1.5 px-3 py-1.5 bg-primary-400/70 text-white text-xs font-medium rounded-xl opacity-50">
           <Loader2 size={14} className="animate-spin" />
           Đang tải...
         </button>
@@ -164,7 +164,7 @@ const MyDocuments = () => {
     return (
       <button
         onClick={() => handleDownload(doc)}
-        className="flex items-center gap-1.5 px-3 py-1.5 bg-primary-600 text-white text-xs font-medium rounded-lg hover:bg-primary-700 transition-colors"
+        className="flex items-center gap-1.5 px-3 py-1.5 bg-primary-400/70 text-white text-xs font-medium rounded-xl hover:bg-primary-500/75 transition-colors"
       >
         <Download size={14} />
         Tải xuống
@@ -176,7 +176,7 @@ const MyDocuments = () => {
     return (
       <div
         key={doc._id}
-        className={`bg-white dark:bg-gray-800 rounded-xl shadow-sm hover:shadow-lg transition-all group ${
+        className={`glass-card rounded-2xl shadow-sm hover:shadow-lg transition-all group ${
           viewMode === 'list' ? 'flex' : ''
         }`}
       >
@@ -209,7 +209,7 @@ const MyDocuments = () => {
             </h3>
 
             <div className="flex items-center gap-2 text-sm text-gray-500 mb-2">
-              <span className="px-2 py-0.5 bg-gray-100 dark:bg-gray-700 rounded uppercase text-xs">
+              <span className="px-2 py-0.5 glass-subtle rounded uppercase text-xs">
                 {doc.document?.subjectCode || 'general'}
               </span>
               <span className="uppercase text-xs px-2 py-0.5 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded">
@@ -254,11 +254,11 @@ const MyDocuments = () => {
 
   return (
     <LoginRequired title="Tài liệu của tôi" message="Bạn cần đăng nhập để xem tài liệu đã mua">
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <div className="bg-gradient-to-r from-primary-600 to-primary-800 text-white py-8">
+      <div className="min-h-screen">
+      <div className="bg-gradient-to-r from-primary-400/75 to-primary-500/75 text-white py-8">
         <div className="container mx-auto px-4">
           <div className="flex items-center gap-4 mb-6">
-            <div className="w-16 h-16 bg-white/20 rounded-xl flex items-center justify-center">
+            <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center">
               <BookOpen size={32} />
             </div>
             <div>
@@ -276,7 +276,7 @@ const MyDocuments = () => {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Tìm kiếm tài liệu..."
-              className="w-full pl-12 pr-4 py-3 rounded-xl text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary-300"
+              className="w-full pl-12 pr-4 py-3 rounded-2xl text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary-300"
             />
           </form>
         </div>
@@ -292,9 +292,9 @@ const MyDocuments = () => {
           <div className="flex items-center gap-2">
             <button
               onClick={() => setViewMode('grid')}
-              className={`p-2 rounded-lg transition-colors ${
+              className={`p-2 rounded-xl transition-colors ${
                 viewMode === 'grid'
-                  ? 'bg-primary-100 text-primary-600 dark:bg-primary-900/30'
+                  ? 'bg-primary-100 text-primary-600 dark:bg-primary-400/15'
                   : 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400'
               }`}
             >
@@ -302,9 +302,9 @@ const MyDocuments = () => {
             </button>
             <button
               onClick={() => setViewMode('list')}
-              className={`p-2 rounded-lg transition-colors ${
+              className={`p-2 rounded-xl transition-colors ${
                 viewMode === 'list'
-                  ? 'bg-primary-100 text-primary-600 dark:bg-primary-900/30'
+                  ? 'bg-primary-100 text-primary-600 dark:bg-primary-400/15'
                   : 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400'
               }`}
             >
@@ -316,7 +316,7 @@ const MyDocuments = () => {
         {isLoading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {[...Array(8)].map((_, i) => (
-              <div key={i} className="bg-white dark:bg-gray-800 rounded-xl h-64 animate-pulse" />
+              <div key={i} className="glass-card rounded-2xl h-64 animate-pulse" />
             ))}
           </div>
         ) : documents.length > 0 ? (
@@ -328,13 +328,13 @@ const MyDocuments = () => {
             {documents.map(renderDocumentCard)}
           </div>
         ) : (
-          <div className="text-center py-16 bg-white dark:bg-gray-800 rounded-xl">
+          <div className="text-center py-16 glass-card rounded-2xl">
             <FileText size={64} className="mx-auto text-gray-300 dark:text-gray-600 mb-4" />
             <h3 className="text-xl font-semibold mb-2">Chưa có tài liệu nào</h3>
             <p className="text-gray-500 mb-6">Bạn chưa tải tài liệu nào. Hãy khám phá marketplace để tìm tài liệu phù hợp.</p>
             <Link
               to="/marketplace"
-              className="inline-flex items-center gap-2 px-6 py-3 bg-primary-600 text-white font-medium rounded-xl hover:bg-primary-700 transition-colors"
+              className="inline-flex items-center gap-2 px-6 py-3 bg-primary-400/70 text-white font-medium rounded-2xl hover:bg-primary-500/75 transition-colors"
             >
               <BookOpen size={20} />
               Khám phá Marketplace
@@ -348,10 +348,10 @@ const MyDocuments = () => {
               <button
                 key={page}
                 onClick={() => loadDocuments(page, searchQuery)}
-                className={`w-10 h-10 rounded-lg font-medium transition-colors ${
+                className={`w-10 h-10 rounded-xl font-medium transition-colors ${
                   pagination.page === page
-                    ? 'bg-primary-600 text-white'
-                    : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-primary-50 dark:hover:bg-primary-900/30'
+                    ? 'bg-primary-400/70 text-white'
+                    : 'glass-subtle text-gray-600 dark:text-gray-400 hover:bg-primary-50 dark:hover:bg-primary-900/30'
                 }`}
               >
                 {page}
@@ -363,7 +363,7 @@ const MyDocuments = () => {
 
       {previewDoc && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-gray-800 rounded-2xl w-full max-w-4xl max-h-[90vh] flex flex-col">
+          <div className="glass-card rounded-3xl w-full max-w-4xl max-h-[90vh] flex flex-col">
             <div className="flex items-center justify-between p-4 border-b dark:border-gray-700">
               <div>
                 <h2 className="text-xl font-bold">{previewDoc.document?.title}</h2>
@@ -373,19 +373,19 @@ const MyDocuments = () => {
               </div>
               <button
                 onClick={() => setPreviewDoc(null)}
-                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                className="p-2 glass-nav-hover rounded-xl transition-colors"
               >
                 <X size={24} />
               </button>
             </div>
 
-            <div className="flex-1 overflow-auto p-6 bg-gray-50 dark:bg-gray-900">
+            <div className="flex-1 overflow-auto p-6 ">
               {loadingPreview ? (
                 <div className="flex items-center justify-center h-64">
                   <div className="animate-spin rounded-full h-12 w-12 border-4 border-primary-600 border-t-transparent"></div>
                 </div>
               ) : (
-                <pre className="whitespace-pre-wrap font-mono text-sm bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm overflow-auto max-h-[60vh]">
+                <pre className="whitespace-pre-wrap font-mono text-sm glass-card p-6 rounded-2xl shadow-sm overflow-auto max-h-[60vh]">
                   {previewContent}
                 </pre>
               )}
@@ -397,7 +397,7 @@ const MyDocuments = () => {
               </div>
               <button
                 onClick={() => handleDownload(previewDoc)}
-                className="flex items-center gap-2 px-6 py-2 bg-primary-600 text-white font-medium rounded-lg hover:bg-primary-700 transition-colors"
+                className="flex items-center gap-2 px-6 py-2 bg-primary-400/70 text-white font-medium rounded-xl hover:bg-primary-500/75 transition-colors"
               >
                 <Download size={18} />
                 Tải xuống

@@ -144,7 +144,7 @@ export default function AdminPayments() {
             placeholder="Tìm kiếm theo tên, email hoặc mã đơn..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500"
+            className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl glass-card text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500"
           />
         </div>
       </Card>
@@ -169,7 +169,7 @@ export default function AdminPayments() {
               <div className="flex items-start justify-between">
                 <div className="flex-1">
                   <div className="flex items-center gap-3 mb-3">
-                    <div className="w-10 h-10 rounded-full bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center">
+                    <div className="w-10 h-10 rounded-full bg-primary-100 dark:bg-primary-400/15 flex items-center justify-center">
                       <span className="text-primary-600 font-semibold">
                         {order.user?.name?.charAt(0).toUpperCase() || 'U'}
                       </span>
@@ -184,7 +184,7 @@ export default function AdminPayments() {
                     </div>
                   </div>
 
-                  <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-3 mb-3">
+                  <div className="glass-subtle/50 rounded-xl p-3 mb-3">
                     <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
                       Tài liệu đã đặt:
                     </p>
@@ -203,7 +203,7 @@ export default function AdminPayments() {
                   </div>
 
                   <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
-                    <span>Mã đơn: <code className="bg-gray-100 dark:bg-gray-700 px-1 rounded">{order._id.slice(-8)}</code></span>
+                    <span>Mã đơn: <code className="glass-subtle px-1 rounded">{order._id.slice(-8)}</code></span>
                     <span>|</span>
                     <span>{formatDate(order.createdAt)}</span>
                   </div>
@@ -257,7 +257,7 @@ export default function AdminPayments() {
       >
         {selectedOrder && (
           <div className="space-y-4">
-            <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
+            <div className="glass-subtle rounded-xl p-4">
               <p className="text-sm text-gray-600 dark:text-gray-400">Người dùng:</p>
               <p className="font-medium text-gray-900 dark:text-white">
                 {selectedOrder.user?.name} ({selectedOrder.user?.email})
@@ -288,7 +288,7 @@ export default function AdminPayments() {
                     onChange={(e) => setAdminNotes(e.target.value)}
                     placeholder="Nhập lý do từ chối..."
                     rows={3}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl glass-card text-gray-900 dark:text-white"
                   />
                 </div>
               </>

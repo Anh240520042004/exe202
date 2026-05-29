@@ -113,8 +113,8 @@ const AIAssistant = () => {
   // Guest Login Prompt Component
   const GuestLoginPrompt = ({ message = 'vui lòng đăng nhập để sử dụng tính năng này' }) => (
     <div className="flex-1 flex items-center justify-center p-6">
-      <div className="text-center max-w-md bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-lg border border-gray-200 dark:border-gray-700">
-        <div className="w-20 h-20 bg-primary-100 dark:bg-primary-900/30 rounded-full flex items-center justify-center mx-auto mb-6">
+      <div className="text-center max-w-md glass-card rounded-3xl p-8 shadow-lg border glass-divider border">
+        <div className="w-20 h-20 bg-primary-100 dark:bg-primary-400/15 rounded-full flex items-center justify-center mx-auto mb-6">
           <Sparkles className="w-10 h-10 text-primary-600" />
         </div>
         <h2 className="text-2xl font-bold mb-2 text-gray-900 dark:text-white">Chào mừng đến AI Assistant!</h2>
@@ -124,14 +124,14 @@ const AIAssistant = () => {
         <div className="flex gap-3 justify-center">
           <Link
             to="/login"
-            className="px-6 py-3 bg-primary-600 text-white rounded-xl font-medium hover:bg-primary-700 flex items-center gap-2 transition-colors"
+            className="px-6 py-3 bg-primary-400/70 text-white rounded-2xl font-medium hover:bg-primary-500/75 flex items-center gap-2 transition-colors"
           >
             <LogIn className="w-4 h-4" />
             Đăng nhập
           </Link>
           <Link
             to="/register"
-            className="px-6 py-3 border border-gray-300 dark:border-gray-600 rounded-xl font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+            className="px-6 py-3 border border-gray-300 dark:border-gray-600 rounded-2xl font-medium text-gray-700 dark:text-gray-300 glass-nav-hover transition-colors"
           >
             Đăng ký
           </Link>
@@ -141,8 +141,8 @@ const AIAssistant = () => {
   );
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex">
-      <aside className="w-80 bg-white dark:bg-gray-800 border-r dark:border-gray-700 flex flex-col">
+    <div className="min-h-screen flex">
+      <aside className="w-80 glass-card border-r dark:border-gray-700 flex flex-col">
         <div className="p-4 border-b dark:border-gray-700">
           <div className="flex items-center gap-2 mb-4">
             <Sparkles className="text-purple-600" />
@@ -154,7 +154,7 @@ const AIAssistant = () => {
               <select
                 value={selectedSubject}
                 onChange={(e) => setSelectedSubject(e.target.value)}
-                className="w-full px-3 py-2 border rounded-lg dark:bg-gray-700 mb-3"
+                className="w-full px-3 py-2 border rounded-xl dark:bg-gray-700 mb-3"
               >
                 {subjects.map(s => (
                   <option key={s} value={s}>{s}</option>
@@ -162,14 +162,14 @@ const AIAssistant = () => {
               </select>
               <button
                 onClick={createNewChat}
-                className="w-full py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 flex items-center justify-center gap-2"
+                className="w-full py-2 bg-purple-600 text-white rounded-xl hover:bg-purple-700 flex items-center justify-center gap-2"
               >
                 <Sparkles size={18} />
                 New Chat
               </button>
             </>
           ) : (
-            <div className="bg-purple-50 dark:bg-purple-900/20 rounded-lg p-3 text-center">
+            <div className="bg-purple-50 dark:bg-purple-900/20 rounded-xl p-3 text-center">
               <p className="text-sm text-purple-700 dark:text-purple-300">
                 Đăng nhập để tạo cuộc trò chuyện
               </p>
@@ -188,8 +188,8 @@ const AIAssistant = () => {
             chats.map(chat => (
               <div
                 key={chat._id}
-                className={`p-3 rounded-lg cursor-pointer group flex items-center justify-between ${
-                  currentChat?._id === chat._id ? 'bg-purple-100 dark:bg-purple-900' : 'hover:bg-gray-100 dark:hover:bg-gray-700'
+                className={`p-3 rounded-xl cursor-pointer group flex items-center justify-between ${
+                  currentChat?._id === chat._id ? 'bg-purple-100 dark:bg-purple-900' : 'glass-nav-hover'
                 }`}
               >
                 <div className="flex-1 truncate" onClick={() => selectChat(chat)}>
@@ -232,7 +232,7 @@ const AIAssistant = () => {
                     setSelectedSubject('SWP391');
                     createNewChat();
                   }}
-                  className="p-4 border rounded-xl hover:border-purple-500 transition-colors"
+                  className="p-4 border rounded-2xl hover:border-purple-500 transition-colors"
                 >
                   <BookOpen className="mx-auto mb-2 text-purple-600" />
                   <span className="text-sm font-medium">Course Help</span>
@@ -242,7 +242,7 @@ const AIAssistant = () => {
                     setSelectedSubject('General');
                     createNewChat();
                   }}
-                  className="p-4 border rounded-xl hover:border-purple-500 transition-colors"
+                  className="p-4 border rounded-2xl hover:border-purple-500 transition-colors"
                 >
                   <FileText className="mx-auto mb-2 text-purple-600" />
                   <span className="text-sm font-medium">Summarize PDF</span>
@@ -252,7 +252,7 @@ const AIAssistant = () => {
           </div>
         ) : (
           <>
-            <div className="p-4 border-b dark:border-gray-700 bg-white dark:bg-gray-800">
+            <div className="p-4 border-b dark:border-gray-700 glass-card">
               <h2 className="font-bold">{currentChat.title}</h2>
               <p className="text-sm text-gray-500">{currentChat.subject}</p>
             </div>
@@ -285,8 +285,8 @@ const AIAssistant = () => {
                   }`}>
                     {msg.role === 'user' ? <User size={16} /> : <Bot size={16} />}
                   </div>
-                  <div className={`max-w-[70%] px-4 py-3 rounded-2xl ${
-                    msg.role === 'user' ? 'bg-blue-500 text-white' : 'bg-gray-100 dark:bg-gray-800'
+                  <div className={`max-w-[70%] px-4 py-3 rounded-3xl ${
+                    msg.role === 'user' ? 'bg-blue-500 text-white' : 'glass-subtle'
                   }`}>
                     <p className="whitespace-pre-wrap">{msg.content}</p>
                   </div>
@@ -298,7 +298,7 @@ const AIAssistant = () => {
                   <div className="w-8 h-8 rounded-full bg-purple-500 text-white flex items-center justify-center">
                     <Bot size={16} />
                   </div>
-                  <div className="bg-gray-100 dark:bg-gray-800 px-4 py-3 rounded-2xl">
+                  <div className="glass-subtle px-4 py-3 rounded-3xl">
                     <div className="flex gap-1">
                       <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
                       <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
@@ -311,19 +311,19 @@ const AIAssistant = () => {
               <div ref={messagesEndRef} />
             </div>
 
-            <form onSubmit={sendMessage} className="p-4 border-t dark:border-gray-700 bg-white dark:bg-gray-800">
+            <form onSubmit={sendMessage} className="p-4 border-t dark:border-gray-700 glass-card">
               <div className="flex gap-3">
                 <input
                   type="text"
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   placeholder="Ask me anything..."
-                  className="flex-1 px-4 py-3 border rounded-xl dark:bg-gray-700 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  className="flex-1 px-4 py-3 border rounded-2xl dark:bg-gray-700 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-purple-500"
                 />
                 <button
                   type="submit"
                   disabled={!input.trim() || isTyping}
-                  className="px-6 py-3 bg-purple-600 text-white rounded-xl hover:bg-purple-700 disabled:opacity-50 flex items-center gap-2"
+                  className="px-6 py-3 bg-purple-600 text-white rounded-2xl hover:bg-purple-700 disabled:opacity-50 flex items-center gap-2"
                 >
                   <Send size={18} />
                 </button>

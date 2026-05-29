@@ -51,6 +51,14 @@ const adminItems = [
   { path: '/admin/settings', icon: Settings, label: 'Cài đặt hệ thống' },
 ];
 
+const navLinkClass = (isActive) => `
+  glass-nav-link flex items-center gap-3 px-3 py-2.5 rounded-ios
+  ${isActive
+    ? 'glass-nav-active text-primary-600 dark:text-primary-400'
+    : 'text-gray-600 dark:text-gray-400 glass-nav-hover'
+  }
+`;
+
 export default function Sidebar({ isOpen, onToggle }) {
   const { user, isAuthenticated } = useSelector((state) => state.auth);
   const isAdmin = user?.role === 'admin';
@@ -60,29 +68,29 @@ export default function Sidebar({ isOpen, onToggle }) {
     <aside
       className={`
         fixed top-0 left-0 z-40 h-screen
-        bg-white dark:bg-gray-900
-        border-r border-gray-200 dark:border-gray-700
+        glass-sidebar
+        glass-divider border-r
         transition-all duration-300 ease-in-out
         ${isOpen ? 'w-64' : 'w-20'}
         hidden lg:block
       `}
     >
       <div className="flex flex-col h-full">
-        <div className="p-4 border-b border-gray-200 dark:border-gray-700">
+        <div className="p-4 border-b glass-divider">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary-500 to-primary-700 flex items-center justify-center">
-              <span className="text-white font-bold text-lg">F</span>
+            <div className="w-10 h-10 rounded-ios bg-gradient-to-br from-primary-400/80 to-primary-500/80 flex items-center justify-center shadow-md shadow-primary-400/20 backdrop-blur-sm">
+              <span className="text-white font-bold text-sm">F.</span>
             </div>
             {isOpen && (
               <div className="animate-fade-in">
-                <h1 className="font-bold text-xl gradient-text">FPTAIEZ</h1>
-                <p className="text-xs text-gray-500">Learning Platform</p>
+                <h1 className="font-bold text-xl gradient-text">F.EdTech</h1>
+                <p className="text-xs text-gray-500">Nền tảng học tập</p>
               </div>
             )}
           </div>
         </div>
 
-        <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
+        <nav className="flex-1 p-4 space-y-1 overflow-y-auto scrollbar-hide">
           <div className="mb-4">
             {isOpen && (
               <p className="text-xs font-semibold text-gray-400 uppercase mb-2 px-3">
@@ -93,14 +101,7 @@ export default function Sidebar({ isOpen, onToggle }) {
               <NavLink
                 key={item.path}
                 to={item.path}
-                className={({ isActive }) => `
-                  flex items-center gap-3 px-3 py-2.5 rounded-lg
-                  transition-all duration-200
-                  ${isActive
-                    ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400'
-                    : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800'
-                  }
-                `}
+                className={({ isActive }) => navLinkClass(isActive)}
               >
                 <item.icon className="w-5 h-5 flex-shrink-0" />
                 {isOpen && <span className="font-medium">{item.label}</span>}
@@ -119,14 +120,7 @@ export default function Sidebar({ isOpen, onToggle }) {
                 <NavLink
                   key={item.path}
                   to={item.path}
-                  className={({ isActive }) => `
-                    flex items-center gap-3 px-3 py-2.5 rounded-lg
-                    transition-all duration-200
-                    ${isActive
-                      ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400'
-                      : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800'
-                    }
-                  `}
+                  className={({ isActive }) => navLinkClass(isActive)}
                 >
                   <item.icon className="w-5 h-5 flex-shrink-0" />
                   {isOpen && <span className="font-medium">{item.label}</span>}
@@ -136,34 +130,20 @@ export default function Sidebar({ isOpen, onToggle }) {
               <>
                 <NavLink
                   to="/login"
-                  className={({ isActive }) => `
-                    flex items-center gap-3 px-3 py-2.5 rounded-lg
-                    transition-all duration-200
-                    ${isActive
-                      ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400'
-                      : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800'
-                    }
-                  `}
+                  className={({ isActive }) => navLinkClass(isActive)}
                 >
                   <LogIn className="w-5 h-5 flex-shrink-0" />
                   {isOpen && <span className="font-medium">Đăng nhập</span>}
                 </NavLink>
                 <NavLink
                   to="/register"
-                  className={({ isActive }) => `
-                    flex items-center gap-3 px-3 py-2.5 rounded-lg
-                    transition-all duration-200
-                    ${isActive
-                      ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400'
-                      : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800'
-                    }
-                  `}
+                  className={({ isActive }) => navLinkClass(isActive)}
                 >
                   <UserPlus className="w-5 h-5 flex-shrink-0" />
                   {isOpen && <span className="font-medium">Đăng ký</span>}
                 </NavLink>
                 {isOpen && (
-                  <div className="mt-3 mx-3 p-3 bg-primary-50 dark:bg-primary-900/20 rounded-lg border border-primary-100 dark:border-primary-800">
+                  <div className="mt-3 mx-3 p-3 glass-subtle rounded-ios">
                     <p className="text-xs text-primary-700 dark:text-primary-300 text-center">
                       Đăng nhập để truy cập đầy đủ tính năng
                     </p>
@@ -174,7 +154,7 @@ export default function Sidebar({ isOpen, onToggle }) {
           </div>
 
           {isMentor && !isAdmin && (
-            <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
+            <div className="pt-4 border-t glass-divider">
               {isOpen && (
                 <p className="text-xs font-semibold text-gray-400 uppercase mb-2 px-3">
                   Mentor
@@ -184,14 +164,7 @@ export default function Sidebar({ isOpen, onToggle }) {
                 <NavLink
                   key={item.path}
                   to={item.path}
-                  className={({ isActive }) => `
-                    flex items-center gap-3 px-3 py-2.5 rounded-lg
-                    transition-all duration-200
-                    ${isActive
-                      ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400'
-                      : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800'
-                    }
-                  `}
+                  className={({ isActive }) => navLinkClass(isActive)}
                 >
                   <item.icon className="w-5 h-5 flex-shrink-0" />
                   {isOpen && <span className="font-medium">{item.label}</span>}
@@ -201,7 +174,7 @@ export default function Sidebar({ isOpen, onToggle }) {
           )}
 
           {isAdmin && (
-            <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
+            <div className="pt-4 border-t glass-divider">
               {isOpen && (
                 <p className="text-xs font-semibold text-gray-400 uppercase mb-2 px-3">
                   Quản trị
@@ -211,14 +184,7 @@ export default function Sidebar({ isOpen, onToggle }) {
                 <NavLink
                   key={item.path}
                   to={item.path}
-                  className={({ isActive }) => `
-                    flex items-center gap-3 px-3 py-2.5 rounded-lg
-                    transition-all duration-200
-                    ${isActive
-                      ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400'
-                      : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800'
-                    }
-                  `}
+                  className={({ isActive }) => navLinkClass(isActive)}
                 >
                   <item.icon className="w-5 h-5 flex-shrink-0" />
                   {isOpen && <span className="font-medium">{item.label}</span>}
@@ -228,10 +194,10 @@ export default function Sidebar({ isOpen, onToggle }) {
           )}
         </nav>
 
-        <div className="p-4 border-t border-gray-200 dark:border-gray-700">
+        <div className="p-4 border-t glass-divider">
           <button
             onClick={onToggle}
-            className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+            className="glass-nav-link w-full flex items-center justify-center gap-2 px-3 py-2 rounded-ios text-gray-500 glass-nav-hover transition-colors"
           >
             {isOpen ? <ChevronLeft className="w-5 h-5" /> : <ChevronRight className="w-5 h-5" />}
             {isOpen && <span className="text-sm">Thu gọn</span>}

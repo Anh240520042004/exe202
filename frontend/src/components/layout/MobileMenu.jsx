@@ -31,34 +31,34 @@ export default function MobileMenu() {
     <>
       {isMobileMenuOpen && (
         <div 
-          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+          className="fixed inset-0 glass-overlay z-40 lg:hidden"
           onClick={handleClose}
         />
       )}
       
       <div className={`
         fixed top-0 left-0 z-50 w-72 h-full
-        bg-white dark:bg-gray-900
+        glass-sidebar
         transform transition-transform duration-300
         lg:hidden
         ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}
       `}>
-        <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
+        <div className="flex items-center justify-between p-4 border-b glass-divider">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary-500 to-primary-700 flex items-center justify-center">
-              <span className="text-white font-bold text-lg">F</span>
+            <div className="w-10 h-10 rounded-ios bg-gradient-to-br from-primary-500 to-primary-700 flex items-center justify-center">
+              <span className="text-white font-bold text-sm">F.</span>
             </div>
             <div>
-              <h1 className="font-bold text-lg gradient-text">FPTAIEZ</h1>
+              <h1 className="font-bold text-lg gradient-text">F.EdTech</h1>
             </div>
           </div>
-          <button onClick={handleClose} className="p-2">
+          <button onClick={handleClose} className="p-2 rounded-ios glass-nav-hover">
             <X className="w-5 h-5" />
           </button>
         </div>
 
         <div className="p-4">
-          <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-xl mb-4">
+          <div className="flex items-center gap-3 p-3 glass-subtle rounded-ios mb-4">
             <img
               src={user?.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.name}`}
               alt={user?.name}
@@ -77,11 +77,10 @@ export default function MobileMenu() {
                 to={item.path}
                 onClick={handleClose}
                 className={({ isActive }) => `
-                  flex items-center gap-3 px-4 py-3 rounded-xl
-                  transition-colors
+                  glass-nav-link flex items-center gap-3 px-4 py-3 rounded-ios
                   ${isActive
-                    ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400'
-                    : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800'
+                    ? 'glass-nav-active text-primary-600 dark:text-primary-400'
+                    : 'text-gray-600 dark:text-gray-400 glass-nav-hover'
                   }
                 `}
               >
@@ -97,10 +96,10 @@ export default function MobileMenu() {
           </nav>
         </div>
 
-        <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-200 dark:border-gray-700">
+        <div className="absolute bottom-0 left-0 right-0 p-4 border-t glass-divider">
           <button
             onClick={handleLogout}
-            className="flex items-center gap-3 w-full px-4 py-3 rounded-xl text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+            className="flex items-center gap-3 w-full px-4 py-3 rounded-ios text-red-500 hover:bg-red-500/15 transition-colors"
           >
             <LogOut className="w-5 h-5" />
             <span className="font-medium">Đăng xuất</span>

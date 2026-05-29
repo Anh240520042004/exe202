@@ -90,7 +90,7 @@ export default function Dashboard() {
             Xin chào, {user?.name?.split(' ').pop()}!
           </h1>
           <p className="text-gray-500 dark:text-gray-400 mt-1">
-            Chào mừng bạn quay trở lại FPTAIEZ
+            Chào mừng bạn quay trở lại F.EdTech
           </p>
         </div>
         <Link to="/transactions/create">
@@ -149,10 +149,10 @@ export default function Dashboard() {
               stats.recentTransactions.map((transaction) => (
                 <div
                   key={transaction._id}
-                  className="flex items-center justify-between p-3 rounded-lg bg-gray-50 dark:bg-gray-800/50 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                  className="flex items-center justify-between p-3 rounded-xl glass-subtle/50 glass-nav-hover transition-colors"
                 >
                   <div className="flex items-center gap-3">
-                    <div className={`p-2 rounded-lg ${
+                    <div className={`p-2 rounded-xl ${
                       transaction.type === 'income' 
                         ? 'bg-green-100 dark:bg-green-900/30' 
                         : 'bg-red-100 dark:bg-red-900/30'
@@ -224,7 +224,7 @@ export default function Dashboard() {
                     <div key={cat._id.category} className="space-y-2">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
-                          <span className={`px-2 py-1 rounded-lg text-xs font-medium ${categoryColors[cat._id.category]}`}>
+                          <span className={`px-2 py-1 rounded-xl text-xs font-medium ${categoryColors[cat._id.category]}`}>
                             {categoryLabels[cat._id.category]}
                           </span>
                         </div>
@@ -259,7 +259,7 @@ export default function Dashboard() {
               <p className="text-3xl font-bold mt-1">{formatCurrency(50000000)}</p>
               <p className="text-primary-200 text-sm mt-2">Còn lại: {formatCurrency((stats?.balance || 0) % 50000000)}</p>
             </div>
-            <div className="p-4 bg-white/20 rounded-xl">
+            <div className="p-4 bg-white/20 rounded-2xl">
               <PiggyBank className="w-8 h-8 text-white" />
             </div>
           </div>
@@ -272,7 +272,7 @@ export default function Dashboard() {
               <p className="text-3xl font-bold mt-1">{formatCurrency(100000000)}</p>
               <p className="text-green-200 text-sm mt-2">Đã đạt: 45%</p>
             </div>
-            <div className="p-4 bg-white/20 rounded-xl">
+            <div className="p-4 bg-white/20 rounded-2xl">
               <TrendingUp className="w-8 h-8 text-white" />
             </div>
           </div>
@@ -285,7 +285,7 @@ export default function Dashboard() {
               <p className="text-3xl font-bold mt-1">{formatCurrency(stats?.totalIncome || 0)}</p>
               <p className="text-accent-200 text-sm mt-2">Tăng 12% so với tháng trước</p>
             </div>
-            <div className="p-4 bg-white/20 rounded-xl">
+            <div className="p-4 bg-white/20 rounded-2xl">
               <DollarSign className="w-8 h-8 text-white" />
             </div>
           </div>

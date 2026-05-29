@@ -216,13 +216,13 @@ const MentorCourses = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen">
       {/* Header */}
-      <div className="bg-gradient-to-r from-primary-600 to-primary-800 text-white py-8">
+      <div className="bg-gradient-to-r from-primary-400/75 to-primary-500/75 text-white py-8">
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <div className="w-16 h-16 bg-white/20 rounded-xl flex items-center justify-center">
+              <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center">
                 <BookOpen size={32} />
               </div>
               <div>
@@ -234,7 +234,7 @@ const MentorCourses = () => {
             </div>
             <button
               onClick={() => setShowCreateModal(true)}
-              className="flex items-center gap-2 px-6 py-3 bg-white text-primary-600 font-semibold rounded-xl hover:bg-primary-50 transition-colors"
+              className="flex items-center gap-2 px-6 py-3 bg-white text-primary-600 font-semibold rounded-2xl hover:bg-primary-50 transition-colors"
             >
               <Plus size={20} />
               Tạo Khóa Học Mới
@@ -245,7 +245,7 @@ const MentorCourses = () => {
 
       <div className="container mx-auto px-4 py-8">
         {/* Filter Bar */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4 mb-6">
+        <div className="glass-card rounded-2xl shadow-sm p-4 mb-6">
           <div className="flex flex-col md:flex-row gap-4">
             {/* Search */}
             <div className="flex-1 relative">
@@ -255,7 +255,7 @@ const MentorCourses = () => {
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && loadMyCourses()}
-                className="w-full pl-10 pr-4 py-2 border border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-primary-500 dark:bg-gray-700"
+                className="w-full pl-10 pr-4 py-2 border glass-divider border rounded-xl focus:ring-2 focus:ring-primary-500 dark:bg-gray-700"
               />
               <Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
             </div>
@@ -266,10 +266,10 @@ const MentorCourses = () => {
                 <button
                   key={cat.value}
                   onClick={() => setSelectedCategory(cat.value)}
-                  className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  className={`px-3 py-2 rounded-xl text-sm font-medium transition-colors ${
                     selectedCategory === cat.value
-                      ? 'bg-primary-600 text-white'
-                      : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                      ? 'bg-primary-400/70 text-white'
+                      : 'glass-subtle text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
                   }`}
                 >
                   <span className="mr-1">{cat.icon}</span>
@@ -284,7 +284,7 @@ const MentorCourses = () => {
         {loading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {[...Array(6)].map((_, i) => (
-              <div key={i} className="bg-white dark:bg-gray-800 rounded-xl h-64 animate-pulse" />
+              <div key={i} className="glass-card rounded-2xl h-64 animate-pulse" />
             ))}
           </div>
         ) : courses.length > 0 ? (
@@ -297,7 +297,7 @@ const MentorCourses = () => {
               return (
               <div
                 key={course._id}
-                className="bg-white dark:bg-gray-800 rounded-xl shadow-sm hover:shadow-lg transition-all overflow-hidden"
+                className="glass-card rounded-2xl shadow-sm hover:shadow-lg transition-all overflow-hidden"
               >
                 {/* Course Thumbnail */}
                 <div className="h-40 bg-gradient-to-br from-primary-400 to-primary-600 relative">
@@ -360,14 +360,14 @@ const MentorCourses = () => {
                         setSelectedCourse(course);
                         setShowDocumentModal(true);
                       }}
-                      className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-primary-600 text-white text-sm font-medium rounded-lg hover:bg-primary-700 transition-colors"
+                      className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-primary-400/70 text-white text-sm font-medium rounded-xl hover:bg-primary-500/75 transition-colors"
                     >
                       <Upload size={16} />
                       Thêm Tài Liệu
                     </button>
                     <button
                       onClick={() => handleDeleteCourse(course.code)}
-                      className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                      className="p-2 text-red-600 hover:bg-red-50 rounded-xl transition-colors"
                     >
                       <Trash2 size={18} />
                     </button>
@@ -375,13 +375,13 @@ const MentorCourses = () => {
 
                   {/* Document List */}
                   {course.documents && course.documents.length > 0 && (
-                    <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-700">
+                    <div className="mt-4 pt-4 border-t glass-divider border">
                       <p className="text-xs text-gray-500 mb-2">Tài liệu:</p>
                       <div className="space-y-2 max-h-32 overflow-y-auto">
                         {course.documents.slice(0, 3).map((doc) => (
                           <div
                             key={doc._id}
-                            className="flex items-center justify-between text-sm bg-gray-50 dark:bg-gray-700/50 rounded-lg px-3 py-2"
+                            className="flex items-center justify-between text-sm glass-subtle/50 rounded-xl px-3 py-2"
                           >
                             <div className="flex items-center gap-2 min-w-0">
                               <span>{getFileIcon(doc.fileType)}</span>
@@ -409,13 +409,13 @@ const MentorCourses = () => {
             })}
           </div>
         ) : (
-          <div className="text-center py-16 bg-white dark:bg-gray-800 rounded-xl">
+          <div className="text-center py-16 glass-card rounded-2xl">
             <Folder size={64} className="mx-auto text-gray-300 dark:text-gray-600 mb-4" />
             <h3 className="text-xl font-semibold mb-2">Chưa có khóa học nào</h3>
             <p className="text-gray-500 mb-6">Tạo khóa học đầu tiên để bắt đầu</p>
             <button
               onClick={() => setShowCreateModal(true)}
-              className="inline-flex items-center gap-2 px-6 py-3 bg-primary-600 text-white font-medium rounded-xl hover:bg-primary-700 transition-colors"
+              className="inline-flex items-center gap-2 px-6 py-3 bg-primary-400/70 text-white font-medium rounded-2xl hover:bg-primary-500/75 transition-colors"
             >
               <Plus size={20} />
               Tạo Khóa Học
@@ -427,13 +427,13 @@ const MentorCourses = () => {
       {/* Create Course Modal */}
       {showCreateModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-gray-800 rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
-            <div className="p-6 border-b border-gray-100 dark:border-gray-700">
+          <div className="glass-card rounded-3xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
+            <div className="p-6 border-b glass-divider border">
               <div className="flex items-center justify-between">
                 <h2 className="text-xl font-bold">Tạo Khóa Học Mới</h2>
                 <button
                   onClick={() => setShowCreateModal(false)}
-                  className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
+                  className="p-2 glass-nav-hover rounded-xl"
                 >
                   <X size={20} />
                 </button>
@@ -447,7 +447,7 @@ const MentorCourses = () => {
                   type="text"
                   value={courseForm.name}
                   onChange={(e) => setCourseForm({ ...courseForm, name: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-primary-500 dark:bg-gray-700"
+                  className="w-full px-4 py-2 border glass-divider border rounded-xl focus:ring-2 focus:ring-primary-500 dark:bg-gray-700"
                   placeholder="VD: Lập Trình Python Cơ Bản"
                   required
                 />
@@ -458,7 +458,7 @@ const MentorCourses = () => {
                 <textarea
                   value={courseForm.description}
                   onChange={(e) => setCourseForm({ ...courseForm, description: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-primary-500 dark:bg-gray-700"
+                  className="w-full px-4 py-2 border glass-divider border rounded-xl focus:ring-2 focus:ring-primary-500 dark:bg-gray-700"
                   placeholder="Mô tả về khóa học..."
                   rows={3}
                 />
@@ -471,7 +471,7 @@ const MentorCourses = () => {
                     type="number"
                     value={courseForm.credits}
                     onChange={(e) => setCourseForm({ ...courseForm, credits: parseInt(e.target.value) })}
-                    className="w-full px-4 py-2 border border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-primary-500 dark:bg-gray-700"
+                    className="w-full px-4 py-2 border glass-divider border rounded-xl focus:ring-2 focus:ring-primary-500 dark:bg-gray-700"
                     min={1}
                     max={10}
                   />
@@ -482,7 +482,7 @@ const MentorCourses = () => {
                     type="number"
                     value={courseForm.price}
                     onChange={(e) => setCourseForm({ ...courseForm, price: parseInt(e.target.value) })}
-                    className="w-full px-4 py-2 border border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-primary-500 dark:bg-gray-700"
+                    className="w-full px-4 py-2 border glass-divider border rounded-xl focus:ring-2 focus:ring-primary-500 dark:bg-gray-700"
                     min={0}
                   />
                 </div>
@@ -494,7 +494,7 @@ const MentorCourses = () => {
                   type="text"
                   value={courseForm.faculty}
                   onChange={(e) => setCourseForm({ ...courseForm, faculty: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-primary-500 dark:bg-gray-700"
+                  className="w-full px-4 py-2 border glass-divider border rounded-xl focus:ring-2 focus:ring-primary-500 dark:bg-gray-700"
                   placeholder="VD: Công Nghệ Thông Tin"
                   required
                 />
@@ -505,7 +505,7 @@ const MentorCourses = () => {
                 <select
                   value={courseForm.category}
                   onChange={(e) => setCourseForm({ ...courseForm, category: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-primary-500 dark:bg-gray-700"
+                  className="w-full px-4 py-2 border glass-divider border rounded-xl focus:ring-2 focus:ring-primary-500 dark:bg-gray-700"
                 >
                   {CATEGORY_OPTIONS.filter(c => c.value !== 'all').map((cat) => (
                     <option key={cat.value} value={cat.value}>
@@ -520,7 +520,7 @@ const MentorCourses = () => {
                 <select
                   value={courseForm.semester}
                   onChange={(e) => setCourseForm({ ...courseForm, semester: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-primary-500 dark:bg-gray-700"
+                  className="w-full px-4 py-2 border glass-divider border rounded-xl focus:ring-2 focus:ring-primary-500 dark:bg-gray-700"
                 >
                   <option value="1">Học Kỳ 1</option>
                   <option value="2">Học Kỳ 2</option>
@@ -533,13 +533,13 @@ const MentorCourses = () => {
                 <button
                   type="button"
                   onClick={() => setShowCreateModal(false)}
-                  className="flex-1 px-4 py-2 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700"
+                  className="flex-1 px-4 py-2 border glass-divider border rounded-xl glass-nav-hover"
                 >
                   Hủy
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700"
+                  className="flex-1 px-4 py-2 bg-primary-400/70 text-white rounded-xl hover:bg-primary-500/75"
                 >
                   Tạo Khóa Học
                 </button>
@@ -552,8 +552,8 @@ const MentorCourses = () => {
       {/* Add Document Modal */}
       {showDocumentModal && selectedCourse && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-gray-800 rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
-            <div className="p-6 border-b border-gray-100 dark:border-gray-700">
+          <div className="glass-card rounded-3xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
+            <div className="p-6 border-b glass-divider border">
               <div className="flex items-center justify-between">
                 <div>
                   <h2 className="text-xl font-bold">Thêm Tài Liệu</h2>
@@ -566,7 +566,7 @@ const MentorCourses = () => {
                     setExternalUrl('');
                     setDocumentSourceType('upload');
                   }}
-                  className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
+                  className="p-2 glass-nav-hover rounded-xl"
                 >
                   <X size={20} />
                 </button>
@@ -585,10 +585,10 @@ const MentorCourses = () => {
                       setExternalUrl('');
                       setSelectedFile(null);
                     }}
-                    className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-lg border-2 transition-colors ${
+                    className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-xl border-2 transition-colors ${
                       documentSourceType === 'upload'
                         ? 'border-primary-600 bg-primary-50 text-primary-700'
-                        : 'border-gray-200 dark:border-gray-700 hover:border-gray-300'
+                        : 'glass-divider border hover:border-gray-300'
                     }`}
                   >
                     <Upload size={18} />
@@ -600,10 +600,10 @@ const MentorCourses = () => {
                       setDocumentSourceType('google_drive');
                       setSelectedFile(null);
                     }}
-                    className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-lg border-2 transition-colors ${
+                    className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-xl border-2 transition-colors ${
                       documentSourceType === 'google_drive'
                         ? 'border-primary-600 bg-primary-50 text-primary-700'
-                        : 'border-gray-200 dark:border-gray-700 hover:border-gray-300'
+                        : 'glass-divider border hover:border-gray-300'
                     }`}
                   >
                     <svg className="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="currentColor">
@@ -617,10 +617,10 @@ const MentorCourses = () => {
                       setDocumentSourceType('external_link');
                       setSelectedFile(null);
                     }}
-                    className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-lg border-2 transition-colors ${
+                    className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-xl border-2 transition-colors ${
                       documentSourceType === 'external_link'
                         ? 'border-primary-600 bg-primary-50 text-primary-700'
-                        : 'border-gray-200 dark:border-gray-700 hover:border-gray-300'
+                        : 'glass-divider border hover:border-gray-300'
                     }`}
                   >
                     <svg className="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -636,7 +636,7 @@ const MentorCourses = () => {
               {documentSourceType === 'upload' && (
                 <div>
                   <label className="block text-sm font-medium mb-1">File *</label>
-                  <div className="border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-lg p-6 text-center hover:border-primary-400 transition-colors">
+                  <div className="border-2 border-dashed glass-divider border rounded-xl p-6 text-center hover:border-primary-400 transition-colors">
                     <input
                       type="file"
                       id="file-upload"
@@ -677,7 +677,7 @@ const MentorCourses = () => {
                     type="url"
                     value={externalUrl}
                     onChange={(e) => setExternalUrl(e.target.value)}
-                    className="w-full px-4 py-2 border border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-primary-500 dark:bg-gray-700"
+                    className="w-full px-4 py-2 border glass-divider border rounded-xl focus:ring-2 focus:ring-primary-500 dark:bg-gray-700"
                     placeholder={
                       documentSourceType === 'google_drive'
                         ? 'https://drive.google.com/...'
@@ -698,7 +698,7 @@ const MentorCourses = () => {
                   type="text"
                   value={documentForm.title}
                   onChange={(e) => setDocumentForm({ ...documentForm, title: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-primary-500 dark:bg-gray-700"
+                  className="w-full px-4 py-2 border glass-divider border rounded-xl focus:ring-2 focus:ring-primary-500 dark:bg-gray-700"
                   placeholder="Để trống sẽ dùng tên file"
                 />
               </div>
@@ -708,7 +708,7 @@ const MentorCourses = () => {
                 <textarea
                   value={documentForm.description}
                   onChange={(e) => setDocumentForm({ ...documentForm, description: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-primary-500 dark:bg-gray-700"
+                  className="w-full px-4 py-2 border glass-divider border rounded-xl focus:ring-2 focus:ring-primary-500 dark:bg-gray-700"
                   placeholder="Mô tả về tài liệu..."
                   rows={2}
                 />
@@ -720,7 +720,7 @@ const MentorCourses = () => {
                   <select
                     value={documentForm.documentType}
                     onChange={(e) => setDocumentForm({ ...documentForm, documentType: e.target.value })}
-                    className="w-full px-4 py-2 border border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-primary-500 dark:bg-gray-700"
+                    className="w-full px-4 py-2 border glass-divider border rounded-xl focus:ring-2 focus:ring-primary-500 dark:bg-gray-700"
                   >
                     <option value="pdf">PDF</option>
                     <option value="slide">Slide</option>
@@ -736,7 +736,7 @@ const MentorCourses = () => {
                     type="number"
                     value={documentForm.price}
                     onChange={(e) => setDocumentForm({ ...documentForm, price: parseInt(e.target.value) })}
-                    className="w-full px-4 py-2 border border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-primary-500 dark:bg-gray-700"
+                    className="w-full px-4 py-2 border glass-divider border rounded-xl focus:ring-2 focus:ring-primary-500 dark:bg-gray-700"
                     min={0}
                   />
                 </div>
@@ -748,7 +748,7 @@ const MentorCourses = () => {
                   type="text"
                   value={documentForm.tags}
                   onChange={(e) => setDocumentForm({ ...documentForm, tags: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-primary-500 dark:bg-gray-700"
+                  className="w-full px-4 py-2 border glass-divider border rounded-xl focus:ring-2 focus:ring-primary-500 dark:bg-gray-700"
                   placeholder="python, lap-trinh, co-ban (phân cách bằng dấu phẩy)"
                 />
               </div>
@@ -762,14 +762,14 @@ const MentorCourses = () => {
                     setExternalUrl('');
                     setDocumentSourceType('upload');
                   }}
-                  className="flex-1 px-4 py-2 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700"
+                  className="flex-1 px-4 py-2 border glass-divider border rounded-xl glass-nav-hover"
                 >
                   Hủy
                 </button>
                 <button
                   type="submit"
                   disabled={uploading}
-                  className="flex-1 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-50"
+                  className="flex-1 px-4 py-2 bg-primary-400/70 text-white rounded-xl hover:bg-primary-500/75 disabled:opacity-50"
                 >
                   {uploading ? 'Đang tải lên...' : 'Thêm Tài Liệu'}
                 </button>

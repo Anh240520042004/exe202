@@ -142,12 +142,12 @@ const DownloadHistory = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen">
       {/* Header */}
       <div className="bg-gradient-to-r from-blue-600 to-blue-800 text-white py-8">
         <div className="container mx-auto px-4">
           <div className="flex items-center gap-4 mb-6">
-            <div className="w-16 h-16 bg-white/20 rounded-xl flex items-center justify-center">
+            <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center">
               <Clock size={32} />
             </div>
             <div>
@@ -160,9 +160,9 @@ const DownloadHistory = () => {
 
           {/* Stats */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="bg-white/10 backdrop-blur rounded-xl p-4">
+            <div className="bg-white/10 backdrop-blur rounded-2xl p-4">
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center">
+                <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
                   <Download size={24} />
                 </div>
                 <div>
@@ -171,9 +171,9 @@ const DownloadHistory = () => {
                 </div>
               </div>
             </div>
-            <div className="bg-white/10 backdrop-blur rounded-xl p-4">
+            <div className="bg-white/10 backdrop-blur rounded-2xl p-4">
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center">
+                <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
                   <TrendingUp size={24} />
                 </div>
                 <div>
@@ -182,9 +182,9 @@ const DownloadHistory = () => {
                 </div>
               </div>
             </div>
-            <div className="bg-white/10 backdrop-blur rounded-xl p-4">
+            <div className="bg-white/10 backdrop-blur rounded-2xl p-4">
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center">
+                <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
                   <FileText size={24} />
                 </div>
                 <div>
@@ -206,7 +206,7 @@ const DownloadHistory = () => {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Tìm kiếm tài liệu..."
-            className="w-full pl-12 pr-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-primary-300"
+            className="w-full pl-12 pr-4 py-3 rounded-2xl border glass-divider border glass-card focus:outline-none focus:ring-2 focus:ring-primary-300"
           />
         </form>
 
@@ -220,9 +220,9 @@ const DownloadHistory = () => {
           <div className="flex items-center gap-2">
             <button
               onClick={() => setViewMode('grid')}
-              className={`p-2 rounded-lg transition-colors ${
+              className={`p-2 rounded-xl transition-colors ${
                 viewMode === 'grid'
-                  ? 'bg-primary-100 text-primary-600 dark:bg-primary-900/30'
+                  ? 'bg-primary-100 text-primary-600 dark:bg-primary-400/15'
                   : 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400'
               }`}
             >
@@ -230,9 +230,9 @@ const DownloadHistory = () => {
             </button>
             <button
               onClick={() => setViewMode('list')}
-              className={`p-2 rounded-lg transition-colors ${
+              className={`p-2 rounded-xl transition-colors ${
                 viewMode === 'list'
-                  ? 'bg-primary-100 text-primary-600 dark:bg-primary-900/30'
+                  ? 'bg-primary-100 text-primary-600 dark:bg-primary-400/15'
                   : 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400'
               }`}
             >
@@ -245,7 +245,7 @@ const DownloadHistory = () => {
         {isLoading ? (
           <div className="space-y-4">
             {[...Array(5)].map((_, i) => (
-              <div key={i} className="bg-white dark:bg-gray-800 rounded-xl h-24 animate-pulse" />
+              <div key={i} className="glass-card rounded-2xl h-24 animate-pulse" />
             ))}
           </div>
         ) : history.length > 0 ? (
@@ -259,7 +259,7 @@ const DownloadHistory = () => {
               return (
                 <div
                   key={item._id}
-                  className={`bg-white dark:bg-gray-800 rounded-xl shadow-sm hover:shadow-lg transition-all ${
+                  className={`glass-card rounded-2xl shadow-sm hover:shadow-lg transition-all ${
                     viewMode === 'list' ? 'flex items-center' : ''
                   }`}
                 >
@@ -272,7 +272,7 @@ const DownloadHistory = () => {
                         <div className="min-w-0">
                           <h3 className="font-semibold truncate">{doc?.title || 'Tài liệu'}</h3>
                           <div className="flex items-center gap-4 text-sm text-gray-500">
-                            <span className="uppercase text-xs px-2 py-0.5 bg-gray-100 dark:bg-gray-700 rounded">
+                            <span className="uppercase text-xs px-2 py-0.5 glass-subtle rounded">
                               {doc?.fileType || 'file'}
                             </span>
                             <span className="flex items-center gap-1">
@@ -287,7 +287,7 @@ const DownloadHistory = () => {
                         <div className="flex items-center gap-2 flex-shrink-0 ml-4">
                           <button
                             onClick={() => handleViewDocument(item)}
-                            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
+                            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-xl hover:bg-blue-700 transition-colors"
                           >
                             <Eye size={16} />
                             Xem
@@ -303,7 +303,7 @@ const DownloadHistory = () => {
                       <div className="p-4">
                         <h3 className="font-semibold mb-2 line-clamp-2">{doc?.title || 'Tài liệu'}</h3>
                         <div className="flex items-center gap-2 text-xs text-gray-500 mb-3">
-                          <span className="uppercase px-2 py-0.5 bg-gray-100 dark:bg-gray-700 rounded">
+                          <span className="uppercase px-2 py-0.5 glass-subtle rounded">
                             {doc?.fileType || 'file'}
                           </span>
                           {doc?.fileSize && (
@@ -317,7 +317,7 @@ const DownloadHistory = () => {
                         <div className="flex gap-2">
                           <button
                             onClick={() => handleViewDocument(item)}
-                            className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
+                            className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-blue-600 text-white text-sm font-medium rounded-xl hover:bg-blue-700 transition-colors"
                           >
                             <Eye size={14} />
                             Xem
@@ -331,13 +331,13 @@ const DownloadHistory = () => {
             })}
           </div>
         ) : (
-          <div className="text-center py-16 bg-white dark:bg-gray-800 rounded-xl">
+          <div className="text-center py-16 glass-card rounded-2xl">
             <Clock size={64} className="mx-auto text-gray-300 dark:text-gray-600 mb-4" />
             <h3 className="text-xl font-semibold mb-2">Chưa có lịch sử tải</h3>
             <p className="text-gray-500 mb-6">Bạn chưa tải tài liệu nào. Hãy khám phá marketplace để tìm tài liệu phù hợp.</p>
             <Link
               to="/marketplace"
-              className="inline-flex items-center gap-2 px-6 py-3 bg-primary-600 text-white font-medium rounded-xl hover:bg-primary-700 transition-colors"
+              className="inline-flex items-center gap-2 px-6 py-3 bg-primary-400/70 text-white font-medium rounded-2xl hover:bg-primary-500/75 transition-colors"
             >
               <FileText size={20} />
               Khám phá Marketplace
@@ -352,10 +352,10 @@ const DownloadHistory = () => {
               <button
                 key={page}
                 onClick={() => loadHistory(page, searchQuery)}
-                className={`w-10 h-10 rounded-lg font-medium transition-colors ${
+                className={`w-10 h-10 rounded-xl font-medium transition-colors ${
                   pagination.page === page
-                    ? 'bg-primary-600 text-white'
-                    : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-primary-50 dark:hover:bg-primary-900/30'
+                    ? 'bg-primary-400/70 text-white'
+                    : 'glass-subtle text-gray-600 dark:text-gray-400 hover:bg-primary-50 dark:hover:bg-primary-900/30'
                 }`}
               >
                 {page}
@@ -368,7 +368,7 @@ const DownloadHistory = () => {
       {/* Preview Modal */}
       {previewDoc && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-gray-800 rounded-2xl w-full max-w-4xl max-h-[90vh] flex flex-col">
+          <div className="glass-card rounded-3xl w-full max-w-4xl max-h-[90vh] flex flex-col">
             {/* Header */}
             <div className="flex items-center justify-between p-4 border-b dark:border-gray-700">
               <div>
@@ -379,20 +379,20 @@ const DownloadHistory = () => {
               </div>
               <button
                 onClick={() => setPreviewDoc(null)}
-                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                className="p-2 glass-nav-hover rounded-xl transition-colors"
               >
                 <X size={24} />
               </button>
             </div>
 
             {/* Content */}
-            <div className="flex-1 overflow-auto p-6 bg-gray-50 dark:bg-gray-900">
+            <div className="flex-1 overflow-auto p-6 ">
               {loadingPreview ? (
                 <div className="flex items-center justify-center h-64">
                   <div className="animate-spin rounded-full h-12 w-12 border-4 border-primary-600 border-t-transparent"></div>
                 </div>
               ) : (
-                <pre className="whitespace-pre-wrap font-mono text-sm bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm overflow-auto max-h-[60vh]">
+                <pre className="whitespace-pre-wrap font-mono text-sm glass-card p-6 rounded-2xl shadow-sm overflow-auto max-h-[60vh]">
                   {previewContent}
                 </pre>
               )}
@@ -405,7 +405,7 @@ const DownloadHistory = () => {
               </div>
               <button
                 onClick={() => handleDownload(previewDoc.document?._id, previewDoc.document?.fileName)}
-                className="flex items-center gap-2 px-6 py-2 bg-primary-600 text-white font-medium rounded-lg hover:bg-primary-700 transition-colors"
+                className="flex items-center gap-2 px-6 py-2 bg-primary-400/70 text-white font-medium rounded-xl hover:bg-primary-500/75 transition-colors"
               >
                 <Download size={18} />
                 Tải xuống

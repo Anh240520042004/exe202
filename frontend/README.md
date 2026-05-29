@@ -1,6 +1,6 @@
-# FPTAIEZ Frontend
+# F.EdTech Frontend
 
-React + Vite + Tailwind CSS Frontend cho dự án FPTAIEZ.
+React + Vite + Tailwind CSS Frontend cho dự án F.EdTech.
 
 ## Cài đặt
 
@@ -56,5 +56,5 @@ src/
 
 ```env
 VITE_API_URL=http://localhost:5000/api
-VITE_APP_NAME=FPTAIEZ
+VITE_APP_NAME=F.EdTech
 ```

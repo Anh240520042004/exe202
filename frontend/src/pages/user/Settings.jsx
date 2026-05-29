@@ -39,9 +39,9 @@ export default function Settings() {
   };
 
   const SettingItem = ({ icon: Icon, title, description, children }) => (
-    <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800/50 rounded-xl">
+    <div className="flex items-center justify-between p-4 glass-subtle/50 rounded-2xl">
       <div className="flex items-center gap-4">
-        <div className="p-2 bg-white dark:bg-gray-700 rounded-lg">
+        <div className="p-2 glass-input rounded-xl">
           <Icon className="w-5 h-5 text-primary-600" />
         </div>
         <div>
@@ -144,7 +144,7 @@ export default function Settings() {
             title="Ngôn ngữ"
             description="Chọn ngôn ngữ hiển thị"
           >
-            <select className="px-3 py-1.5 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg text-sm">
+            <select className="px-3 py-1.5 glass-input border border-gray-200 dark:border-gray-600 rounded-xl text-sm">
               <option value="vi">Tiếng Việt</option>
               <option value="en">English</option>
             </select>
@@ -155,7 +155,7 @@ export default function Settings() {
             title="Đơn vị tiền tệ"
             description="Chọn đơn vị tiền tệ mặc định"
           >
-            <select className="px-3 py-1.5 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg text-sm">
+            <select className="px-3 py-1.5 glass-input border border-gray-200 dark:border-gray-600 rounded-xl text-sm">
               <option value="VND">VND (Việt Nam Đồng)</option>
               <option value="USD">USD (US Dollar)</option>
               <option value="EUR">EUR (Euro)</option>

@@ -4,7 +4,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { Mail, Lock, Eye, EyeOff, CheckCircle, Loader2, Send } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { verifyEmail, resendVerification } from '../../store/slices/authSlice';
-import { Button, Input, Card } from '../../components/ui';
+import { Button, Input } from '../../components/ui';
 
 export default function EmailVerification() {
   const dispatch = useDispatch();
@@ -72,10 +72,10 @@ export default function EmailVerification() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-900 via-primary-800 to-accent-900 p-4">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-400/90 via-primary-300/90 to-accent-300/90 p-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-white/10 backdrop-blur-lg mb-4">
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-3xl bg-white/10 backdrop-blur-lg mb-4">
             <Mail className="w-8 h-8 text-white" />
           </div>
           <h1 className="text-3xl font-bold text-white mb-2">Xác thực Email</h1>
@@ -84,10 +84,10 @@ export default function EmailVerification() {
           </p>
         </div>
 
-        <Card className="backdrop-blur-xl bg-white/10 border border-white/20">
+        <div className="glass-panel rounded-ios-lg p-8 border-white/25">
           <form onSubmit={handleVerify} className="space-y-6">
             <div className="text-center">
-              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary-100 dark:bg-primary-900/50 mb-4">
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary-200/40 dark:bg-primary-400/12/50 mb-4">
                 <CheckCircle className="w-8 h-8 text-primary-600" />
               </div>
               <p className="text-sm text-gray-600 dark:text-gray-400">
@@ -105,7 +105,7 @@ export default function EmailVerification() {
                 onChange={handleCodeChange}
                 placeholder="Nhập 6 số"
                 maxLength={6}
-                className="w-full px-4 py-3 text-center text-2xl tracking-widest border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                className="w-full px-4 py-3 text-center text-2xl tracking-widest border border-gray-300 dark:border-gray-600 rounded-xl glass-input text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                 style={{ letterSpacing: '0.5em' }}
               />
             </div>
@@ -121,7 +121,7 @@ export default function EmailVerification() {
             </Button>
           </form>
 
-          <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
+          <div className="mt-6 pt-6 border-t glass-divider border">
             <p className="text-center text-sm text-gray-600 dark:text-gray-400 mb-4">
               Không nhận được mã?
             </p>
@@ -150,7 +150,7 @@ export default function EmailVerification() {
           </div>
 
           {codeSent && (
-            <div className="mt-4 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
+            <div className="mt-4 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-xl">
               <p className="text-sm text-green-700 dark:text-green-400 text-center">
                 Mã mới đã được gửi! Vui lòng kiểm tra hộp thư.
               </p>
@@ -164,7 +164,7 @@ export default function EmailVerification() {
               </Link>
             </p>
           </div>
-        </Card>
+        </div>
 
         <p className="text-center text-primary-200 text-sm mt-6">
           Mã xác thực có hiệu lực trong 5 phút

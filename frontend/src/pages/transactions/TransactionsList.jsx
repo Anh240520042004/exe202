@@ -193,7 +193,7 @@ export default function TransactionsList() {
         </div>
 
         {showFilters && (
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-xl mb-6">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 p-4 glass-subtle/50 rounded-2xl mb-6">
             <Select
               label="Loại giao dịch"
               options={typeOptions}
@@ -237,7 +237,7 @@ export default function TransactionsList() {
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b border-gray-200 dark:border-gray-700">
+                  <tr className="border-b glass-divider border">
                     <th className="text-left py-3 px-4 text-sm font-semibold text-gray-600 dark:text-gray-400">Mô tả</th>
                     <th className="text-left py-3 px-4 text-sm font-semibold text-gray-600 dark:text-gray-400">Danh mục</th>
                     <th className="text-left py-3 px-4 text-sm font-semibold text-gray-600 dark:text-gray-400">Ngày</th>
@@ -248,10 +248,10 @@ export default function TransactionsList() {
                 </thead>
                 <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
                   {transactions.map((transaction) => (
-                    <tr key={transaction._id} className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+                    <tr key={transaction._id} className="glass-nav-hover transition-colors">
                       <td className="py-4 px-4">
                         <div className="flex items-center gap-3">
-                          <div className={`p-2 rounded-lg ${transaction.type === 'income'
+                          <div className={`p-2 rounded-xl ${transaction.type === 'income'
                               ? 'bg-green-100 dark:bg-green-900/30'
                               : 'bg-red-100 dark:bg-red-900/30'
                             }`}>
@@ -295,13 +295,13 @@ export default function TransactionsList() {
                         <div className="flex items-center justify-center gap-2">
                           <button
                             onClick={() => navigate(`/transactions/edit/${transaction._id}`)}
-                            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                            className="p-2 glass-nav-hover rounded-xl transition-colors"
                           >
                             <Edit2 className="w-4 h-4 text-gray-500" />
                           </button>
                           <button
                             onClick={() => setDeleteModal({ open: true, id: transaction._id })}
-                            className="p-2 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                            className="p-2 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-colors"
                           >
                             <Trash2 className="w-4 h-4 text-red-500" />
                           </button>
@@ -314,7 +314,7 @@ export default function TransactionsList() {
             </div>
 
             {pagination && pagination.totalPages > 1 && (
-              <div className="flex items-center justify-between mt-6 pt-4 border-t border-gray-100 dark:border-gray-700">
+              <div className="flex items-center justify-between mt-6 pt-4 border-t glass-divider border">
                 <p className="text-sm text-gray-500">
                   Hiển thị {(pagination.currentPage - 1) * pagination.itemsPerPage + 1} - {Math.min(pagination.currentPage * pagination.itemsPerPage, pagination.totalItems)} của {pagination.totalItems}
                 </p>
@@ -327,7 +327,7 @@ export default function TransactionsList() {
                   >
                     <ChevronLeft className="w-4 h-4" />
                   </Button>
-                  <span className="px-3 py-1 bg-primary-100 dark:bg-primary-900/30 text-primary-600 rounded-lg">
+                  <span className="px-3 py-1 bg-primary-100 dark:bg-primary-400/15 text-primary-600 rounded-xl">
                     {pagination.currentPage} / {pagination.totalPages}
                   </span>
                   <Button
@@ -344,7 +344,7 @@ export default function TransactionsList() {
           </>
         ) : (
           <div className="text-center py-12">
-            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
+            <div className="w-16 h-16 mx-auto mb-4 rounded-full glass-subtle flex items-center justify-center">
               <Plus className="w-8 h-8 text-gray-400" />
             </div>
             <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">

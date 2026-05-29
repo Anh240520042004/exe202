@@ -13,34 +13,18 @@ const StudentDashboard = () => {
   // Guest view - show login prompt
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen flex items-center justify-center relative overflow-hidden">
-        {/* Background Video */}
-        <video autoPlay loop muted playsInline className="absolute inset-0 w-full h-full object-cover z-0 opacity-60">
-          <source src="https://res.cloudinary.com/dfonotyfb/video/upload/v1775585556/dds3_1_rqhg7x.mp4" type="video/mp4" />
-        </video>
-
-        {/* Cinematic Overlays */}
-        <div className="absolute inset-0 z-10 bg-gradient-to-br from-black/80 via-primary-950/80 to-black/80" />
-        <div className="absolute inset-0 z-10 bg-gradient-to-r from-black/40 via-transparent to-black/40" />
-        <div className="absolute inset-0 z-10 bg-[radial-gradient(ellipse_at_center,transparent_40%,black_100%)]" />
-        <div className="absolute inset-0 z-10 opacity-[0.03]"
-          style={{
-            backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")`,
-            backgroundSize: '256px 256px'
-          }}
-        />
-
-        <div className="text-center max-w-md relative z-20 px-4">
-          <div className="w-20 h-20 mx-auto rounded-2xl bg-white/10 backdrop-blur-lg flex items-center justify-center mb-6">
+      <div className="min-h-screen bg-gradient-to-br from-primary-400/90 via-primary-300/90 to-accent-300/90 flex items-center justify-center p-4">
+        <div className="text-center max-w-md">
+          <div className="w-20 h-20 mx-auto rounded-3xl bg-white/10 backdrop-blur-lg flex items-center justify-center mb-6">
             <span className="text-4xl font-bold text-white">F</span>
           </div>
-          <h1 className="text-3xl font-bold text-white mb-4">FPTAIEZ</h1>
+          <h1 className="text-3xl font-bold text-white mb-4">F.EdTech</h1>
           <p className="text-white/70 mb-8 text-lg">
             Đăng nhập để truy cập dashboard và bắt đầu hành trình học tập của bạn
           </p>
           <button
             onClick={() => navigate('/login')}
-            className="px-8 py-4 bg-gradient-to-r from-primary-500 to-accent-500 text-white rounded-xl font-bold text-lg hover:shadow-lg hover:shadow-primary-500/30 transition-all duration-300 flex items-center gap-3 mx-auto"
+            className="px-8 py-4 bg-gradient-to-r from-primary-500 to-accent-500 text-white rounded-2xl font-bold text-lg hover:shadow-lg hover:shadow-primary-500/30 transition-all duration-300 flex items-center gap-3 mx-auto"
           >
             <LogIn className="w-5 h-5" />
             Đăng nhập ngay
@@ -62,12 +46,12 @@ const StudentDashboard = () => {
 
   if (isLoading || !student) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-8">
+      <div className="min-h-screen p-8">
         <div className="animate-pulse space-y-8">
-          <div className="h-24 bg-gray-300 dark:bg-gray-700 rounded-xl" />
+          <div className="h-24 bg-gray-300 dark:bg-gray-700 rounded-2xl" />
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
             {[...Array(4)].map((_, i) => (
-              <div key={i} className="h-32 bg-gray-300 dark:bg-gray-700 rounded-xl" />
+              <div key={i} className="h-32 bg-gray-300 dark:bg-gray-700 rounded-2xl" />
             ))}
           </div>
         </div>
@@ -80,8 +64,8 @@ const StudentDashboard = () => {
   const xpForNextLevel = profile.xpForNextLevel || profile.xp + 500;
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <div className="bg-gradient-to-r from-primary-600 to-primary-800 text-white py-8">
+    <div className="min-h-screen">
+      <div className="bg-gradient-to-r from-primary-400/75 to-primary-500/75 text-white py-8">
         <div className="container mx-auto px-4">
           <div className="flex items-center gap-6">
             <img src={profile.avatar} alt={profile.name} className="w-20 h-20 rounded-full border-4 border-white/30" />
@@ -89,12 +73,12 @@ const StudentDashboard = () => {
               <h1 className="text-3xl font-bold">Welcome back, {profile.name}!</h1>
               <p className="text-primary-100">GPA: {profile.gpa} | Level {profile.level}</p>
             </div>
-            <div className="text-center bg-white/10 rounded-xl px-6 py-4">
+            <div className="text-center bg-white/10 rounded-2xl px-6 py-4">
               <Flame className="mx-auto text-orange-400 mb-1" size={24} />
               <p className="text-2xl font-bold">{profile.studyStreak}</p>
               <p className="text-xs text-primary-200">day streak</p>
             </div>
-            <div className="text-center bg-white/10 rounded-xl px-6 py-4">
+            <div className="text-center bg-white/10 rounded-2xl px-6 py-4">
               <Coins className="mx-auto text-amber-400 mb-1" size={24} />
               <p className="text-2xl font-bold">{new Intl.NumberFormat('vi-VN').format(profile.rewardPoints || 0)}</p>
               <p className="text-xs text-primary-200">reward points</p>
@@ -108,7 +92,7 @@ const StudentDashboard = () => {
           <h2 className="text-xl font-bold">Quick Access</h2>
           <Link
             to="/my-documents"
-            className="flex items-center gap-2 px-4 py-2 bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 rounded-lg hover:bg-green-200 dark:hover:bg-green-900/50 transition-colors"
+            className="flex items-center gap-2 px-4 py-2 bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 rounded-xl hover:bg-green-200 dark:hover:bg-green-900/50 transition-colors"
           >
             <FolderOpen size={18} />
             <span>Xem tất cả tài liệu</span>
@@ -124,7 +108,7 @@ const StudentDashboard = () => {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-          <div className="lg:col-span-2 bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm">
+          <div className="lg:col-span-2 glass-card rounded-2xl p-6 shadow-sm">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-bold flex items-center gap-2">
                 <TrendingUp className="text-primary-500" />
@@ -149,7 +133,7 @@ const StudentDashboard = () => {
                         <div
                           className={`w-full rounded-t-lg transition-all hover:opacity-80 min-h-[4px] ${
                             day.count === 0
-                              ? 'bg-gray-100 dark:bg-gray-700'
+                              ? 'glass-subtle'
                               : isToday
                               ? 'bg-gradient-to-t from-primary-600 to-primary-400 shadow-md shadow-primary-400/30'
                               : 'bg-gradient-to-t from-primary-400 to-primary-300'
@@ -185,15 +169,15 @@ const StudentDashboard = () => {
             )}
           </div>
 
-          <div className="bg-white dark:bg-gray-800 rounded-xl p-6">
+          <div className="glass-card rounded-2xl p-6">
             <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
               <FolderOpen className="text-green-500" />
               Lịch Sử Tải Xuống
             </h2>
             <div className="space-y-3">
               {recentDownloads?.slice(0, 5).map((item, idx) => (
-                <div key={item._id || idx} className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
-                  <div className="w-10 h-10 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center text-sm">
+                <div key={item._id || idx} className="flex items-center gap-3 p-2 rounded-xl glass-nav-hover transition-colors">
+                  <div className="w-10 h-10 bg-green-100 dark:bg-green-900/30 rounded-xl flex items-center justify-center text-sm">
                     📄
                   </div>
                   <div className="flex-1 min-w-0">
@@ -208,7 +192,7 @@ const StudentDashboard = () => {
             </div>
             <Link
               to="/download-history"
-              className="mt-4 w-full flex items-center justify-center gap-2 px-4 py-2 bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 rounded-lg hover:bg-green-200 dark:hover:bg-green-900/50 transition-colors text-sm font-medium"
+              className="mt-4 w-full flex items-center justify-center gap-2 px-4 py-2 bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 rounded-xl hover:bg-green-200 dark:hover:bg-green-900/50 transition-colors text-sm font-medium"
             >
               <FolderOpen size={16} />
               Xem lịch sử đầy đủ
@@ -217,7 +201,7 @@ const StudentDashboard = () => {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="bg-white dark:bg-gray-800 rounded-xl overflow-hidden">
+          <div className="glass-card rounded-2xl overflow-hidden">
             <div className="p-4 border-b dark:border-gray-700 flex items-center justify-between">
               <h2 className="font-bold">Tài Liệu Đã Tải Gần Đây</h2>
               <Link to="/download-history" className="text-primary-600 text-sm hover:underline">Xem tất cả</Link>
@@ -243,7 +227,7 @@ const StudentDashboard = () => {
             </div>
           </div>
 
-          <div className="bg-white dark:bg-gray-800 rounded-xl overflow-hidden">
+          <div className="glass-card rounded-2xl overflow-hidden">
             <div className="p-4 border-b dark:border-gray-700 flex items-center justify-between">
               <h2 className="font-bold">Upcoming Sessions</h2>
               <Link to="/mentors" className="text-primary-600 text-sm hover:underline">View all</Link>
@@ -268,7 +252,7 @@ const StudentDashboard = () => {
             </div>
           </div>
 
-          <div className="bg-white dark:bg-gray-800 rounded-xl overflow-hidden">
+          <div className="glass-card rounded-2xl overflow-hidden">
             <div className="p-4 border-b dark:border-gray-700 flex items-center justify-between">
               <h2 className="font-bold">Recent AI Chats</h2>
               <Link to="/ai" className="text-primary-600 text-sm hover:underline">View all</Link>
@@ -307,9 +291,9 @@ const StatCard = React.memo(({ icon, label, value, color }) => {
   };
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm">
+    <div className="glass-card rounded-2xl p-6 shadow-sm">
       <div className="flex items-center gap-4">
-        <div className={`w-12 h-12 rounded-xl ${colorClasses[color]} flex items-center justify-center`}>
+        <div className={`w-12 h-12 rounded-2xl ${colorClasses[color]} flex items-center justify-center`}>
           {icon}
         </div>
         <div>

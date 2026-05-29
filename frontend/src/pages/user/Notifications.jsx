@@ -120,11 +120,11 @@ export default function Notifications() {
               return (
                 <div
                   key={notification._id}
-                  className={`p-4 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors ${!notification.isRead ? 'bg-primary-50/30 dark:bg-primary-900/10' : ''
+                  className={`p-4 glass-nav-hover transition-colors ${!notification.isRead ? 'bg-primary-200/20 dark:bg-primary-400/8' : ''
                     }`}
                 >
                   <div className="flex items-start gap-4">
-                    <div className={`p-2 rounded-lg ${config.bg} ${config.text} mt-1`}>
+                    <div className={`p-2 rounded-xl ${config.bg} ${config.text} mt-1`}>
                       <Icon className="w-5 h-5" />
                     </div>
 
@@ -151,7 +151,7 @@ export default function Notifications() {
                           {!notification.isRead && (
                             <button
                               onClick={() => handleMarkAsRead(notification._id)}
-                              className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                              className="p-2 glass-nav-hover rounded-xl transition-colors"
                               title="Đánh dấu đã đọc"
                             >
                               <Check className="w-4 h-4 text-gray-500" />
@@ -159,7 +159,7 @@ export default function Notifications() {
                           )}
                           <button
                             onClick={() => handleDelete(notification._id)}
-                            className="p-2 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                            className="p-2 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-colors"
                             title="Xóa thông báo"
                           >
                             <Trash2 className="w-4 h-4 text-red-500" />
@@ -173,7 +173,7 @@ export default function Notifications() {
             })
           ) : (
             <div className="p-12 text-center">
-              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
+              <div className="w-16 h-16 mx-auto mb-4 rounded-full glass-subtle flex items-center justify-center">
                 <Bell className="w-8 h-8 text-gray-400" />
               </div>
               <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">

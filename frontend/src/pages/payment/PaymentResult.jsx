@@ -32,7 +32,7 @@ export default function PaymentResult() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <Loader2 className="w-16 h-16 animate-spin text-primary-600 mx-auto mb-4" />
           <p className="text-xl text-gray-600 dark:text-gray-400">Đang xử lý kết quả thanh toán...</p>
@@ -58,24 +58,9 @@ export default function PaymentResult() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
-      {/* Background Video */}
-      <video autoPlay loop muted playsInline className="absolute inset-0 w-full h-full object-cover z-0 opacity-30">
-        <source src="https://res.cloudinary.com/dfonotyfb/video/upload/v1775585556/dds3_1_rqhg7x.mp4" type="video/mp4" />
-      </video>
-
-      {/* Cinematic Overlays */}
-      <div className="absolute inset-0 z-10 bg-gradient-to-br from-black/90 via-primary-950/80 to-black/90" />
-      <div className="absolute inset-0 z-10 bg-[radial-gradient(ellipse_at_center,transparent_30%,black_100%)]" />
-      <div className="absolute inset-0 z-10 opacity-[0.03]"
-        style={{
-          backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")`,
-          backgroundSize: '256px 256px'
-        }}
-      />
-
-      <div className="max-w-md w-full relative z-20">
-        <div className={`bg-white/10 backdrop-blur-xl rounded-2xl shadow-xl p-8 text-center border ${isSuccess ? 'border-green-500/50' : 'border-red-500/50'}`}>
+    <div className="min-h-screen bg-gradient-to-br from-primary-100 via-primary-200 to-accent-100 flex items-center justify-center p-4">
+      <div className="max-w-md w-full">
+        <div className={`bg-white/10 backdrop-blur-xl rounded-3xl shadow-xl p-8 text-center border ${isSuccess ? 'border-green-500/50' : 'border-red-500/50'}`}>
           {/* Icon */}
           <div className={`w-24 h-24 mx-auto rounded-full flex items-center justify-center mb-6 ${isSuccess ? 'bg-green-500/20' : 'bg-red-500/20'}`}>
             {isSuccess ? (
@@ -107,7 +92,7 @@ export default function PaymentResult() {
 
           {/* Order ID & Amount */}
           {orderId && isSuccess && (
-            <div className="bg-white/10 rounded-xl p-4 mb-6 space-y-2">
+            <div className="bg-white/10 rounded-2xl p-4 mb-6 space-y-2">
               <div className="flex justify-between">
                 <span className="text-white/60">Mã đơn hàng</span>
                 <span className="font-mono font-semibold text-white">{orderId.slice(-8).toUpperCase()}</span>
@@ -123,7 +108,7 @@ export default function PaymentResult() {
 
           {/* Error Code */}
           {errorCode && !isSuccess && (
-            <div className="bg-red-500/20 rounded-xl p-4 mb-6">
+            <div className="bg-red-500/20 rounded-2xl p-4 mb-6">
               <p className="text-red-400 text-sm mb-1">Mã lỗi</p>
               <p className="font-mono font-semibold text-white">{errorCode}</p>
               <p className="text-red-300/60 text-xs mt-2">
@@ -136,7 +121,7 @@ export default function PaymentResult() {
           <div className="space-y-3">
             <button
               onClick={() => navigate('/transactions')}
-              className={`block w-full py-3 px-6 rounded-xl font-medium transition-all duration-300 flex items-center justify-center gap-2 ${
+              className={`block w-full py-3 px-6 rounded-2xl font-medium transition-all duration-300 flex items-center justify-center gap-2 ${
                 isSuccess
                   ? 'bg-green-500 text-white hover:bg-green-600 hover:shadow-lg hover:shadow-green-500/25'
                   : 'bg-primary-500 text-white hover:bg-primary-600'
@@ -150,7 +135,7 @@ export default function PaymentResult() {
             {isSuccess && (
               <button
                 onClick={() => navigate('/my-documents')}
-                className="block w-full py-3 px-6 rounded-xl font-medium bg-blue-500 text-white hover:bg-blue-600 transition-all duration-300 flex items-center justify-center gap-2"
+                className="block w-full py-3 px-6 rounded-2xl font-medium bg-blue-500 text-white hover:bg-blue-600 transition-all duration-300 flex items-center justify-center gap-2"
               >
                 <ArrowRight className="w-5 h-5" />
                 Xem tài liệu đã mua
@@ -159,7 +144,7 @@ export default function PaymentResult() {
 
             <button
               onClick={() => navigate('/dashboard')}
-              className="block w-full py-3 px-6 rounded-xl font-medium border border-white/20 text-white hover:bg-white/10 transition-all duration-300 flex items-center justify-center gap-2"
+              className="block w-full py-3 px-6 rounded-2xl font-medium border border-white/20 text-white hover:bg-white/10 transition-all duration-300 flex items-center justify-center gap-2"
             >
               <Home className="w-5 h-5" />
               Về trang chủ

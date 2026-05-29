@@ -213,12 +213,12 @@ export default function Profile() {
                 {profile?.name}
               </h2>
               <p className="text-gray-500 dark:text-gray-400">{profile?.email}</p>
-              <span className="inline-block mt-2 px-3 py-1 bg-primary-100 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 rounded-full text-sm font-medium">
+              <span className="inline-block mt-2 px-3 py-1 bg-primary-100 dark:bg-primary-400/15 text-primary-600 dark:text-primary-400 rounded-full text-sm font-medium">
                 {profile?.role === 'admin' ? 'Quản trị viên' : 'Người dùng'}
               </span>
             </div>
 
-            <div className="mt-6 pt-6 border-t border-gray-100 dark:border-gray-700 space-y-4">
+            <div className="mt-6 pt-6 border-t glass-divider border space-y-4">
               <div className="flex items-center gap-3 text-gray-600 dark:text-gray-400">
                 <User className="w-5 h-5" />
                 <span>Tham gia: {profile?.createdAt ? new Date(profile.createdAt).toLocaleDateString('vi-VN') : 'N/A'}</span>
@@ -259,7 +259,7 @@ export default function Profile() {
                 />
               </div>
 
-              <div className="flex items-center justify-between mt-6 pt-6 border-t border-gray-100 dark:border-gray-700">
+              <div className="flex items-center justify-between mt-6 pt-6 border-t glass-divider border">
                 <Button
                   type="button"
                   variant="outline"
@@ -284,8 +284,8 @@ export default function Profile() {
                   const Icon = ACTIVITY_ICONS[activity.type] || User;
                   const label = ACTIVITY_LABELS[activity.type] || activity.description || 'Hoạt động';
                   return (
-                    <div key={index} className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
-                      <div className="w-10 h-10 rounded-full bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center">
+                    <div key={index} className="flex items-center gap-3 p-3 glass-subtle/50 rounded-xl">
+                      <div className="w-10 h-10 rounded-full bg-primary-100 dark:bg-primary-400/15 flex items-center justify-center">
                         <Icon className="w-5 h-5 text-primary-600" />
                       </div>
                       <div className="flex-1">
@@ -329,17 +329,17 @@ export default function Profile() {
               <div>
                 {/* Stats Summary */}
                 <div className="grid grid-cols-3 gap-4 mb-6">
-                  <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-4 text-center">
+                  <div className="bg-green-50 dark:bg-green-900/20 rounded-xl p-4 text-center">
                     <TrendingUp className="w-6 h-6 text-green-600 mx-auto mb-2" />
                     <p className="text-2xl font-bold text-green-600">{formatCurrency(transactionStats.totalIncome)}</p>
                     <p className="text-xs text-gray-500">Tổng thu</p>
                   </div>
-                  <div className="bg-red-50 dark:bg-red-900/20 rounded-lg p-4 text-center">
+                  <div className="bg-red-50 dark:bg-red-900/20 rounded-xl p-4 text-center">
                     <TrendingDown className="w-6 h-6 text-red-600 mx-auto mb-2" />
                     <p className="text-2xl font-bold text-red-600">{formatCurrency(transactionStats.totalExpense)}</p>
                     <p className="text-xs text-gray-500">Tổng chi</p>
                   </div>
-                  <div className="bg-primary-50 dark:bg-primary-900/20 rounded-lg p-4 text-center">
+                  <div className="bg-primary-200/25 dark:bg-primary-400/10 rounded-xl p-4 text-center">
                     <CreditCard className="w-6 h-6 text-primary-600 mx-auto mb-2" />
                     <p className={`text-2xl font-bold ${transactionStats.balance >= 0 ? 'text-primary-600' : 'text-red-600'}`}>
                       {formatCurrency(transactionStats.balance)}
@@ -355,7 +355,7 @@ export default function Profile() {
                       const TxnIcon = getTransactionIcon(txn.type);
                       const colorClass = getTransactionColor(txn.type);
                       return (
-                        <div key={txn._id} className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
+                        <div key={txn._id} className="flex items-center gap-3 p-3 glass-subtle/50 rounded-xl">
                           <div className={`w-10 h-10 rounded-full flex items-center justify-center ${colorClass}`}>
                             <TxnIcon className="w-5 h-5" />
                           </div>

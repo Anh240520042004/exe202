@@ -37,9 +37,9 @@ export default function ForgotPassword() {
 
   if (submitted) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-900 via-primary-800 to-accent-900 p-4">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-400/90 via-primary-300/90 to-accent-300/90 p-4">
         <div className="w-full max-w-md text-center">
-          <div className="bg-white/10 backdrop-blur-xl rounded-2xl p-8 shadow-2xl border border-white/20">
+          <div className="glass-panel rounded-ios-lg p-8 border-white/25">
             <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-green-500/20 flex items-center justify-center">
               <svg className="w-8 h-8 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
@@ -61,7 +61,7 @@ export default function ForgotPassword() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-900 via-primary-800 to-accent-900 p-4">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-400/90 via-primary-300/90 to-accent-300/90 p-4">
       <div className="w-full max-w-md">
         <Link 
           to="/login" 
@@ -72,14 +72,14 @@ export default function ForgotPassword() {
         </Link>
 
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-white/10 backdrop-blur-lg mb-4">
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-3xl bg-white/10 backdrop-blur-lg mb-4">
             <span className="text-3xl font-bold text-white">F</span>
           </div>
           <h1 className="text-3xl font-bold text-white mb-2">Quên mật khẩu?</h1>
           <p className="text-primary-200">Nhập email để nhận link đặt lại mật khẩu</p>
         </div>
 
-        <div className="bg-white/10 backdrop-blur-xl rounded-2xl p-8 shadow-2xl border border-white/20">
+        <div className="glass-panel rounded-ios-lg p-8 border-white/25">
           <form onSubmit={handleSubmit} className="space-y-5">
             <Input
               type="email"
@@ -87,12 +87,13 @@ export default function ForgotPassword() {
               label="Email"
               placeholder="Nhập email của bạn"
               icon={Mail}
+              variant="auth"
               value={email}
               onChange={handleChange}
             />
 
             {error && (
-              <div className="p-3 bg-red-500/20 border border-red-500/30 rounded-lg text-red-200 text-sm">
+              <div className="p-3 bg-red-500/20 border border-red-500/30 rounded-xl text-red-200 text-sm">
                 {error}
               </div>
             )}
@@ -109,7 +110,7 @@ export default function ForgotPassword() {
         </div>
 
         <p className="text-center text-primary-200 text-sm mt-6">
-          FPTAIEZ - Quản lý tài chính thông minh
+          F.EdTech - Quản lý tài chính thông minh
         </p>
       </div>
     </div>

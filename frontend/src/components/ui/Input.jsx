@@ -6,20 +6,29 @@ const Input = forwardRef(({
   type = 'text',
   className = '',
   containerClassName = '',
+  variant = 'default',
   icon: Icon,
   ...props
 }, ref) => {
+  const inputClass = variant === 'auth'
+    ? 'glass-input-auth'
+    : 'glass-input';
+
   return (
     <div className={`mb-4 ${containerClassName}`}>
       {label && (
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+        <label className={`block text-sm font-medium mb-1.5 ${
+          variant === 'auth'
+            ? 'text-primary-100'
+            : 'text-gray-700 dark:text-gray-300'
+        }`}>
           {label}
         </label>
       )}
       <div className="relative">
         {Icon && (
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <Icon className="h-5 w-5 text-gray-400" />
+            <Icon className={`h-5 w-5 ${variant === 'auth' ? 'text-white/60' : 'text-gray-400'}`} />
           </div>
         )}
         <input
@@ -28,13 +37,12 @@ const Input = forwardRef(({
           className={`
             w-full px-4 py-2.5
             ${Icon ? 'pl-10' : ''}
-            bg-white dark:bg-gray-800
-            border border-gray-300 dark:border-gray-600
-            rounded-lg
+            ${inputClass}
             text-gray-900 dark:text-gray-100
             placeholder-gray-500 dark:placeholder-gray-400
-            focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent
+            focus:outline-none focus:ring-2 focus:ring-primary-500/50 focus:border-transparent
             transition-all duration-200
+            ${variant === 'auth' ? 'text-white placeholder-white/55' : ''}
             ${error ? 'border-red-500 focus:ring-red-500' : ''}
             ${className}
           `}
@@ -42,7 +50,9 @@ const Input = forwardRef(({
         />
       </div>
       {error && (
-        <p className="mt-1.5 text-sm text-red-500">{error}</p>
+        <p className={`mt-1.5 text-sm ${variant === 'auth' ? 'text-red-200' : 'text-red-500'}`}>
+          {error}
+        </p>
       )}
     </div>
   );

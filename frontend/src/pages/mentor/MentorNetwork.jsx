@@ -50,24 +50,24 @@ const MentorNetwork = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <div className="bg-gradient-to-r from-purple-600 to-indigo-700 text-white py-12">
-        <div className="container mx-auto px-4">
-          <h1 className="text-4xl font-bold mb-4">Mentor Network</h1>
-          <p className="text-lg text-purple-100 mb-6">
+    <div className="min-h-screen">
+      <div className="glass-hero glass-hero-purple mx-4 mt-2 px-6 py-10 md:px-10">
+        <div className="max-w-7xl mx-auto">
+          <h1 className="text-4xl font-bold mb-3 text-gray-900 dark:text-white">Mentor Network</h1>
+          <p className="text-lg text-gray-600 dark:text-gray-300 mb-6">
             Kết nối với mentor thực chiến từ FPT Software, VNG, và các công ty hàng đầu
           </p>
-          <div className="flex flex-wrap gap-4">
-            <div className="flex items-center gap-2 bg-white/20 px-4 py-2 rounded-lg">
-              <Award size={20} />
+          <div className="flex flex-wrap gap-3">
+            <div className="glass-chip glass-nav-link flex items-center gap-2 px-4 py-2 text-gray-800 dark:text-gray-200">
+              <Award size={20} className="text-primary-500" />
               <span>{mentors.length} Mentors</span>
             </div>
-            <div className="flex items-center gap-2 bg-white/20 px-4 py-2 rounded-lg">
-              <Star size={20} className="text-yellow-400" />
+            <div className="glass-chip glass-nav-link flex items-center gap-2 px-4 py-2 text-gray-800 dark:text-gray-200">
+              <Star size={20} className="text-amber-400" />
               <span>4.8 Rating</span>
             </div>
-            <div className="flex items-center gap-2 bg-white/20 px-4 py-2 rounded-lg">
-              <MessageCircle size={20} />
+            <div className="glass-chip glass-nav-link flex items-center gap-2 px-4 py-2 text-gray-800 dark:text-gray-200">
+              <MessageCircle size={20} className="text-primary-500" />
               <span>1000+ Sessions</span>
             </div>
           </div>
@@ -99,13 +99,13 @@ const MentorNetwork = () => {
                   placeholder="Tìm kiếm mentor..."
                   value={filters.search}
                   onChange={(e) => setFilters({ ...filters, search: e.target.value })}
-                  className="pl-4 pr-10 py-2 border rounded-lg dark:bg-gray-800 dark:border-gray-700"
+                  className="glass-input glass-hover-card pl-4 pr-10 py-2 min-w-[200px]"
                 />
               </div>
               <select
                 value={filters.subject}
                 onChange={(e) => setFilters({ ...filters, subject: e.target.value })}
-                className="px-4 py-2 border rounded-lg dark:bg-gray-800 dark:border-gray-700"
+                className="glass-input glass-hover-card px-4 py-2"
               >
                 <option value="">Tất cả môn</option>
                 <option value="SWP391">SWP391</option>
@@ -119,7 +119,7 @@ const MentorNetwork = () => {
           {isLoading ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {[...Array(6)].map((_, i) => (
-                <div key={i} className="bg-white dark:bg-gray-800 rounded-xl h-80 animate-pulse" />
+                <div key={i} className="glass-card rounded-2xl h-80 animate-pulse" />
               ))}
             </div>
           ) : mentors.length > 0 ? (
@@ -129,11 +129,11 @@ const MentorNetwork = () => {
               ))}
             </div>
           ) : (
-            <div className="text-center py-12">
+            <div className="text-center py-12 glass-card glass-hover-card rounded-2xl p-8">
               <p className="text-gray-500">Không tìm thấy mentor nào</p>
               <button
                 onClick={() => setFilters({ search: '', subject: '' })}
-                className="mt-4 px-4 py-2 bg-purple-600 text-white rounded-lg"
+                className="glass-nav-link mt-4 px-4 py-2 bg-primary-400/60 backdrop-blur-md text-white rounded-xl border border-white/25 hover:bg-primary-500/70"
               >
                 Xóa bộ lọc
               </button>
@@ -153,8 +153,8 @@ const TopMentorCard = ({ mentor, rank, onBook }) => {
   const rankEmoji = rank === 1 ? '🥇' : rank === 2 ? '🥈' : '🥉';
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 relative overflow-hidden">
-      <div className="absolute top-0 right-0 w-20 h-20 bg-yellow-100 rounded-bl-full">
+    <div className="glass-card glass-hover-card rounded-2xl p-6 relative overflow-hidden">
+      <div className="absolute top-0 right-0 w-20 h-20 glass-subtle rounded-bl-full">
         <span className="absolute top-2 right-2 text-3xl">{rankEmoji}</span>
       </div>
       <div className="flex items-center gap-4 mb-4">
@@ -175,7 +175,7 @@ const TopMentorCard = ({ mentor, rank, onBook }) => {
         </div>
         <div className="flex flex-wrap gap-2 mt-2">
           {mentor.mentorProfile?.expertise?.slice(0, 3).map(subject => (
-            <span key={subject} className="px-2 py-1 bg-purple-100 dark:bg-purple-900 text-purple-600 dark:text-purple-300 rounded text-xs">
+            <span key={subject} className="glass-chip px-2 py-1 text-primary-600 dark:text-primary-300 text-xs">
               {subject}
             </span>
           ))}
@@ -183,7 +183,7 @@ const TopMentorCard = ({ mentor, rank, onBook }) => {
       </div>
       <button
         onClick={onBook}
-        className="w-full py-2 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-lg hover:opacity-90 transition-opacity"
+        className="glass-nav-link w-full py-2 bg-primary-400/60 backdrop-blur-md text-white rounded-xl border border-white/25 hover:bg-primary-500/70 transition-all"
       >
         Book Session
       </button>
@@ -193,7 +193,7 @@ const TopMentorCard = ({ mentor, rank, onBook }) => {
 
 const MentorCard = ({ mentor, onBook }) => {
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm hover:shadow-lg transition-all p-6">
+    <div className="glass-card glass-hover-card rounded-2xl p-6">
       <div className="flex items-start gap-4 mb-4">
         <img src={mentor.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${mentor._id}`} alt={mentor.name} className="w-14 h-14 rounded-full" />
         <div className="flex-1">
@@ -211,21 +211,21 @@ const MentorCard = ({ mentor, onBook }) => {
       </p>
       <div className="flex flex-wrap gap-2 mb-4">
         {mentor.mentorProfile?.expertise?.slice(0, 3).map(subject => (
-          <span key={subject} className="px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded text-xs">
+          <span key={subject} className="px-2 py-1 glass-subtle rounded text-xs">
             {subject}
           </span>
         ))}
       </div>
-      <div className="flex items-center justify-between pt-4 border-t dark:border-gray-700">
+      <div className="flex items-center justify-between pt-4 border-t glass-divider">
         <div>
-          <span className="text-lg font-bold text-purple-600">
+          <span className="text-lg font-bold text-primary-600 dark:text-primary-400">
             {mentor.mentorProfile?.pricePerHour?.toLocaleString() || 0}đ
           </span>
           <span className="text-sm text-gray-500">/hour</span>
         </div>
         <button
           onClick={onBook}
-          className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+          className="glass-nav-link px-4 py-2 bg-primary-400/60 backdrop-blur-md text-white rounded-xl border border-white/25 hover:bg-primary-500/70 transition-all"
         >
           Book
         </button>
@@ -263,9 +263,9 @@ const BookingModal = ({ mentor, onClose }) => {
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white dark:bg-gray-800 rounded-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
-        <div className="p-6 border-b dark:border-gray-700">
+    <div className="fixed inset-0 glass-overlay flex items-center justify-center z-50 p-4">
+      <div className="glass-modal rounded-3xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
+        <div className="p-6 border-b glass-divider">
           <div className="flex items-center gap-4">
             <img src={mentor.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${mentor._id}`} alt={mentor.name} className="w-12 h-12 rounded-full" />
             <div>
@@ -281,7 +281,7 @@ const BookingModal = ({ mentor, onClose }) => {
               required
               value={formData.subject}
               onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
-              className="w-full px-4 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600"
+              className="glass-input w-full px-4 py-2"
             >
               <option value="">Select subject</option>
               {mentor.mentorProfile?.expertise?.map(s => (
@@ -296,7 +296,7 @@ const BookingModal = ({ mentor, onClose }) => {
               value={formData.topic}
               onChange={(e) => setFormData({ ...formData, topic: e.target.value })}
               placeholder="What do you want to discuss?"
-              className="w-full px-4 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600"
+              className="glass-input w-full px-4 py-2"
             />
           </div>
           <div className="grid grid-cols-2 gap-4">
@@ -307,7 +307,7 @@ const BookingModal = ({ mentor, onClose }) => {
                 required
                 value={formData.date}
                 onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                className="w-full px-4 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600"
+                className="glass-input w-full px-4 py-2"
               />
             </div>
             <div>
@@ -318,7 +318,7 @@ const BookingModal = ({ mentor, onClose }) => {
                   const [start, end] = e.target.value.split('-');
                   setFormData({ ...formData, startTime: start, endTime: end });
                 }}
-                className="w-full px-4 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600"
+                className="glass-input w-full px-4 py-2"
               >
                 <option value="09:00-10:00">1 hour</option>
                 <option value="09:00-11:00">2 hours</option>
@@ -333,21 +333,21 @@ const BookingModal = ({ mentor, onClose }) => {
               onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
               placeholder="Any additional information..."
               rows={3}
-              className="w-full px-4 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600"
+              className="glass-input w-full px-4 py-2"
             />
           </div>
           <div className="flex gap-4 pt-4">
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 py-2 border rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"
+              className="flex-1 py-2 border rounded-xl glass-nav-hover"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={isSubmitting}
-              className="flex-1 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50"
+              className="glass-nav-link flex-1 py-2 bg-primary-400/60 backdrop-blur-md text-white rounded-xl border border-white/25 hover:bg-primary-500/70 disabled:opacity-50"
             >
               {isSubmitting ? 'Booking...' : 'Confirm Booking'}
             </button>

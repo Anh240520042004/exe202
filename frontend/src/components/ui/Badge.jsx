@@ -7,12 +7,12 @@ export default function Badge({
   className = '' 
 }) {
   const variants = {
-    default: 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300',
-    primary: 'bg-primary-100 text-primary-800 dark:bg-primary-900/30 dark:text-primary-400',
-    success: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400',
-    danger: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400',
-    warning: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400',
-    info: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400',
+    default: 'bg-white/20 text-gray-700 dark:bg-white/8 dark:text-gray-300 backdrop-blur-md',
+    primary: 'bg-primary-400/15 text-primary-600 dark:text-primary-300 backdrop-blur-md',
+    success: 'bg-emerald-400/15 text-emerald-700 dark:text-emerald-300 backdrop-blur-md',
+    danger: 'bg-rose-400/15 text-rose-700 dark:text-rose-300 backdrop-blur-md',
+    warning: 'bg-amber-300/15 text-amber-700 dark:text-amber-300 backdrop-blur-md',
+    info: 'bg-sky-400/15 text-sky-700 dark:text-sky-300 backdrop-blur-md',
   };
 
   const sizes = {

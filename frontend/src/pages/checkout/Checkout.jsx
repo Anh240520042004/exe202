@@ -290,7 +290,7 @@ export default function Checkout() {
   // ─── Loading ─────────────────────────────────────────────────────────────────
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <Loader2 className="w-12 h-12 animate-spin text-primary-600 mx-auto mb-4" />
           <p className="text-gray-500">Đang tải thông tin...</p>
@@ -301,11 +301,11 @@ export default function Checkout() {
 
   if (!itemDetails) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
           <p className="text-gray-500">Không tìm thấy sản phẩm</p>
-          <button onClick={() => navigate(-1)} className="mt-4 px-4 py-2 bg-primary-600 text-white rounded-lg">
+          <button onClick={() => navigate(-1)} className="mt-4 px-4 py-2 bg-primary-400/70 text-white rounded-xl">
             Quay lại
           </button>
         </div>
@@ -316,8 +316,8 @@ export default function Checkout() {
   // ─── Payment confirmed screen ─────────────────────────────────────────────────
   if (paymentConfirmed) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center p-4">
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-8 max-w-md w-full text-center">
+      <div className="min-h-screen flex items-center justify-center p-4">
+        <div className="glass-card rounded-3xl shadow-lg p-8 max-w-md w-full text-center">
           {/* Animated checkmark */}
           <div className="w-24 h-24 mx-auto mb-6 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
             <CheckCircle className="w-14 h-14 text-green-500" />
@@ -334,7 +334,7 @@ export default function Checkout() {
           </p>
 
           {/* Order info */}
-          <div className="bg-gray-50 dark:bg-gray-700 rounded-xl p-4 mb-6 text-left">
+          <div className="glass-subtle rounded-2xl p-4 mb-6 text-left">
             <div className="flex justify-between items-center mb-2">
               <span className="text-sm text-gray-500">Tài liệu</span>
               <span className="text-sm font-medium text-gray-900 dark:text-white">{itemDetails.title}</span>
@@ -353,7 +353,7 @@ export default function Checkout() {
 
           {/* Points earned */}
           {estimatedPointsEarned > 0 && (
-            <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl p-3 mb-6 flex items-center gap-3">
+            <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-2xl p-3 mb-6 flex items-center gap-3">
               <Sparkles className="w-5 h-5 text-amber-500 flex-shrink-0" />
               <p className="text-sm text-amber-700 dark:text-amber-300">
                 Bạn vừa nhận được <strong>{formatPoints(estimatedPointsEarned)} điểm</strong> thưởng!
@@ -364,14 +364,14 @@ export default function Checkout() {
           <div className="flex flex-col gap-3">
             <button
               onClick={() => navigate('/library')}
-              className="w-full py-3 bg-primary-600 text-white rounded-xl font-medium hover:bg-primary-700 flex items-center justify-center gap-2 transition-colors"
+              className="w-full py-3 bg-primary-400/70 text-white rounded-2xl font-medium hover:bg-primary-500/75 flex items-center justify-center gap-2 transition-colors"
             >
               <Download className="w-5 h-5" />
               Tải tài liệu ngay
             </button>
             <button
               onClick={() => navigate('/dashboard')}
-              className="w-full py-3 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-xl font-medium hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+              className="w-full py-3 glass-subtle text-gray-700 dark:text-gray-300 rounded-2xl font-medium hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
             >
               Về trang chủ
             </button>
@@ -384,8 +384,8 @@ export default function Checkout() {
   // ─── Points success screen ────────────────────────────────────────────────────
   if (showPointsSuccess) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center p-4">
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-8 max-w-md w-full text-center">
+      <div className="min-h-screen flex items-center justify-center p-4">
+        <div className="glass-card rounded-3xl shadow-lg p-8 max-w-md w-full text-center">
           <div className="w-24 h-24 mx-auto mb-6 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center">
             <Gift className="w-14 h-14 text-amber-500" />
           </div>
@@ -398,14 +398,14 @@ export default function Checkout() {
           <div className="flex flex-col gap-3">
             <button
               onClick={() => navigate('/library')}
-              className="w-full py-3 bg-amber-500 text-white rounded-xl font-medium hover:bg-amber-600 flex items-center justify-center gap-2"
+              className="w-full py-3 bg-amber-500 text-white rounded-2xl font-medium hover:bg-amber-600 flex items-center justify-center gap-2"
             >
               <Download className="w-5 h-5" />
               Tải tài liệu ngay
             </button>
             <button
               onClick={() => navigate('/dashboard')}
-              className="w-full py-3 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-xl font-medium hover:bg-gray-200"
+              className="w-full py-3 glass-subtle text-gray-700 dark:text-gray-300 rounded-2xl font-medium hover:bg-gray-200"
             >
               Về trang chủ
             </button>
@@ -417,7 +417,7 @@ export default function Checkout() {
 
   // ─── Main checkout UI ─────────────────────────────────────────────────────────
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
+    <div className="min-h-screen py-8">
       <div className="container mx-auto px-4 max-w-4xl">
         <button
           onClick={() => navigate(-1)}
@@ -433,10 +433,10 @@ export default function Checkout() {
           {/* Left column */}
           <div className="lg:col-span-2 space-y-6">
             {/* Product info */}
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
+            <div className="glass-card rounded-2xl shadow-sm p-6">
               <h2 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Thông tin sản phẩm</h2>
               <div className="flex gap-4">
-                <div className="w-24 h-24 bg-gray-100 dark:bg-gray-700 rounded-lg overflow-hidden flex-shrink-0 flex items-center justify-center">
+                <div className="w-24 h-24 glass-subtle rounded-xl overflow-hidden flex-shrink-0 flex items-center justify-center">
                   {itemDetails.previewImage ? (
                     <img src={itemDetails.previewImage} alt={itemDetails.title} className="w-full h-full object-cover" />
                   ) : (
@@ -459,7 +459,7 @@ export default function Checkout() {
             </div>
 
             {/* Points earned info */}
-            <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl p-4 flex items-center gap-3">
+            <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-2xl p-4 flex items-center gap-3">
               <Sparkles className="w-5 h-5 text-amber-600 flex-shrink-0" />
               <div>
                 <p className="font-medium text-amber-800 dark:text-amber-200 text-sm">
@@ -473,13 +473,13 @@ export default function Checkout() {
 
             {/* Payment method selection */}
             {!orderCreated && (
-              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
+              <div className="glass-card rounded-2xl shadow-sm p-6">
                 <h2 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Phương thức thanh toán</h2>
                 <div className="space-y-3">
                   {/* Points */}
-                  <label className={`flex items-center gap-4 p-4 border-2 rounded-xl cursor-pointer transition-all ${selectedPaymentMethod === 'points' ? 'border-amber-500 bg-amber-50 dark:bg-amber-900/20' : 'border-gray-200 dark:border-gray-700'}`}>
+                  <label className={`flex items-center gap-4 p-4 border-2 rounded-2xl cursor-pointer transition-all ${selectedPaymentMethod === 'points' ? 'border-amber-500 bg-amber-50 dark:bg-amber-900/20' : 'glass-divider border'}`}>
                     <input type="radio" name="paymentMethod" value="points" checked={selectedPaymentMethod === 'points'} onChange={(e) => setSelectedPaymentMethod(e.target.value)} className="sr-only" />
-                    <div className="w-12 h-12 bg-gradient-to-br from-amber-400 to-orange-500 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <div className="w-12 h-12 bg-gradient-to-br from-amber-400 to-orange-500 rounded-xl flex items-center justify-center flex-shrink-0">
                       <Coins className="w-6 h-6 text-white" />
                     </div>
                     <div className="flex-1">
@@ -490,9 +490,9 @@ export default function Checkout() {
                   </label>
 
                   {/* SePay */}
-                  <label className={`flex items-center gap-4 p-4 border-2 rounded-xl cursor-pointer transition-all ${selectedPaymentMethod === 'sepay' ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20' : 'border-gray-200 dark:border-gray-700'}`}>
+                  <label className={`flex items-center gap-4 p-4 border-2 rounded-2xl cursor-pointer transition-all ${selectedPaymentMethod === 'sepay' ? 'border-primary-500 bg-primary-200/25 dark:bg-primary-400/10' : 'glass-divider border'}`}>
                     <input type="radio" name="paymentMethod" value="sepay" checked={selectedPaymentMethod === 'sepay'} onChange={(e) => setSelectedPaymentMethod(e.target.value)} className="sr-only" />
-                    <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-xl flex items-center justify-center flex-shrink-0">
                       <span className="text-lg font-bold text-white">S</span>
                     </div>
                     <div className="flex-1">
@@ -503,9 +503,9 @@ export default function Checkout() {
                   </label>
 
                   {/* VNPay */}
-                  <label className={`flex items-center gap-4 p-4 border-2 rounded-xl cursor-pointer transition-all ${selectedPaymentMethod === 'vnpay' ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20' : 'border-gray-200 dark:border-gray-700'}`}>
+                  <label className={`flex items-center gap-4 p-4 border-2 rounded-2xl cursor-pointer transition-all ${selectedPaymentMethod === 'vnpay' ? 'border-primary-500 bg-primary-200/25 dark:bg-primary-400/10' : 'glass-divider border'}`}>
                     <input type="radio" name="paymentMethod" value="vnpay" checked={selectedPaymentMethod === 'vnpay'} onChange={(e) => setSelectedPaymentMethod(e.target.value)} className="sr-only" />
-                    <div className="w-12 h-12 bg-gradient-to-br from-red-500 to-orange-500 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <div className="w-12 h-12 bg-gradient-to-br from-red-500 to-orange-500 rounded-xl flex items-center justify-center flex-shrink-0">
                       <span className="text-lg font-bold text-white">V</span>
                     </div>
                     <div className="flex-1">
@@ -520,11 +520,11 @@ export default function Checkout() {
 
             {/* QR Payment UI */}
             {orderCreated && sepayPaymentData && selectedPaymentMethod === 'sepay' && (
-              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
+              <div className="glass-card rounded-2xl shadow-sm p-6">
                 <h2 className="text-lg font-semibold mb-2 text-gray-900 dark:text-white">Quét mã QR để thanh toán</h2>
 
                 {pollTimeout ? (
-                  <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-3 mb-5 text-sm text-red-700 dark:text-red-300">
+                  <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-3 mb-5 text-sm text-red-700 dark:text-red-300">
                     Hệ thống chưa nhận được xác nhận tự động sau nhiều lần kiểm tra. Nếu bạn đã chuyển khoản thành công, hãy kiểm tra lại webhook SePay rồi tải lại trang.
                   </div>
                 ) : (
@@ -534,7 +534,7 @@ export default function Checkout() {
                       <span>Đang chờ xác nhận thanh toán... ({pollingCount > 0 ? `đã kiểm tra ${pollingCount} lần` : 'đang kiểm tra'})</span>
                     </div>
 
-                    <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-3 mb-5 text-sm text-yellow-700 dark:text-yellow-300">
+                    <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-xl p-3 mb-5 text-sm text-yellow-700 dark:text-yellow-300">
                       Sau khi chuyển khoản thành công, trang sẽ tự động chuyển sang màn hình xác nhận. Không cần làm gì thêm.
                     </div>
                   </>
@@ -543,11 +543,11 @@ export default function Checkout() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {/* QR */}
                   <div className="flex flex-col items-center">
-                    <div className="bg-white p-3 rounded-xl border-2 border-dashed border-gray-300">
+                    <div className="bg-white p-3 rounded-2xl border-2 border-dashed border-gray-300">
                       {sepayPaymentData.qrUrl ? (
                         <img src={sepayPaymentData.qrUrl} alt="Mã QR thanh toán" className="w-52 h-52 object-contain" />
                       ) : (
-                        <div className="w-52 h-52 flex items-center justify-center bg-gray-50 rounded-lg">
+                        <div className="w-52 h-52 flex items-center justify-center glass-subtle rounded-ios">
                           <QrCode className="w-16 h-16 text-gray-400" />
                         </div>
                       )}
@@ -556,7 +556,7 @@ export default function Checkout() {
                   </div>
 
                   {/* Bank info */}
-                  <div className="bg-gray-50 dark:bg-gray-700 rounded-xl p-4 space-y-3">
+                  <div className="glass-subtle rounded-2xl p-4 space-y-3">
                     <h3 className="font-semibold text-gray-900 dark:text-white text-sm">Thông tin chuyển khoản</h3>
                     {[
                       { label: 'Ngân hàng', value: sepayPaymentData.bankInfo?.bankName || 'BIDV' },
@@ -586,7 +586,7 @@ export default function Checkout() {
 
             {/* VNPay redirect */}
             {orderCreated && selectedPaymentMethod === 'vnpay' && (
-              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 text-center">
+              <div className="glass-card rounded-2xl shadow-sm p-6 text-center">
                 <Loader2 className="w-10 h-10 animate-spin text-red-500 mx-auto mb-3" />
                 <p className="text-gray-600 dark:text-gray-400">Đang chuyển hướng đến VNPay...</p>
               </div>
@@ -595,7 +595,7 @@ export default function Checkout() {
 
           {/* Right column - Order summary */}
           <div className="lg:col-span-1">
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 sticky top-4">
+            <div className="glass-card rounded-2xl shadow-sm p-6 sticky top-4">
               <h2 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Tóm tắt đơn hàng</h2>
 
               <div className="space-y-2 mb-4 text-sm">
@@ -607,7 +607,7 @@ export default function Checkout() {
                 </div>
               </div>
 
-              <div className="border-t border-gray-200 dark:border-gray-700 pt-4 mb-6">
+              <div className="border-t glass-divider border pt-4 mb-6">
                 <div className="flex justify-between items-center">
                   <span className="font-medium text-gray-900 dark:text-white">Tổng cộng</span>
                   <span className="text-2xl font-bold text-primary-600">{formatPrice(itemDetails.price)}</span>
@@ -624,10 +624,10 @@ export default function Checkout() {
                 <button
                   onClick={handleCreateOrder}
                   disabled={paymentLoading || redeemingWithPoints || (selectedPaymentMethod === 'points' && !pointsRequired?.canFullyRedeem)}
-                  className={`w-full py-3 rounded-xl font-medium flex items-center justify-center gap-2 transition-colors disabled:opacity-50 ${
+                  className={`w-full py-3 rounded-2xl font-medium flex items-center justify-center gap-2 transition-colors disabled:opacity-50 ${
                     selectedPaymentMethod === 'points'
                       ? 'bg-amber-500 text-white hover:bg-amber-600'
-                      : 'bg-primary-600 text-white hover:bg-primary-700'
+                      : 'bg-primary-400/70 text-white hover:bg-primary-500/75'
                   }`}
                 >
                   {paymentLoading || redeemingWithPoints ? (
@@ -650,7 +650,7 @@ export default function Checkout() {
 
               {/* Points info */}
               {selectedPaymentMethod === 'points' && !orderCreated && pointsRequired && (
-                <div className="mt-4 p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg">
+                <div className="mt-4 p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl">
                   <div className="flex items-center gap-2 mb-1">
                     <Coins className="w-4 h-4 text-amber-600" />
                     <span className="text-sm font-medium text-amber-800 dark:text-amber-200">Điểm của bạn: {formatPoints(pointBalance)}</span>
@@ -669,7 +669,7 @@ export default function Checkout() {
               )}
 
               {/* Email notice */}
-              <div className="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700 flex items-start gap-3">
+              <div className="mt-6 pt-4 border-t glass-divider border flex items-start gap-3">
                 <Mail className="w-4 h-4 text-gray-400 mt-0.5" />
                 <p className="text-xs text-gray-500">Email xác nhận sẽ được gửi sau khi thanh toán thành công.</p>
               </div>

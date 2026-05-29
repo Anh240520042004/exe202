@@ -49,7 +49,7 @@ const Gamification = () => {
 
   return (
     <LoginRequired title="Thành tựu" message="Bạn cần đăng nhập để xem thành tựu và bảng xếp hạng">
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      <div className="min-h-screen">
       <div className="bg-gradient-to-r from-yellow-500 via-orange-500 to-red-500 text-white py-12">
         <div className="container mx-auto px-4">
           <h1 className="text-4xl font-bold mb-4 flex items-center gap-3">
@@ -66,10 +66,10 @@ const Gamification = () => {
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`px-6 py-3 rounded-xl font-medium capitalize transition-colors ${
+              className={`px-6 py-3 rounded-2xl font-medium capitalize transition-colors ${
                 activeTab === tab
                   ? 'bg-orange-500 text-white'
-                  : 'bg-white dark:bg-gray-800 hover:bg-orange-100 dark:hover:bg-orange-900'
+                  : 'glass-card hover:bg-orange-100 dark:hover:bg-orange-900'
               }`}
             >
               {tab}
@@ -80,7 +80,7 @@ const Gamification = () => {
         {isLoading ? (
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
             {[...Array(4)].map((_, i) => (
-              <div key={i} className="h-32 bg-white dark:bg-gray-800 rounded-xl animate-pulse" />
+              <div key={i} className="h-32 glass-card rounded-2xl animate-pulse" />
             ))}
           </div>
         ) : stats && (
@@ -117,7 +117,7 @@ const Gamification = () => {
             </div>
 
             {stats.progress !== undefined && (
-              <div className="bg-white dark:bg-gray-800 rounded-xl p-6 mb-8">
+              <div className="glass-card rounded-2xl p-6 mb-8">
                 <h3 className="font-bold mb-4">Level Progress</h3>
                 <div className="flex items-center gap-4">
                   <div className="w-16 h-16 rounded-full bg-gradient-to-br from-orange-400 to-red-500 flex items-center justify-center text-white text-2xl font-bold">
@@ -145,7 +145,7 @@ const Gamification = () => {
         )}
 
         {activeTab === 'leaderboard' && (
-          <div className="bg-white dark:bg-gray-800 rounded-xl overflow-hidden">
+          <div className="glass-card rounded-2xl overflow-hidden">
             <div className="p-6 border-b dark:border-gray-700">
               <h2 className="text-xl font-bold flex items-center gap-2">
                 <Trophy className="text-yellow-500" />
@@ -193,7 +193,7 @@ const Gamification = () => {
             {badges.map(badge => (
               <div
                 key={badge._id}
-                className={`bg-white dark:bg-gray-800 rounded-xl p-6 text-center relative overflow-hidden ${
+                className={`glass-card rounded-2xl p-6 text-center relative overflow-hidden ${
                   badge.earned ? 'ring-2 ring-green-500' : 'opacity-60'
                 }`}
               >
@@ -236,9 +236,9 @@ const StatCard = ({ icon, label, value, subtext, color }) => {
   };
 
   return (
-    <div className={`bg-white dark:bg-gray-800 rounded-xl p-6 border ${colorClasses[color]}`}>
+    <div className={`glass-card rounded-2xl p-6 border ${colorClasses[color]}`}>
       <div className="flex items-center gap-4">
-        <div className="w-12 h-12 rounded-xl bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
+        <div className="w-12 h-12 rounded-2xl glass-subtle flex items-center justify-center">
           {icon}
         </div>
         <div>

@@ -82,7 +82,7 @@ export default function CreateTransaction() {
       <div className="flex items-center gap-4">
         <button
           onClick={() => navigate('/transactions')}
-          className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
+          className="p-2 glass-nav-hover rounded-xl transition-colors"
         >
           <ArrowLeft className="w-5 h-5" />
         </button>
@@ -148,7 +148,7 @@ export default function CreateTransaction() {
             onChange={handleChange}
           />
 
-          <div className="flex justify-end gap-3 pt-4 border-t border-gray-100 dark:border-gray-700">
+          <div className="flex justify-end gap-3 pt-4 border-t glass-divider border">
             <Button type="button" variant="secondary" onClick={() => navigate('/transactions')}>
               Hủy
             </Button>

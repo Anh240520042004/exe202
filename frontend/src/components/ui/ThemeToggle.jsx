@@ -10,7 +10,7 @@ export default function ThemeToggle() {
   return (
     <button
       onClick={() => dispatch(toggleTheme())}
-      className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+      className="p-2 rounded-ios glass-nav-hover transition-colors"
       title={theme === 'dark' ? 'Chuyển sang chế độ sáng' : 'Chuyển sang chế độ tối'}
     >
       {theme === 'dark' ? (
