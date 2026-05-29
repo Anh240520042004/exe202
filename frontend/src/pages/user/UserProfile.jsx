@@ -67,11 +67,20 @@ export default function UserProfile() {
         { headers: { Authorization: `Bearer ${token}` } }
       );
       const following = data.data?.following ?? false;
+      const nextStats = data.data?.stats;
       setIsFollowing(following);
-      setStats(prev => prev ? {
-        ...prev,
-        followerCount: following ? prev.followerCount + 1 : prev.followerCount - 1,
-      } : prev);
+      setStats(prev => {
+        if (nextStats) {
+          return {
+            ...prev,
+            followerCount: nextStats.followerCount,
+          };
+        }
+        return prev ? {
+          ...prev,
+          followerCount: Math.max(0, following ? prev.followerCount + 1 : prev.followerCount - 1),
+        } : prev;
+      });
     } catch (err) {
       toast.error(err.response?.data?.message || 'Lỗi khi theo dõi');
     }

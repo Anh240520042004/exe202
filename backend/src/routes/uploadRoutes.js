@@ -3,12 +3,15 @@ import { protect } from '../middleware/auth.js';
 import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
+import { fileURLToPath } from 'url';
 import { apiSuccess, apiError } from '../utils/apiResponse.js';
 
 const router = express.Router();
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Ensure upload directory exists
-const uploadDir = path.join(process.cwd(), 'uploads', 'images');
+const uploadDir = path.join(__dirname, '../../uploads/images');
 if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir, { recursive: true });
 }
@@ -25,8 +28,10 @@ const upload = multer({
   storage,
   limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
   fileFilter: (req, file, cb) => {
-    const allowed = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
-    cb(null, allowed.includes(file.mimetype));
+    const allowedMimeTypes = ['image/jpeg', 'image/png'];
+    const allowedExtensions = ['.jpg', '.jpeg', '.png'];
+    const extension = path.extname(file.originalname).toLowerCase();
+    cb(null, allowedMimeTypes.includes(file.mimetype) && allowedExtensions.includes(extension));
   },
 });
 

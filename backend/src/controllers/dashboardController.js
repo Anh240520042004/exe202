@@ -4,6 +4,7 @@ import Order from '../models/Order.js';
 import MentorBooking from '../models/MentorBooking.js';
 import Course from '../models/Course.js';
 import AIChat from '../models/AIChat.js';
+import Post from '../models/Post.js';
 import { apiSuccess, apiError } from '../utils/apiResponse.js';
 
 export const getStudentDashboard = async (req, res, next) => {
@@ -269,10 +270,22 @@ async function getWeeklyStudyData(userId) {
   weekAgo.setDate(now.getDate() - 6);
   weekAgo.setHours(0, 0, 0, 0);
 
-  const chats = await AIChat.find({
-    user: userId,
-    createdAt: { $gte: weekAgo }
-  });
+  const [chats, posts, purchases] = await Promise.all([
+    AIChat.find({
+      user: userId,
+      createdAt: { $gte: weekAgo }
+    }).select('createdAt'),
+    Post.find({
+      author: userId,
+      isDeleted: false,
+      createdAt: { $gte: weekAgo }
+    }).select('createdAt'),
+    Order.find({
+      user: userId,
+      paymentStatus: 'paid',
+      updatedAt: { $gte: weekAgo }
+    }).select('updatedAt')
+  ]);
 
   const dayNames = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
 
@@ -287,6 +300,20 @@ async function getWeeklyStudyData(userId) {
     const chatDate = new Date(chat.createdAt).toDateString();
     if (dailyActivity[chatDate] !== undefined) {
       dailyActivity[chatDate].count += 1;
+    }
+  });
+
+  posts.forEach(post => {
+    const postDate = new Date(post.createdAt).toDateString();
+    if (dailyActivity[postDate] !== undefined) {
+      dailyActivity[postDate].count += 1;
+    }
+  });
+
+  purchases.forEach(order => {
+    const purchaseDate = new Date(order.updatedAt).toDateString();
+    if (dailyActivity[purchaseDate] !== undefined) {
+      dailyActivity[purchaseDate].count += 1;
     }
   });
 

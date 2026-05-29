@@ -388,7 +388,7 @@ function getSystemPrompt(subject) {
 }
 
 function getFallbackResponse(question) {
-  return "I'm here to help! To use the AI assistant, please configure your OpenAI API key in the backend .env file (OPENAI_API_KEY). Once configured, I'll be able to answer your questions about any subject.";
+  return "I'm here to help! To use the AI assistant, please configure GEMINI_API_KEY or OPENAI_API_KEY in the backend .env file, then restart the backend server.";
 }
 
 function parseFlashcardsFromText(text) {

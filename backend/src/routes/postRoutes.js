@@ -58,6 +58,57 @@ router.get('/', async (req, res, next) => {
 });
 
 // ─── GET /api/posts/:id ──────────────────────────────────────────────────
+router.get('/tags/trending', async (req, res, next) => {
+  try {
+    const tags = await Tag.find()
+      .sort({ count: -1 })
+      .limit(20)
+      .lean();
+    return res.json(apiSuccess(tags));
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.get('/users/:userId/posts', async (req, res, next) => {
+  try {
+    const posts = await Post.find({ author: req.params.userId, isDeleted: false, isHidden: false })
+      .sort({ createdAt: -1 })
+      .populate('author', 'name avatar role')
+      .lean();
+    return res.json(apiSuccess(posts));
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.get('/admin/all', protect, admin, async (req, res, next) => {
+  try {
+    const { page = 1, limit = 20 } = req.query;
+    const skip = (Number(page) - 1) * Number(limit);
+
+    const filter = { isDeleted: false };
+    if (req.query.hidden === 'true') filter.isHidden = true;
+    if (req.query.hidden === 'false') filter.isHidden = false;
+
+    const [posts, total] = await Promise.all([
+      Post.find(filter)
+        .sort({ createdAt: -1 })
+        .skip(skip).limit(Number(limit))
+        .populate('author', 'name avatar role')
+        .lean(),
+      Post.countDocuments(filter),
+    ]);
+
+    return res.json(apiSuccess({
+      posts,
+      pagination: { page: Number(page), limit: Number(limit), total, pages: Math.ceil(total / Number(limit)) },
+    }));
+  } catch (error) {
+    next(error);
+  }
+});
+
 router.get('/:id', async (req, res, next) => {
   try {
     const post = await Post.findByIdAndUpdate(

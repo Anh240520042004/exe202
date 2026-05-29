@@ -118,27 +118,42 @@ const StudentDashboard = () => {
                 {weeklyStudy?.reduce((sum, d) => sum + d.count, 0) || 0} hoạt động
               </span>
             </div>
-            {weeklyStudy && weeklyStudy.length > 0 && weeklyStudy.some(d => d.count > 0) ? (
+            {weeklyStudy && weeklyStudy.length > 0 ? (
               <>
-                <div className="h-40 flex items-end justify-around gap-2 mb-3">
+                <div className="h-48 grid grid-cols-[2rem_1fr] gap-3 mb-3">
+                  <div className="flex flex-col justify-between pb-7 text-[10px] text-gray-500">
+                    {(() => {
+                      const maxCount = Math.max(...weeklyStudy.map(d => d.count), 1);
+                      return [maxCount, Math.ceil(maxCount * 0.75), Math.ceil(maxCount * 0.5), Math.ceil(maxCount * 0.25), 0]
+                        .filter((value, index, values) => values.indexOf(value) === index)
+                        .map(value => <span key={value} className="text-right">{value}</span>);
+                    })()}
+                  </div>
+                  <div className="relative">
+                    <div className="absolute inset-x-0 top-0 bottom-7 flex flex-col justify-between">
+                      {[0, 1, 2, 3, 4].map(line => (
+                        <div key={line} className="border-t border-white/10" />
+                      ))}
+                    </div>
+                    <div className="relative h-full flex items-end justify-around gap-3 pb-7">
                   {weeklyStudy.map((day, i) => {
                     const maxCount = Math.max(...weeklyStudy.map(d => d.count), 1);
                     const height = (day.count / maxCount) * 100;
                     const isToday = i === 6;
                     return (
-                      <div key={i} className="flex flex-col items-center gap-2 flex-1 group relative">
+                      <div key={i} className="h-full flex flex-col items-center justify-end gap-2 flex-1 group relative">
                         <span className="text-xs font-medium text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity absolute -top-5">
                           {day.count}
                         </span>
                         <div
-                          className={`w-full rounded-t-lg transition-all hover:opacity-80 min-h-[4px] ${
+                          className={`w-8 sm:w-10 rounded-t-xl transition-all hover:opacity-90 shadow-lg ${
                             day.count === 0
-                              ? 'glass-subtle'
+                              ? 'bg-gray-700/45 shadow-none'
                               : isToday
-                              ? 'bg-gradient-to-t from-primary-600 to-primary-400 shadow-md shadow-primary-400/30'
-                              : 'bg-gradient-to-t from-primary-400 to-primary-300'
+                              ? 'bg-gradient-to-t from-primary-700 via-primary-500 to-primary-300 shadow-primary-500/30'
+                              : 'bg-gradient-to-t from-violet-700 via-violet-500 to-violet-300 shadow-violet-500/25'
                           }`}
-                          style={{ height: `${Math.max(height, 4)}%` }}
+                          style={{ height: `${day.count === 0 ? 6 : Math.max(height, 14)}%` }}
                         />
                         <span className={`text-xs font-semibold ${isToday ? 'text-primary-600 dark:text-primary-400' : 'text-gray-500'}`}>
                           {day.day}
@@ -146,11 +161,13 @@ const StudentDashboard = () => {
                       </div>
                     );
                   })}
+                    </div>
+                  </div>
                 </div>
                 <div className="flex items-center justify-center gap-6 mt-4 pt-4 border-t dark:border-gray-700">
                   <div className="flex items-center gap-2">
                     <div className="w-3 h-3 rounded bg-primary-400" />
-                    <span className="text-xs text-gray-500">Hoạt động</span>
+                    <span className="text-xs text-gray-500">Bài viết, mua tài liệu, AI</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <div className="w-3 h-3 rounded bg-gray-200 dark:bg-gray-700" />
@@ -163,7 +180,7 @@ const StudentDashboard = () => {
                 <div className="text-center">
                   <TrendingUp size={40} className="mx-auto text-gray-300 dark:text-gray-600 mb-3" />
                   <p className="text-gray-400 text-sm">Chưa có hoạt động trong tuần này</p>
-                  <p className="text-gray-300 dark:text-gray-500 text-xs mt-1">Bắt đầu trò chuyện với AI để ghi nhận!</p>
+                  <p className="text-gray-300 dark:text-gray-500 text-xs mt-1">Đăng bài, mua tài liệu hoặc trò chuyện với AI để ghi nhận!</p>
                 </div>
               </div>
             )}

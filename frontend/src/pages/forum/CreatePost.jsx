@@ -5,7 +5,12 @@ import axios from 'axios';
 import { useSelector } from 'react-redux';
 import toast from 'react-hot-toast';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+const API_URL = (import.meta.env.VITE_API_URL || 'http://localhost:5000').replace(/\/api\/?$/, '');
+
+const makeMediaUrl = (url) => {
+  if (!url) return url;
+  return url.startsWith('/uploads') ? `${API_URL}${url}` : url;
+};
 
 export default function CreatePost() {
   const navigate = useNavigate();
@@ -42,6 +47,14 @@ export default function CreatePost() {
   const handleImageUpload = async (e) => {
     const files = Array.from(e.target.files);
     if (!files.length) return;
+    const allowedTypes = ['image/jpeg', 'image/png'];
+    const allowedExtensions = /\.(jpe?g|png)$/i;
+    const invalidFile = files.find(file => !allowedTypes.includes(file.type) || !allowedExtensions.test(file.name));
+    if (invalidFile) {
+      toast.error('Chỉ hỗ trợ ảnh .jpg, .jpeg hoặc .png');
+      e.target.value = '';
+      return;
+    }
     if (images.length + files.length > 5) {
       toast.error('Tối đa 5 ảnh');
       return;
@@ -177,7 +190,7 @@ export default function CreatePost() {
             <input
               ref={fileInputRef}
               type="file"
-              accept="image/*"
+              accept=".jpg,.jpeg,.png,image/jpeg,image/png"
               multiple
               onChange={handleImageUpload}
               className="hidden"
@@ -187,7 +200,7 @@ export default function CreatePost() {
               <div className="grid grid-cols-3 gap-3 mb-3">
                 {images.map((url, i) => (
                   <div key={i} className="relative group">
-                    <img src={url} alt="" className="w-full h-28 object-cover rounded-xl" />
+                    <img src={makeMediaUrl(url)} alt="" className="w-full h-28 object-cover rounded-xl" />
                     <button
                       type="button"
                       onClick={() => setImages(images.filter((_, idx) => idx !== i))}

@@ -17,7 +17,7 @@ router.get('/profile', protect, async (req, res, next) => {
 
     if (!user) return next(apiError('User not found', 404));
 
-    const { followeeCount, followerCount, postCount } = await Promise.all([
+    const [followerCount, followeeCount, postCount] = await Promise.all([
       Follow.countDocuments({ following: req.user.id }),
       Follow.countDocuments({ follower: req.user.id }),
       Post.countDocuments({ author: req.user.id, isDeleted: false }),
@@ -47,7 +47,7 @@ router.get('/:id', optionalAuth, async (req, res, next) => {
 
     if (!user) return next(apiError('User not found', 404));
 
-    const { followeeCount, followerCount, postCount } = await Promise.all([
+    const [followerCount, followeeCount, postCount] = await Promise.all([
       Follow.countDocuments({ following: req.params.id }),
       Follow.countDocuments({ follower: req.params.id }),
       Post.countDocuments({ author: req.params.id, isDeleted: false }),
@@ -83,11 +83,19 @@ router.post('/:id/follow', protect, async (req, res, next) => {
 
     if (existing) {
       await Follow.deleteOne({ _id: existing._id });
-      return res.json(apiSuccess({ following: false }));
+      const [followerCount, followeeCount] = await Promise.all([
+        Follow.countDocuments({ following: req.params.id }),
+        Follow.countDocuments({ follower: req.user.id }),
+      ]);
+      return res.json(apiSuccess({ following: false, stats: { followerCount, followeeCount } }));
     }
 
     await Follow.create({ follower: req.user.id, following: req.params.id });
-    return res.json(apiSuccess({ following: true }));
+    const [followerCount, followeeCount] = await Promise.all([
+      Follow.countDocuments({ following: req.params.id }),
+      Follow.countDocuments({ follower: req.user.id }),
+    ]);
+    return res.json(apiSuccess({ following: true, stats: { followerCount, followeeCount } }));
   } catch (error) {
     next(error);
   }
