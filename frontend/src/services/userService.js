@@ -3,12 +3,14 @@ import api from './api';
 export const userService = {
   getProfile: async () => {
     const response = await api.get('/users/profile');
-    return response.data.data;
+    const data = response.data.data;
+    return data?.user ? { ...data.user, stats: data.stats } : data;
   },
 
   updateProfile: async (data) => {
     const response = await api.put('/users/profile', data);
-    return response.data.data;
+    const updated = response.data.data;
+    return updated?.user ? { ...updated.user, stats: updated.stats } : updated;
   },
 
   changePassword: async (data) => {

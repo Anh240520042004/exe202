@@ -13,8 +13,24 @@ const StudentDashboard = () => {
   // Guest view - show login prompt
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-primary-900 via-primary-800 to-accent-900 flex items-center justify-center p-4">
-        <div className="text-center max-w-md">
+      <div className="min-h-screen flex items-center justify-center relative overflow-hidden">
+        {/* Background Video */}
+        <video autoPlay loop muted playsInline className="absolute inset-0 w-full h-full object-cover z-0 opacity-60">
+          <source src="https://res.cloudinary.com/dfonotyfb/video/upload/v1775585556/dds3_1_rqhg7x.mp4" type="video/mp4" />
+        </video>
+
+        {/* Cinematic Overlays */}
+        <div className="absolute inset-0 z-10 bg-gradient-to-br from-black/80 via-primary-950/80 to-black/80" />
+        <div className="absolute inset-0 z-10 bg-gradient-to-r from-black/40 via-transparent to-black/40" />
+        <div className="absolute inset-0 z-10 bg-[radial-gradient(ellipse_at_center,transparent_40%,black_100%)]" />
+        <div className="absolute inset-0 z-10 opacity-[0.03]"
+          style={{
+            backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")`,
+            backgroundSize: '256px 256px'
+          }}
+        />
+
+        <div className="text-center max-w-md relative z-20 px-4">
           <div className="w-20 h-20 mx-auto rounded-2xl bg-white/10 backdrop-blur-lg flex items-center justify-center mb-6">
             <span className="text-4xl font-bold text-white">F</span>
           </div>

@@ -384,8 +384,15 @@ const DocumentCard = ({ document, viewMode = 'grid', isAuthenticated, navigate }
     navigate(`/checkout/document/${document._id}`);
   };
 
+  const handleCardClick = () => {
+    navigate(`/documents/${document._id}`);
+  };
+
   return (
-    <div className={`bg-white dark:bg-gray-800 rounded-xl shadow-sm hover:shadow-lg transition-all group ${viewMode === 'list' ? 'flex' : ''}`}>
+    <div
+      onClick={handleCardClick}
+      className={`bg-white dark:bg-gray-800 rounded-xl shadow-sm hover:shadow-lg transition-all group cursor-pointer ${viewMode === 'list' ? 'flex' : ''}`}
+    >
       <div className={`relative ${viewMode === 'list' ? 'w-48 h-48 flex-shrink-0' : 'h-40'}`}>
         <img
           src={document.previewImages?.[0] || `https://picsum.photos/seed/${document._id}/300/200`}

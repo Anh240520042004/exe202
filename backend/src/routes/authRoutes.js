@@ -4,8 +4,71 @@ import { authController } from '../controllers/index.js';
 import { protect, authLimiter, validate } from '../middleware/index.js';
 import bcrypt from 'bcryptjs';
 import { User } from '../models/index.js';
+import { apiSuccess, apiError } from '../utils/apiResponse.js';
+import { generateAccessToken, generateRefreshToken } from '../services/jwtService.js';
 
 const router = Router();
+
+// ─── Google OAuth ───────────────────────────────────────────────────────────
+router.post('/google', async (req, res, next) => {
+  try {
+    const { idToken } = req.body;
+    if (!idToken) return next(apiError('Google ID token required', 400));
+
+    // Verify Google token
+    const { OAuth2Client } = await import('google-auth-library');
+    const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+    const ticket = await client.verifyIdToken({
+      idToken,
+      audience: process.env.GOOGLE_CLIENT_ID,
+    });
+    const payload = ticket.getPayload();
+
+    if (!payload) return next(apiError('Invalid Google token', 400));
+
+    // Find or create user
+    let user = await User.findOne({ email: payload.email });
+    const isNewUser = !user;
+
+    if (!user) {
+      user = await User.create({
+        name: payload.name || payload.email.split('@')[0],
+        email: payload.email,
+        avatar: payload.picture,
+        password: null,
+        isVerified: true,
+        authProvider: 'google',
+        googleId: payload.sub,
+      });
+    } else {
+      if (payload.picture && user.avatar !== payload.picture) {
+        user.avatar = payload.picture;
+        await user.save();
+      }
+    }
+
+    const accessToken = generateAccessToken(user);
+    const refreshToken = generateRefreshToken(user);
+
+    user.refreshToken = refreshToken;
+    await user.save();
+
+    return res.json(apiSuccess({
+      accessToken,
+      refreshToken,
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        avatar: user.avatar,
+        role: user.role,
+      },
+      isNewUser,
+    }, isNewUser ? 'Dang ky bang Google thanh cong' : 'Dang nhap bang Google thanh cong'));
+  } catch (error) {
+    next(error);
+  }
+});
 
 router.post(
   '/register',

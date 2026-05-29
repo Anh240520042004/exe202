@@ -6,12 +6,14 @@ import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
 import path from 'path';
+import http from 'http';
 import { fileURLToPath } from 'url';
 import config from './config/index.js';
 import connectDB from './config/db.js';
 import { apiLimiter } from './middleware/index.js';
 import { notFound } from './middleware/errorHandler.js';
 import errorHandler from './middleware/errorHandler.js';
+import { initSocket } from './services/socketService.js';
 import {
   authRoutes,
   userRoutes,
@@ -27,12 +29,20 @@ import {
   gamificationRoutes,
   paymentRoutes,
   rewardRoutes,
+  postRoutes,
+  conversationRoutes,
+  reviewRoutes,
+  uploadRoutes,
 } from './routes/index.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
+const server = http.createServer(app);
+
+// ─── Socket.io ────────────────────────────────────────────────────────────
+initSocket(server);
 
 app.use(helmet());
 app.use(cors({
@@ -70,6 +80,10 @@ app.use('/api/mentors', mentorRoutes);
 app.use('/api/ai', aiRoutes);
 app.use('/api/gamification', gamificationRoutes);
 app.use('/api/rewards', rewardRoutes);
+app.use('/api/posts', postRoutes);
+app.use('/api/conversations', conversationRoutes);
+app.use('/api/reviews', reviewRoutes);
+app.use('/api/upload', uploadRoutes);
 
 app.use(notFound);
 app.use(errorHandler);
@@ -77,8 +91,8 @@ app.use(errorHandler);
 const startServer = async () => {
   try {
     await connectDB();
-    
-    app.listen(config.port, () => {
+
+    server.listen(config.port, () => {
       console.log(`Server running on port ${config.port}`);
       console.log(`Environment: ${config.nodeEnv}`);
       console.log(`Client URL: ${config.clientUrl}`);

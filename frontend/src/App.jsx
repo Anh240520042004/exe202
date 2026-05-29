@@ -6,16 +6,22 @@ import { Login, Register, ForgotPassword, EmailVerification } from './pages/auth
 import Homepage from './pages/Homepage';
 import { Dashboard, StudentDashboard } from './pages/dashboard';
 import { Profile, Settings, Notifications } from './pages/user';
+import UserProfile from './pages/user/UserProfile';
 import { TransactionsList, CreateTransaction } from './pages/transactions';
 import Marketplace from './pages/marketplace/Marketplace';
 import Checkout from './pages/checkout/Checkout';
 import { MentorNetwork, MentorCourses } from './pages/mentor';
 import { MyDocuments, DownloadHistory } from './pages/documents';
+import DocumentDetail from './pages/documents/DocumentDetail';
 import AIAssistant from './pages/ai/AIAssistant';
 import Gamification from './pages/gamification/Gamification';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import PaymentResult from './pages/payment/PaymentResult';
 import AdminPayments from './pages/admin/AdminPayments';
+import Forum from './pages/forum/Forum';
+import CreatePost from './pages/forum/CreatePost';
+import PostDetail from './pages/forum/PostDetail';
+import ChatPage from './pages/chat/ChatPage';
 
 export default function App() {
   const dispatch = useDispatch();
@@ -26,16 +32,14 @@ export default function App() {
     document.documentElement.classList.toggle('dark', theme === 'dark');
   }, [theme]);
 
-  const DashboardComponent = user?.role === 'admin' ? AdminDashboard : 
-                            user?.role === 'mentor' ? MentorNetwork : 
+  const DashboardComponent = user?.role === 'admin' ? AdminDashboard :
+                            user?.role === 'mentor' ? MentorNetwork :
                             StudentDashboard;
 
   return (
     <Routes>
-      {/* Redirect root to dashboard */}
+      {/* Public pages */}
       <Route path="/" element={<Navigate to="/dashboard" replace />} />
-
-      {/* Auth pages */}
       <Route path="/login" element={
         !isAuthenticated ? <Login /> : <Navigate to="/dashboard" replace />
       } />
@@ -52,6 +56,7 @@ export default function App() {
       <Route element={<Layout />}>
         <Route path="/dashboard" element={<DashboardComponent />} />
         <Route path="/my-documents" element={<MyDocuments />} />
+        <Route path="/documents/:id" element={<DocumentDetail />} />
         <Route path="/download-history" element={<DownloadHistory />} />
         <Route path="/marketplace" element={<Marketplace />} />
         <Route path="/checkout/:type/:id" element={<Checkout />} />
@@ -62,9 +67,14 @@ export default function App() {
         <Route path="/transactions" element={<TransactionsList />} />
         <Route path="/transactions/create" element={<CreateTransaction />} />
         <Route path="/profile" element={<Profile />} />
+        <Route path="/profile/:userId" element={<UserProfile />} />
         <Route path="/settings" element={<Settings />} />
         <Route path="/notifications" element={<Notifications />} />
-        
+        <Route path="/forum" element={<Forum />} />
+        <Route path="/forum/create" element={<CreatePost />} />
+        <Route path="/forum/:id" element={<PostDetail />} />
+        <Route path="/chat" element={<ChatPage />} />
+
         {/* Admin routes */}
         {user?.role === 'admin' && (
           <>

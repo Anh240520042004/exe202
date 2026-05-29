@@ -19,11 +19,15 @@ import {
   CreditCard,
   LogIn,
   UserPlus,
+  MessageSquare,
+  PenSquare,
 } from 'lucide-react';
 
 const menuItems = [
   { path: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
   { path: '/marketplace', icon: ShoppingBag, label: 'Marketplace' },
+  { path: '/forum', icon: MessageSquare, label: 'Diễn đàn' },
+  { path: '/chat', icon: PenSquare, label: 'Chat' },
   { path: '/mentors', icon: GraduationCap, label: 'Mentors' },
   { path: '/ai', icon: Bot, label: 'AI Assistant' },
   { path: '/gamification', icon: Trophy, label: 'Achievements' },

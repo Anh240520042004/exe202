@@ -12,6 +12,10 @@ import aiRoutes from './aiRoutes.js';
 import gamificationRoutes from './gamificationRoutes.js';
 import paymentRoutes from './paymentRoutes.js';
 import rewardRoutes from './rewardRoutes.js';
+import postRoutes from './postRoutes.js';
+import conversationRoutes from './conversationRoutes.js';
+import reviewRoutes from './reviewRoutes.js';
+import uploadRoutes from './uploadRoutes.js';
 
 export {
   authRoutes,
@@ -28,4 +32,8 @@ export {
   gamificationRoutes,
   paymentRoutes,
   rewardRoutes,
+  postRoutes,
+  conversationRoutes,
+  reviewRoutes,
+  uploadRoutes,
 };

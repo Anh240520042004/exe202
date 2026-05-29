@@ -1,6 +1,6 @@
 import jwt from 'jsonwebtoken';
-import config from '../config/index.js';
 import { User } from '../models/index.js';
+import { JWT_ACCESS_SECRET } from '../utils/jwtHelper.js';
 
 export const protect = async (req, res, next) => {
   let token;
@@ -12,42 +12,39 @@ export const protect = async (req, res, next) => {
     token = req.headers.authorization.split(' ')[1];
   }
 
-  console.log('Auth Middleware - Token:', token ? 'received (' + token.substring(0, 20) + '...)' : 'NOT received');
-  console.log('Auth Middleware - Secret:', config.jwt.accessSecret);
-
   if (!token) {
     return res.status(401).json({
       success: false,
-      message: 'Không có token, truy cập bị từ chối',
+      message: 'Khong co token, truy cap bi tu choi',
     });
   }
 
   try {
-    const decoded = jwt.verify(token, config.jwt.accessSecret);
-    console.log('Auth Middleware - Decoded:', decoded);
-    
+    const decoded = jwt.verify(token, JWT_ACCESS_SECRET);
+
     const user = await User.findById(decoded.id);
-    
+
     if (!user) {
       return res.status(401).json({
         success: false,
-        message: 'Người dùng không tồn tại',
+        message: 'Nguoi dung khong ton tai',
       });
     }
 
     if (!user.isActive) {
       return res.status(401).json({
         success: false,
-        message: 'Tài khoản đã bị vô hiệu hóa',
+        message: 'Tai khoan da bi vo hieu hoa',
       });
     }
 
     req.user = user;
     next();
   } catch (error) {
+    console.error('[Auth] Token verify failed:', error.message);
     return res.status(401).json({
       success: false,
-      message: 'Token không hợp lệ hoặc đã hết hạn',
+      message: 'Token khong hop le hoac da het han',
     });
   }
 };
@@ -97,7 +94,7 @@ export const optionalAuth = async (req, res, next) => {
 
   if (token) {
     try {
-      const decoded = jwt.verify(token, config.jwt.accessSecret);
+      const decoded = jwt.verify(token, JWT_ACCESS_SECRET);
       req.user = await User.findById(decoded.id);
     } catch (error) {
       // Token invalid but continue anyway
