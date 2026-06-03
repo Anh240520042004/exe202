@@ -116,14 +116,14 @@ export default function PostDetail() {
 
   const fetchPost = async () => {
     try {
-      const { data } = await axios.get(`${API_URL}/api/posts/${id}`);
+      const headers = accessToken ? { Authorization: `Bearer ${accessToken}` } : {};
+      const { data } = await axios.get(`${API_URL}/api/posts/${id}`, { headers });
       const postData = data.data?.post;
       setPost(postData);
       setComments(data.data?.comments || []);
       setLikeCount(data.data?.post?.likeCount || 0);
 
       if (isAuthenticated && postData?.author?._id && postData.author._id !== user?._id) {
-        const headers = accessToken ? { Authorization: `Bearer ${accessToken}` } : {};
         const profileRes = await axios.get(`${API_URL}/api/users/${postData.author._id}`, { headers });
         setIsFollowing(profileRes.data.data?.isFollowing || false);
       }

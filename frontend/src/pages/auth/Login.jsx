@@ -75,7 +75,7 @@ export default function Login() {
           <button
             type="button"
             onClick={() => setShowPassword(!showPassword)}
-            className="absolute right-3 top-[2.15rem] text-gray-400 hover:text-white transition-colors"
+            className="absolute right-3 top-[2.15rem] text-gray-400 hover:text-gray-700 dark:hover:text-white transition-colors"
           >
             {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
           </button>
@@ -88,11 +88,11 @@ export default function Login() {
         )}
 
         <div className="flex items-center justify-between text-sm pt-1">
-          <label className="flex items-center gap-2 text-gray-400 cursor-pointer select-none">
-            <input type="checkbox" className="rounded border-white/20 bg-white/5 accent-primary-400" />
+          <label className="flex items-center gap-2 text-gray-600 dark:text-gray-400 cursor-pointer select-none">
+            <input type="checkbox" className="rounded border-slate-300 dark:border-white/20 bg-white/60 dark:bg-white/5 accent-primary-400" />
             Ghi nhớ đăng nhập
           </label>
-          <Link to="/forgot-password" className="text-primary-300 hover:text-primary-200 transition-colors">
+          <Link to="/forgot-password" className="text-primary-600 dark:text-primary-300 hover:text-primary-500 dark:hover:text-primary-200 transition-colors">
             Quên mật khẩu?
           </Link>
         </div>

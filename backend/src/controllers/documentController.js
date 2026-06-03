@@ -281,6 +281,21 @@ export const getPopularDocuments = async (req, res, next) => {
   }
 };
 
+export const getTopRatedDocuments = async (req, res, next) => {
+  try {
+    const { limit = 10 } = req.query;
+
+    const documents = await Document.find({ isActive: true })
+      .populate('author', 'name avatar')
+      .sort({ rating: -1, avgRating: -1, totalReviews: -1, reviewCount: -1, downloads: -1 })
+      .limit(Number(limit));
+
+    res.json(apiSuccess(documents));
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const getUserFavorites = async (req, res, next) => {
   try {
     const user = await mongoose.model('User').findById(req.user.id)

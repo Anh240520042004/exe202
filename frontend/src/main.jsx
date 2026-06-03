@@ -7,8 +7,6 @@ import App from './App';
 import { store } from './store';
 import './index.css';
 
-document.documentElement.classList.add('dark');
-
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <Provider store={store}>

@@ -7,3 +7,4 @@ export { default as ThemeToggle } from './ThemeToggle';
 export { default as Badge } from './Badge';
 export { default as Select } from './Select';
 export { default as LoginRequired } from './LoginRequired';
+export { default as BrandLogo } from './BrandLogo';

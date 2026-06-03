@@ -4,6 +4,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { Menu, Bell, Search, LogOut, UserPlus, LogIn } from 'lucide-react';
 import { logout } from '../../store/slices/authSlice';
 import { toggleMobileMenu } from '../../store/slices/uiSlice';
+import { ThemeToggle } from '../ui';
 
 export default function Header() {
   const dispatch = useDispatch();
@@ -38,6 +39,7 @@ export default function Header() {
         </div>
 
         <div className="flex items-center gap-2">
+          <ThemeToggle />
           {isAuthenticated ? (
             <>
               <Link

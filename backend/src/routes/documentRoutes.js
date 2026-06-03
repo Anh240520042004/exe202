@@ -7,6 +7,7 @@ const router = express.Router();
 router.get('/', documentController.getDocuments);
 router.get('/featured', documentController.getFeaturedDocuments);
 router.get('/popular', documentController.getPopularDocuments);
+router.get('/top-rated', documentController.getTopRatedDocuments);
 router.get('/subject/:subjectCode', documentController.getDocumentsBySubject);
 router.get('/favorites', protect, documentController.getUserFavorites);
 router.get('/download-history', protect, documentController.getDownloadHistory);

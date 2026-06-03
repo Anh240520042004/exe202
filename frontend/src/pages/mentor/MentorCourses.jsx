@@ -28,6 +28,8 @@ const CATEGORY_OPTIONS = [
   { value: 'other', label: 'Khác', icon: '📁' },
 ];
 
+const SEMESTER_OPTIONS = Array.from({ length: 9 }, (_, index) => String(index + 1));
+
 const MentorCourses = () => {
   const navigate = useNavigate();
   const [courses, setCourses] = useState([]);
@@ -103,6 +105,7 @@ const MentorCourses = () => {
         description: '',
         credits: 3,
         faculty: '',
+        category: 'software_engineering',
         semester: '1',
         thumbnail: '',
         price: 0,
@@ -489,19 +492,19 @@ const MentorCourses = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-1">Khoa</label>
+                <label className="block text-sm font-medium mb-1">Tên ngành</label>
                 <input
                   type="text"
                   value={courseForm.faculty}
                   onChange={(e) => setCourseForm({ ...courseForm, faculty: e.target.value })}
                   className="w-full px-4 py-2 border glass-divider border rounded-xl focus:ring-2 focus:ring-primary-500 dark:bg-gray-700"
-                  placeholder="VD: Công Nghệ Thông Tin"
+                  placeholder="VD: Công nghệ thông tin"
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-1">Danh Mục</label>
+                <label className="block text-sm font-medium mb-1">Chuyên ngành</label>
                 <select
                   value={courseForm.category}
                   onChange={(e) => setCourseForm({ ...courseForm, category: e.target.value })}
@@ -522,10 +525,11 @@ const MentorCourses = () => {
                   onChange={(e) => setCourseForm({ ...courseForm, semester: e.target.value })}
                   className="w-full px-4 py-2 border glass-divider border rounded-xl focus:ring-2 focus:ring-primary-500 dark:bg-gray-700"
                 >
-                  <option value="1">Học Kỳ 1</option>
-                  <option value="2">Học Kỳ 2</option>
-                  <option value="3">Học Kỳ 3</option>
-                  <option value="summer">Hè</option>
+                  {SEMESTER_OPTIONS.map((semester) => (
+                    <option key={semester} value={semester}>
+                      Học Kỳ {semester}
+                    </option>
+                  ))}
                 </select>
               </div>
 

@@ -4,14 +4,14 @@ import emailService from './emailService.js';
 
 class AuthService {
   async register(userData) {
-    const { name, email, password } = userData;
+    const { name, email, password, role = 'student' } = userData;
 
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       throw { statusCode: 400, message: 'Email đã được sử dụng' };
     }
 
-    const user = await User.create({ name, email, password });
+    const user = await User.create({ name, email, password, role });
 
     // Auto-verify email - skip email verification step
     user.isEmailVerified = true;

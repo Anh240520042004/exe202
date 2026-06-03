@@ -98,7 +98,9 @@ export const getAdminDashboard = async (req, res, next) => {
       popularDocuments,
       popularMentors,
       monthlyRevenue,
-      userGrowth
+      userGrowth,
+      dailyUserSignups,
+      monthlyUserSignups
     ] = await Promise.all([
       getUserStats(),
       getDocumentStats(),
@@ -118,7 +120,9 @@ export const getAdminDashboard = async (req, res, next) => {
         .sort({ 'mentorProfile.totalSessions': -1 })
         .limit(10),
       getMonthlyRevenue(),
-      getUserGrowth()
+      getUserGrowth(),
+      getDailyUserSignups(),
+      getMonthlyUserSignups()
     ]);
 
     res.json(apiSuccess({
@@ -128,7 +132,9 @@ export const getAdminDashboard = async (req, res, next) => {
         totalDocuments: documentStats.total,
         totalOrders: orderStats.total,
         totalMentors: mentorStats.total,
-        totalRevenue: orderStats.revenue
+        totalRevenue: orderStats.revenue,
+        usersToday: userStats.today,
+        usersThisMonth: userStats.thisMonth
       },
       stats: {
         userStats,
@@ -138,7 +144,9 @@ export const getAdminDashboard = async (req, res, next) => {
       },
       charts: {
         monthlyRevenue,
-        userGrowth
+        userGrowth,
+        dailyUserSignups,
+        monthlyUserSignups
       },
       recentOrders,
       popularDocuments,
@@ -150,14 +158,23 @@ export const getAdminDashboard = async (req, res, next) => {
 };
 
 async function getUserStats() {
-  const [total, active, students, mentors] = await Promise.all([
+  const startOfToday = new Date();
+  startOfToday.setHours(0, 0, 0, 0);
+
+  const startOfMonth = new Date();
+  startOfMonth.setDate(1);
+  startOfMonth.setHours(0, 0, 0, 0);
+
+  const [total, active, students, mentors, today, thisMonth] = await Promise.all([
     User.countDocuments(),
     User.countDocuments({ isActive: true }),
     User.countDocuments({ role: 'student' }),
-    User.countDocuments({ role: 'mentor' })
+    User.countDocuments({ role: 'mentor' }),
+    User.countDocuments({ createdAt: { $gte: startOfToday } }),
+    User.countDocuments({ createdAt: { $gte: startOfMonth } })
   ]);
 
-  return { total, active, students, mentors };
+  return { total, active, students, mentors, today, thisMonth };
 }
 
 async function getDocumentStats() {
@@ -207,15 +224,17 @@ async function getMentorStats() {
 }
 
 async function getMonthlyRevenue() {
-  const sixMonthsAgo = new Date();
-  sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+  const start = new Date();
+  start.setMonth(start.getMonth() - 5);
+  start.setDate(1);
+  start.setHours(0, 0, 0, 0);
 
   const revenue = await Order.aggregate([
     {
       $match: {
         status: 'completed',
         paymentStatus: 'paid',
-        createdAt: { $gte: sixMonthsAgo }
+        createdAt: { $gte: start }
       }
     },
     {
@@ -231,20 +250,33 @@ async function getMonthlyRevenue() {
     { $sort: { '_id.year': 1, '_id.month': 1 } }
   ]);
 
-  return revenue.map(r => ({
-    month: `${r._id.month}/${r._id.year}`,
-    revenue: r.revenue,
-    orders: r.orders
-  }));
+  const byMonth = new Map(revenue.map(item => [
+    `${item._id.year}-${item._id.month}`,
+    item
+  ]));
+
+  return Array.from({ length: 6 }, (_, index) => {
+    const date = new Date(start);
+    date.setMonth(start.getMonth() + index);
+    const key = `${date.getFullYear()}-${date.getMonth() + 1}`;
+    const item = byMonth.get(key);
+    return {
+      month: `${date.getMonth() + 1}/${date.getFullYear()}`,
+      revenue: item?.revenue || 0,
+      orders: item?.orders || 0
+    };
+  });
 }
 
 async function getUserGrowth() {
-  const sixMonthsAgo = new Date();
-  sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+  const start = new Date();
+  start.setMonth(start.getMonth() - 5);
+  start.setDate(1);
+  start.setHours(0, 0, 0, 0);
 
   const growth = await User.aggregate([
     {
-      $match: { createdAt: { $gte: sixMonthsAgo } }
+      $match: { createdAt: { $gte: start } }
     },
     {
       $group: {
@@ -258,10 +290,103 @@ async function getUserGrowth() {
     { $sort: { '_id.year': 1, '_id.month': 1 } }
   ]);
 
-  return growth.map(g => ({
-    month: `${g._id.month}/${g._id.year}`,
-    users: g.users
-  }));
+  const byMonth = new Map(growth.map(item => [
+    `${item._id.year}-${item._id.month}`,
+    item
+  ]));
+
+  return Array.from({ length: 6 }, (_, index) => {
+    const date = new Date(start);
+    date.setMonth(start.getMonth() + index);
+    const key = `${date.getFullYear()}-${date.getMonth() + 1}`;
+    const item = byMonth.get(key);
+    return {
+      month: `${date.getMonth() + 1}/${date.getFullYear()}`,
+      users: item?.users || 0
+    };
+  });
+}
+
+async function getDailyUserSignups() {
+  const start = new Date();
+  start.setDate(start.getDate() - 29);
+  start.setHours(0, 0, 0, 0);
+
+  const growth = await User.aggregate([
+    { $match: { createdAt: { $gte: start } } },
+    {
+      $group: {
+        _id: {
+          day: { $dayOfMonth: '$createdAt' },
+          month: { $month: '$createdAt' },
+          year: { $year: '$createdAt' }
+        },
+        users: { $sum: 1 },
+        students: { $sum: { $cond: [{ $eq: ['$role', 'student'] }, 1, 0] } },
+        mentors: { $sum: { $cond: [{ $eq: ['$role', 'mentor'] }, 1, 0] } }
+      }
+    },
+    { $sort: { '_id.year': 1, '_id.month': 1, '_id.day': 1 } }
+  ]);
+
+  const byDate = new Map(growth.map(item => [
+    `${item._id.year}-${item._id.month}-${item._id.day}`,
+    item
+  ]));
+
+  return Array.from({ length: 30 }, (_, index) => {
+    const date = new Date(start);
+    date.setDate(start.getDate() + index);
+    const key = `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;
+    const item = byDate.get(key);
+    return {
+      date: `${date.getDate()}/${date.getMonth() + 1}`,
+      users: item?.users || 0,
+      students: item?.students || 0,
+      mentors: item?.mentors || 0
+    };
+  });
+}
+
+async function getMonthlyUserSignups() {
+  const start = new Date();
+  start.setMonth(start.getMonth() - 23);
+  start.setDate(1);
+  start.setHours(0, 0, 0, 0);
+
+  const growth = await User.aggregate([
+    { $match: { createdAt: { $gte: start } } },
+    {
+      $group: {
+        _id: {
+          month: { $month: '$createdAt' },
+          year: { $year: '$createdAt' }
+        },
+        users: { $sum: 1 },
+        students: { $sum: { $cond: [{ $eq: ['$role', 'student'] }, 1, 0] } },
+        mentors: { $sum: { $cond: [{ $eq: ['$role', 'mentor'] }, 1, 0] } }
+      }
+    },
+    { $sort: { '_id.year': 1, '_id.month': 1 } }
+  ]);
+
+  const byMonth = new Map(growth.map(item => [
+    `${item._id.year}-${item._id.month}`,
+    item
+  ]));
+
+  return Array.from({ length: 24 }, (_, index) => {
+    const date = new Date(start);
+    date.setMonth(start.getMonth() + index);
+    const key = `${date.getFullYear()}-${date.getMonth() + 1}`;
+    const item = byMonth.get(key);
+    return {
+      month: `${date.getMonth() + 1}/${date.getFullYear()}`,
+      users: item?.users || 0,
+      students: item?.students || 0,
+      mentors: item?.mentors || 0
+    };
+  });
 }
 
 async function getWeeklyStudyData(userId) {

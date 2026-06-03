@@ -1,6 +1,7 @@
 import React from 'react';
-import { NavLink, Link } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
 import { useSelector } from 'react-redux';
+import { BrandLogo } from '../ui';
 import {
   LayoutDashboard,
   Receipt,
@@ -20,6 +21,7 @@ import {
   LogIn,
   UserPlus,
   MessageSquare,
+  ShieldOff,
   PenSquare,
 } from 'lucide-react';
 
@@ -47,6 +49,7 @@ const mentorItems = [
 const adminItems = [
   { path: '/admin', icon: Users, label: 'Admin Dashboard' },
   { path: '/admin/users', icon: Users, label: 'Quản lý Users' },
+  { path: '/admin/forum-posts', icon: ShieldOff, label: 'Quản lý bài diễn đàn' },
   { path: '/admin/payments', icon: CreditCard, label: 'Duyệt thanh toán' },
   { path: '/admin/settings', icon: Settings, label: 'Cài đặt hệ thống' },
 ];
@@ -77,17 +80,7 @@ export default function Sidebar({ isOpen, onToggle }) {
     >
       <div className="flex flex-col h-full">
         <div className="p-4 border-b glass-divider">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-ios bg-gradient-to-br from-primary-400/80 to-primary-500/80 flex items-center justify-center shadow-md shadow-primary-400/20 backdrop-blur-sm">
-              <span className="text-white font-bold text-sm">F.</span>
-            </div>
-            {isOpen && (
-              <div className="animate-fade-in">
-                <h1 className="font-bold text-xl gradient-text">F.EdTech</h1>
-                <p className="text-xs text-gray-500">Nền tảng học tập</p>
-              </div>
-            )}
-          </div>
+          <BrandLogo showText={isOpen} className={isOpen ? 'animate-fade-in' : ''} />
         </div>
 
         <nav className="flex-1 p-4 space-y-1 overflow-y-auto scrollbar-hide">

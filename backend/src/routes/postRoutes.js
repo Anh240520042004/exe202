@@ -1,5 +1,5 @@
 import express from 'express';
-import { protect } from '../middleware/auth.js';
+import { protect, optionalAuth } from '../middleware/auth.js';
 import { admin } from '../middleware/auth.js';
 import Post from '../models/Post.js';
 import PostLike from '../models/PostLike.js';
@@ -109,7 +109,7 @@ router.get('/admin/all', protect, admin, async (req, res, next) => {
   }
 });
 
-router.get('/:id', async (req, res, next) => {
+router.get('/:id', optionalAuth, async (req, res, next) => {
   try {
     const post = await Post.findByIdAndUpdate(
       req.params.id,
@@ -121,7 +121,11 @@ router.get('/:id', async (req, res, next) => {
     // Hidden posts only visible to author or admin
     if (post.isDeleted) return next(apiError('Post not found', 404));
     if (post.isHidden) {
-      // Allow if request has auth header (checked later) — for now just return 404 if not deleted
+      const canViewHidden =
+        req.user?.role === 'admin' ||
+        req.user?._id?.toString() === post.author?._id?.toString();
+
+      if (!canViewHidden) return next(apiError('Post not found', 404));
     }
 
     const comments = await Comment.find({ post: post._id, parent: null })
@@ -249,6 +253,7 @@ router.post('/:id/like', protect, async (req, res, next) => {
   try {
     const post = await Post.findById(req.params.id);
     if (!post || post.isDeleted) return next(apiError('Post not found', 404));
+    if (post.isHidden && req.user.role !== 'admin') return next(apiError('Post not found', 404));
 
     const existing = await PostLike.findOne({ post: post._id, user: req.user.id });
     let liked;
@@ -278,6 +283,7 @@ router.post('/:id/comments', protect, async (req, res, next) => {
 
     const post = await Post.findById(req.params.id);
     if (!post || post.isDeleted) return next(apiError('Post not found', 404));
+    if (post.isHidden && req.user.role !== 'admin') return next(apiError('Post not found', 404));
 
     const comment = await Comment.create({
       post: post._id,

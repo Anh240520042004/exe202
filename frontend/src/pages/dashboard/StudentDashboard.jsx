@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { fetchStudentDashboard } from '../../store/dashboardSlice';
 import { BookOpen, Users, MessageCircle, Download, Star, Flame, Zap, Calendar, TrendingUp, FolderOpen, LogIn, Coins, Gift } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
+import { BrandLogo } from '../../components/ui';
 
 const StudentDashboard = () => {
   const dispatch = useDispatch();
@@ -15,11 +16,14 @@ const StudentDashboard = () => {
     return (
       <div className="auth-page min-h-[60vh] flex items-center justify-center p-4">
         <div className="text-center max-w-md auth-form-panel rounded-[1.75rem] p-8">
-          <div className="auth-logo w-20 h-20 mx-auto flex items-center justify-center mb-6">
-            <span className="text-3xl font-bold text-white">F.</span>
+          <div className="auth-logo inline-flex items-center justify-center rounded-[1.75rem] mb-6 p-2.5">
+            <BrandLogo size="lg" />
           </div>
-          <h1 className="text-3xl font-bold text-white mb-4">F.EdTech</h1>
-          <p className="text-gray-400 mb-8 text-lg">
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">F.EdTech</h1>
+          <p className="text-primary-700 dark:text-primary-200/90 mb-3 text-base leading-relaxed">
+            Nền tảng học tập thông minh giúp sinh viên tìm tài liệu, kết nối mentor và học hiệu quả hơn.
+          </p>
+          <p className="text-gray-600 dark:text-gray-400 mb-8 text-lg">
             Đăng nhập để truy cập dashboard và bắt đầu hành trình học tập
           </p>
           <button
@@ -31,7 +35,7 @@ const StudentDashboard = () => {
           </button>
           <p className="text-gray-500 mt-6">
             Chưa có tài khoản?{' '}
-            <Link to="/register" className="text-primary-300 hover:text-primary-200 font-semibold">
+            <Link to="/register" className="text-primary-600 dark:text-primary-300 hover:text-primary-500 dark:hover:text-primary-200 font-semibold">
               Đăng ký
             </Link>
           </p>
@@ -70,18 +74,18 @@ const StudentDashboard = () => {
           <div className="flex flex-wrap items-center gap-6">
             <img src={profile.avatar} alt={profile.name} className="w-20 h-20 rounded-full border-4 border-white/20 object-cover" />
             <div className="flex-1 min-w-[200px]">
-              <h1 className="text-3xl font-bold text-white">Welcome back, {profile.name}!</h1>
-              <p className="text-gray-400 mt-1">GPA: {profile.gpa} | Level {profile.level}</p>
+              <h1 className="text-3xl font-bold text-slate-900 dark:text-white drop-shadow-sm">Welcome back, {profile.name}!</h1>
+              <p className="text-slate-600 dark:text-gray-400 mt-1 font-medium">GPA: {profile.gpa} | Level {profile.level}</p>
             </div>
-            <div className="text-center glass-chip px-6 py-4 rounded-2xl">
+            <div className="text-center glass-chip px-6 py-4 rounded-2xl bg-white/70 dark:bg-white/5">
               <Flame className="mx-auto text-orange-400 mb-1" size={24} />
-              <p className="text-2xl font-bold text-white">{profile.studyStreak}</p>
-              <p className="text-xs text-gray-400">day streak</p>
+              <p className="text-2xl font-bold text-slate-900 dark:text-white">{profile.studyStreak}</p>
+              <p className="text-xs font-medium text-slate-500 dark:text-gray-400">day streak</p>
             </div>
-            <div className="text-center glass-chip px-6 py-4 rounded-2xl">
+            <div className="text-center glass-chip px-6 py-4 rounded-2xl bg-white/70 dark:bg-white/5">
               <Coins className="mx-auto text-amber-400 mb-1" size={24} />
-              <p className="text-2xl font-bold text-white">{new Intl.NumberFormat('vi-VN').format(profile.rewardPoints || 0)}</p>
-              <p className="text-xs text-gray-400">reward points</p>
+              <p className="text-2xl font-bold text-slate-900 dark:text-white">{new Intl.NumberFormat('vi-VN').format(profile.rewardPoints || 0)}</p>
+              <p className="text-xs font-medium text-slate-500 dark:text-gray-400">reward points</p>
             </div>
           </div>
         </div>

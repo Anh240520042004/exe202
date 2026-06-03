@@ -10,6 +10,7 @@ import {
   BookOpen,
   Download,
   Clock,
+  CalendarDays,
 } from 'lucide-react';
 
 const AdminDashboard = () => {
@@ -106,85 +107,62 @@ const AdminDashboard = () => {
           />
         </div>
 
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+          <OverviewCard
+            icon={<CalendarDays />}
+            label="Users Today"
+            value={overview?.usersToday || 0}
+            subtext="New accounts today"
+            color="blue"
+          />
+          <OverviewCard
+            icon={<Users />}
+            label="Users This Month"
+            value={overview?.usersThisMonth || 0}
+            subtext={`${overview?.totalUsers || 0} total users`}
+            color="purple"
+          />
+        </div>
+
         {/* Charts */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-          {/* Revenue Chart */}
-          <div className="glass-card rounded-2xl p-6">
-            <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
-              <TrendingUp className="text-green-500" />
-              Revenue (Last 6 Months)
-            </h2>
+          <MetricBarChart
+            title="Revenue (Last 6 Months)"
+            icon={<TrendingUp className="text-green-500" />}
+            data={charts?.monthlyRevenue || []}
+            labelKey="month"
+            valueKey="revenue"
+            barClassName="bg-gradient-to-t from-green-600 via-green-500 to-emerald-300 shadow-green-500/25"
+            legend="Revenue"
+            valueFormatter={formatCurrencyShort}
+          />
 
-            <div className="h-64 flex items-end justify-around gap-2">
-              {charts?.monthlyRevenue?.map((month, i) => {
-                const maxRevenue = Math.max(
-                  ...(charts?.monthlyRevenue?.map(
-                    (m) => m.revenue
-                  ) || [1])
-                );
+          <MetricBarChart
+            title="User Growth (Last 6 Months)"
+            icon={<Users className="text-blue-500" />}
+            data={charts?.userGrowth || []}
+            labelKey="month"
+            valueKey="users"
+            barClassName="bg-gradient-to-t from-blue-600 via-blue-500 to-cyan-300 shadow-blue-500/25"
+            legend="New users"
+          />
+        </div>
 
-                const height =
-                  (month.revenue / maxRevenue) * 100;
-
-                return (
-                  <div
-                    key={i}
-                    className="flex flex-col items-center gap-2 flex-1"
-                  >
-                    <div
-                      className="w-full bg-gradient-to-t from-green-500 to-emerald-400 rounded-t-lg transition-all hover:opacity-80"
-                      style={{
-                        height: `${Math.max(height, 5)}%`,
-                      }}
-                    />
-
-                    <span className="text-xs text-gray-500">
-                      {month.month}
-                    </span>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* User Growth Chart */}
-          <div className="glass-card rounded-2xl p-6">
-            <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
-              <Users className="text-blue-500" />
-              User Growth (Last 6 Months)
-            </h2>
-
-            <div className="h-64 flex items-end justify-around gap-2">
-              {charts?.userGrowth?.map((month, i) => {
-                const maxUsers = Math.max(
-                  ...(charts?.userGrowth?.map(
-                    (m) => m.users
-                  ) || [1])
-                );
-
-                const height =
-                  (month.users / maxUsers) * 100;
-
-                return (
-                  <div
-                    key={i}
-                    className="flex flex-col items-center gap-2 flex-1"
-                  >
-                    <div
-                      className="w-full bg-gradient-to-t from-blue-500 to-cyan-400 rounded-t-lg transition-all hover:opacity-80"
-                      style={{
-                        height: `${Math.max(height, 5)}%`,
-                      }}
-                    />
-
-                    <span className="text-xs text-gray-500">
-                      {month.month}
-                    </span>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+          <UserBarChart
+            title="New Users By Day"
+            subtitle="Last 30 days"
+            data={charts?.dailyUserSignups || []}
+            labelKey="date"
+            minColumnWidth={34}
+          />
+          <UserBarChart
+            title="New Users By Month"
+            subtitle="Last 24 months"
+            data={charts?.monthlyUserSignups || charts?.userGrowth || []}
+            labelKey="month"
+            minColumnWidth={54}
+          />
         </div>
 
         {/* Tables */}
@@ -353,6 +331,178 @@ const OverviewCard = ({
             {subtext}
           </p>
         </div>
+      </div>
+    </div>
+  );
+};
+
+const formatCurrencyShort = (value) => {
+  if (!value) return '0';
+  if (value >= 1000000) return `${(value / 1000000).toFixed(1)}M`;
+  if (value >= 1000) return `${Math.round(value / 1000)}K`;
+  return value.toLocaleString('vi-VN');
+};
+
+const buildAxisTicks = (maxValue) => {
+  const safeMax = Math.max(maxValue, 1);
+  return [safeMax, Math.ceil(safeMax * 0.75), Math.ceil(safeMax * 0.5), Math.ceil(safeMax * 0.25), 0]
+    .filter((value, index, values) => values.indexOf(value) === index);
+};
+
+const MetricBarChart = ({
+  title,
+  icon,
+  data,
+  labelKey,
+  valueKey,
+  barClassName,
+  legend,
+  valueFormatter = (value) => value,
+}) => {
+  const maxValue = Math.max(...(data?.map((item) => item[valueKey] || 0) || [0]), 1);
+  const total = data?.reduce((sum, item) => sum + (item[valueKey] || 0), 0) || 0;
+
+  return (
+    <div className="glass-card rounded-2xl p-6 overflow-hidden">
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-lg font-bold flex items-center gap-2">
+          {icon}
+          {title}
+        </h2>
+        <span className="text-xs text-gray-500">{valueFormatter(total)} total</span>
+      </div>
+
+      <div className="h-64 grid grid-cols-[2rem_minmax(0,1fr)] gap-3">
+        <div className="flex flex-col justify-between pb-7 text-[10px] text-gray-500">
+          {buildAxisTicks(maxValue).map((value) => (
+            <span key={value} className="text-right">{valueFormatter(value)}</span>
+          ))}
+        </div>
+
+        <div className="relative min-w-0 overflow-hidden">
+          <div className="absolute inset-x-0 top-0 bottom-7 flex flex-col justify-between">
+            {[0, 1, 2, 3, 4].map((line) => (
+              <div key={line} className="border-t border-white/10" />
+            ))}
+          </div>
+
+          <div
+            className="relative h-full grid items-end gap-2 px-2 pb-7"
+            style={{ gridTemplateColumns: `repeat(${Math.max(data?.length || 1, 1)}, minmax(0, 1fr))` }}
+          >
+            {data?.map((item, index) => {
+              const value = item[valueKey] || 0;
+              const height = (value / maxValue) * 100;
+
+              return (
+                <div key={`${item[labelKey]}-${index}`} className="h-full flex flex-col items-center justify-end gap-2 group relative min-w-0">
+                  <span className="absolute -top-5 left-1/2 -translate-x-1/2 whitespace-nowrap text-xs font-medium text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity">
+                    {valueFormatter(value)}
+                  </span>
+                  <div
+                    className={`w-full max-w-10 rounded-t-xl transition-all hover:opacity-90 shadow-lg ${
+                      value === 0 ? 'bg-gray-700/45 shadow-none' : barClassName
+                    }`}
+                    style={{ height: `${value === 0 ? 6 : Math.max(height, 14)}%` }}
+                  />
+                  <span className="max-w-full truncate text-[10px] font-semibold text-gray-500">
+                    {item[labelKey]}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+
+      <div className="flex items-center justify-center gap-6 mt-4 pt-4 border-t dark:border-gray-700">
+        <span className="inline-flex items-center gap-2 text-xs text-gray-500">
+          <span className="w-3 h-3 rounded bg-primary-400" />
+          {legend}
+        </span>
+        <span className="inline-flex items-center gap-2 text-xs text-gray-500">
+          <span className="w-3 h-3 rounded bg-gray-700" />
+          No data
+        </span>
+      </div>
+    </div>
+  );
+};
+
+const UserBarChart = ({ title, subtitle, data, labelKey, minColumnWidth = 42 }) => {
+  const maxUsers = Math.max(...(data?.map((item) => item.users) || [0]), 1);
+  const chartWidth = Math.max((data?.length || 1) * minColumnWidth, 520);
+
+  return (
+    <div className="glass-card rounded-2xl p-6 overflow-hidden">
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-lg font-bold flex items-center gap-2">
+          <Users className="text-blue-500" />
+          {title}
+        </h2>
+        <span className="text-xs text-gray-500">{subtitle}</span>
+      </div>
+
+      <div className="h-64 grid grid-cols-[2rem_minmax(0,1fr)] gap-3">
+        <div className="flex flex-col justify-between pb-7 text-[10px] text-gray-500">
+          {buildAxisTicks(maxUsers).map((value) => (
+            <span key={value} className="text-right">{value}</span>
+          ))}
+        </div>
+
+        <div className="min-w-0 overflow-x-auto overflow-y-hidden pb-2 scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-white/5">
+          <div className="relative h-full" style={{ width: `${chartWidth}px` }}>
+            <div className="absolute inset-x-0 top-0 bottom-7 flex flex-col justify-between">
+              {[0, 1, 2, 3, 4].map((line) => (
+                <div key={line} className="border-t border-white/10" />
+              ))}
+            </div>
+
+            <div
+              className="relative h-full grid items-end gap-1 px-2 pb-7"
+              style={{ gridTemplateColumns: `repeat(${Math.max(data?.length || 1, 1)}, minmax(0, 1fr))` }}
+            >
+              {data?.map((item, i) => {
+                const height = (item.users / maxUsers) * 100;
+                const mentorHeight = ((item.mentors || 0) / maxUsers) * 100;
+
+                return (
+                  <div key={`${item[labelKey]}-${i}`} className="h-full flex flex-col items-center justify-end gap-2 min-w-0 group relative">
+                    <span className="absolute -top-5 left-1/2 -translate-x-1/2 whitespace-nowrap text-xs font-medium text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity">
+                      {item.users || 0}
+                    </span>
+                    <div className="h-full w-full min-w-0 flex items-end justify-center gap-0.5">
+                      <div
+                        className={`w-[54%] max-w-7 rounded-t-xl transition-all shadow-lg ${
+                          item.users
+                            ? 'bg-gradient-to-t from-blue-600 via-blue-500 to-cyan-300 shadow-blue-500/25'
+                            : 'bg-gray-700/45 shadow-none'
+                        }`}
+                        style={{ height: `${item.users ? Math.max(height, 14) : 6}%` }}
+                        title={`${item.users || 0} users`}
+                      />
+                      <div
+                        className={`w-[18%] max-w-2 rounded-t transition-all ${
+                          item.mentors
+                            ? 'bg-gradient-to-t from-purple-600 to-fuchsia-300'
+                            : 'bg-gray-700/45'
+                        }`}
+                        style={{ height: `${item.mentors ? Math.max(mentorHeight, 14) : 6}%` }}
+                        title={`${item.mentors || 0} mentors`}
+                      />
+                    </div>
+                    <span className="text-[10px] font-semibold text-gray-500 truncate max-w-full">{item[labelKey]}</span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="flex items-center justify-center gap-4 mt-4 pt-4 border-t dark:border-gray-700 text-xs text-gray-500">
+        <span className="inline-flex items-center gap-1"><span className="w-3 h-3 rounded bg-blue-500" />Total</span>
+        <span className="inline-flex items-center gap-1"><span className="w-3 h-3 rounded bg-purple-500" />Mentor</span>
       </div>
     </div>
   );

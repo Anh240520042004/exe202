@@ -18,6 +18,7 @@ import Gamification from './pages/gamification/Gamification';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import PaymentResult from './pages/payment/PaymentResult';
 import AdminPayments from './pages/admin/AdminPayments';
+import AdminForumPosts from './pages/admin/AdminForumPosts';
 import Forum from './pages/forum/Forum';
 import CreatePost from './pages/forum/CreatePost';
 import PostDetail from './pages/forum/PostDetail';
@@ -29,7 +30,7 @@ export default function App() {
   const theme = useSelector((state) => state.ui.theme);
 
   useEffect(() => {
-    document.documentElement.classList.add('dark');
+    document.documentElement.classList.toggle('dark', theme === 'dark');
   }, [theme]);
 
   const DashboardComponent = user?.role === 'admin' ? AdminDashboard :
@@ -80,6 +81,7 @@ export default function App() {
           <>
             <Route path="/admin" element={<AdminDashboard />} />
             <Route path="/admin/payments" element={<AdminPayments />} />
+            <Route path="/admin/forum-posts" element={<AdminForumPosts />} />
           </>
         )}
       </Route>

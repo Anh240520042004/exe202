@@ -260,6 +260,59 @@ const userSchema = new mongoose.Schema(
         type: String,
       },
 
+      achievements: [
+        {
+          title: { type: String, trim: true },
+          issuer: { type: String, trim: true },
+          year: { type: String, trim: true },
+          description: { type: String, trim: true },
+        },
+      ],
+
+      demoMaterials: [
+        {
+          title: { type: String, trim: true },
+          type: {
+            type: String,
+            enum: ['video', 'slide', 'document', 'repository', 'link'],
+            default: 'link',
+          },
+          url: { type: String, trim: true },
+          description: { type: String, trim: true },
+        },
+      ],
+
+      exerciseTemplates: [
+        {
+          title: { type: String, trim: true },
+          subjectCode: { type: String, trim: true },
+          level: {
+            type: String,
+            enum: ['beginner', 'intermediate', 'advanced'],
+            default: 'intermediate',
+          },
+          url: { type: String, trim: true },
+          description: { type: String, trim: true },
+        },
+      ],
+
+      projects: [
+        {
+          title: { type: String, trim: true },
+          role: { type: String, trim: true },
+          techStack: [{ type: String, trim: true }],
+          url: { type: String, trim: true },
+          description: { type: String, trim: true },
+        },
+      ],
+
+      promotion: {
+        isPromoted: { type: Boolean, default: false },
+        priorityScore: { type: Number, default: 0 },
+        paidUntil: { type: Date },
+        campaignName: { type: String, trim: true },
+      },
+
       pricePerHour: {
         type: Number,
         default: 0,

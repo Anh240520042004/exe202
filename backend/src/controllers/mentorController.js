@@ -1,6 +1,15 @@
 import User from '../models/User.js';
 import MentorBooking from '../models/MentorBooking.js';
 import { apiSuccess, apiError } from '../utils/apiResponse.js';
+import mongoose from 'mongoose';
+
+const mentorSelect = '-password -refreshToken';
+
+const promotedSort = (sortBy, order) => ({
+  'mentorProfile.promotion.isPromoted': -1,
+  'mentorProfile.promotion.priorityScore': -1,
+  [sortBy === 'rating' ? 'mentorProfile.rating' : sortBy]: order === 'asc' ? 1 : -1,
+});
 
 export const getMentors = async (req, res, next) => {
   try {
@@ -14,6 +23,7 @@ export const getMentors = async (req, res, next) => {
       order = 'desc',
       search,
       isAvailable,
+      promotedOnly,
     } = req.query;
 
     const query = { role: 'mentor', 'mentorProfile.isAvailable': true };
@@ -22,20 +32,27 @@ export const getMentors = async (req, res, next) => {
     if (minPrice) query['mentorProfile.pricePerHour'] = { $gte: Number(minPrice) };
     if (maxPrice) query['mentorProfile.pricePerHour'] = { ...query['mentorProfile.pricePerHour'], $lte: Number(maxPrice) };
     if (isAvailable !== undefined) query['mentorProfile.isAvailable'] = isAvailable === 'true';
+    if (promotedOnly === 'true') {
+      query['mentorProfile.promotion.isPromoted'] = true;
+      query['mentorProfile.promotion.paidUntil'] = { $gte: new Date() };
+    }
     if (search) {
       query.$or = [
         { name: { $regex: search, $options: 'i' } },
         { 'mentorProfile.title': { $regex: search, $options: 'i' } },
         { 'mentorProfile.expertise': { $regex: search, $options: 'i' } },
+        { 'mentorProfile.major': { $regex: search, $options: 'i' } },
+        { 'mentorProfile.projects.title': { $regex: search, $options: 'i' } },
+        { 'mentorProfile.achievements.title': { $regex: search, $options: 'i' } },
       ];
     }
 
-    const sortOption = { [sortBy === 'rating' ? 'mentorProfile.rating' : sortBy]: order === 'asc' ? 1 : -1 };
+    const sortOption = promotedSort(sortBy, order);
     const skip = (Number(page) - 1) * Number(limit);
 
     const [mentors, total] = await Promise.all([
       User.find(query)
-        .select('-password -refreshToken')
+        .select(mentorSelect)
         .sort(sortOption)
         .skip(skip)
         .limit(Number(limit)),
@@ -61,7 +78,7 @@ export const getMentorById = async (req, res, next) => {
     const { id } = req.params;
 
     const mentor = await User.findOne({ _id: id, role: 'mentor' })
-      .select('-password -refreshToken');
+      .select(mentorSelect);
 
     if (!mentor) {
       return next(apiError('Mentor not found', 404));
@@ -77,9 +94,9 @@ export const getMentorById = async (req, res, next) => {
       status: 'completed',
       rating: { $exists: true }
     })
-      .populate('student', 'name avatar')
+      .populate('student', 'name avatar role')
       .sort({ updatedAt: -1 })
-      .limit(5);
+      .limit(8);
 
     res.json(apiSuccess({
       mentor,
@@ -113,6 +130,14 @@ export const updateMentorProfile = async (req, res, next) => {
       'mentorProfile.title',
       'mentorProfile.bio',
       'mentorProfile.expertise',
+      'mentorProfile.gpa',
+      'mentorProfile.major',
+      'mentorProfile.passedSubjects',
+      'mentorProfile.experience',
+      'mentorProfile.achievements',
+      'mentorProfile.demoMaterials',
+      'mentorProfile.exerciseTemplates',
+      'mentorProfile.projects',
       'mentorProfile.pricePerHour',
       'mentorProfile.availability',
       'mentorProfile.isAvailable',
@@ -127,10 +152,50 @@ export const updateMentorProfile = async (req, res, next) => {
       }
     });
 
-    Object.assign(mentor, updates);
+    mentor.set(updates);
     await mentor.save();
 
     res.json(apiSuccess(mentor, 'Profile updated successfully'));
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const activatePromotion = async (req, res, next) => {
+  try {
+    if (req.user.role !== 'mentor' && req.user.role !== 'admin') {
+      return next(apiError('Only mentors can promote their profile', 403));
+    }
+
+    const {
+      mentorId = req.user.id,
+      days = 7,
+      priorityScore = 100,
+      campaignName = 'Mentor search boost',
+    } = req.body;
+
+    if (mentorId !== req.user.id && req.user.role !== 'admin') {
+      return next(apiError('Not authorized', 403));
+    }
+
+    const mentor = await User.findOne({ _id: mentorId, role: 'mentor' });
+    if (!mentor) return next(apiError('Mentor not found', 404));
+
+    const paidUntil = new Date();
+    paidUntil.setDate(paidUntil.getDate() + Math.max(1, Number(days)));
+
+    mentor.set({
+      'mentorProfile.promotion.isPromoted': true,
+      'mentorProfile.promotion.priorityScore': Number(priorityScore) || 100,
+      'mentorProfile.promotion.paidUntil': paidUntil,
+      'mentorProfile.promotion.campaignName': campaignName,
+    });
+    await mentor.save();
+
+    res.json(apiSuccess({
+      mentor,
+      promotion: mentor.mentorProfile.promotion,
+    }, 'Promotion activated'));
   } catch (error) {
     next(error);
   }
@@ -297,13 +362,141 @@ export const addBookingReview = async (req, res, next) => {
   }
 };
 
+export const getMentorReviews = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const { page = 1, limit = 10 } = req.query;
+    const skip = (Number(page) - 1) * Number(limit);
+
+    const [reviews, total] = await Promise.all([
+      MentorBooking.find({ mentor: id, status: 'completed', rating: { $exists: true } })
+        .populate('student', 'name avatar role')
+        .sort({ updatedAt: -1 })
+        .skip(skip)
+        .limit(Number(limit)),
+      MentorBooking.countDocuments({ mentor: id, status: 'completed', rating: { $exists: true } }),
+    ]);
+
+    res.json(apiSuccess({
+      reviews: reviews.map(booking => ({
+        _id: booking._id,
+        user: booking.student,
+        rating: booking.rating,
+        comment: booking.review?.comment || '',
+        createdAt: booking.review?.createdAt || booking.updatedAt,
+      })),
+      pagination: {
+        page: Number(page),
+        limit: Number(limit),
+        total,
+        pages: Math.ceil(total / Number(limit)),
+      },
+    }));
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const addMentorReview = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const { rating, comment = '', bookingId } = req.body;
+
+    if (!rating || rating < 1 || rating > 5) {
+      return next(apiError('Rating must be 1-5', 400));
+    }
+
+    const mentor = await User.findOne({ _id: id, role: 'mentor' });
+    if (!mentor) return next(apiError('Mentor not found', 404));
+
+    const bookingQuery = {
+      mentor: id,
+      student: req.user.id,
+      status: 'completed',
+    };
+    if (bookingId) bookingQuery._id = bookingId;
+
+    const booking = await MentorBooking.findOne(bookingQuery);
+    if (!booking) {
+      return next(apiError('You need a completed mentor session before reviewing', 403));
+    }
+
+    if (booking.rating) return next(apiError('You already reviewed this session', 400));
+
+    booking.rating = rating;
+    booking.review = { comment: comment.trim(), createdAt: new Date() };
+    await booking.save();
+    await recalcMentorRating(id);
+
+    const populated = await MentorBooking.findById(booking._id).populate('student', 'name avatar role');
+    res.status(201).json(apiSuccess({
+      _id: populated._id,
+      user: populated.student,
+      rating: populated.rating,
+      comment: populated.review?.comment || '',
+      createdAt: populated.review?.createdAt || populated.updatedAt,
+    }, 'Mentor review created'));
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getMentorSuggestions = async (req, res, next) => {
+  try {
+    const user = req.user ? await User.findById(req.user.id).select(mentorSelect) : null;
+    const signals = new Set();
+
+    if (user?.role === 'student') {
+      (user.studentProfile?.passedSubjects || []).forEach(subject => signals.add(subject));
+      if (user.studentProfile?.faculty) signals.add(user.studentProfile.faculty);
+    }
+
+    if (user?.role === 'mentor') {
+      (user.mentorProfile?.expertise || []).forEach(subject => signals.add(subject));
+      if (user.mentorProfile?.major) signals.add(user.mentorProfile.major);
+    }
+
+    const signalList = [...signals].filter(Boolean);
+    const query = { role: 'mentor', 'mentorProfile.isAvailable': true };
+    if (user?.role === 'mentor') query._id = { $ne: user._id };
+    if (signalList.length > 0) {
+      query.$or = [
+        { 'mentorProfile.expertise': { $in: signalList.map(s => String(s).toUpperCase()) } },
+        { 'mentorProfile.major': { $in: signalList } },
+        { 'mentorProfile.title': { $regex: signalList.join('|'), $options: 'i' } },
+      ];
+    }
+
+    let mentors = await User.find(query)
+      .select(mentorSelect)
+      .sort(promotedSort('rating', 'desc'))
+      .limit(8);
+
+    if (mentors.length < 4) {
+      mentors = await User.find({ role: 'mentor', 'mentorProfile.isAvailable': true, ...(user?.role === 'mentor' ? { _id: { $ne: user._id } } : {}) })
+        .select(mentorSelect)
+        .sort(promotedSort('rating', 'desc'))
+        .limit(8);
+    }
+
+    res.json(apiSuccess({ mentors, signals: signalList }));
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const getTopMentors = async (req, res, next) => {
   try {
     const { limit = 10 } = req.query;
 
     const mentors = await User.find({ role: 'mentor', 'mentorProfile.isAvailable': true })
-      .select('-password -refreshToken')
-      .sort({ 'mentorProfile.rating': -1, 'mentorProfile.totalSessions': -1 })
+      .select(mentorSelect)
+      .sort({
+        'mentorProfile.promotion.isPromoted': -1,
+        'mentorProfile.promotion.priorityScore': -1,
+        'mentorProfile.rating': -1,
+        'mentorProfile.totalSessions': -1,
+      })
       .limit(Number(limit));
 
     res.json(apiSuccess(mentors));
@@ -311,3 +504,15 @@ export const getTopMentors = async (req, res, next) => {
     next(error);
   }
 };
+
+async function recalcMentorRating(mentorId) {
+  const stats = await MentorBooking.aggregate([
+    { $match: { mentor: new mongoose.Types.ObjectId(mentorId), status: 'completed', rating: { $exists: true } } },
+    { $group: { _id: null, avgRating: { $avg: '$rating' }, count: { $sum: 1 } } },
+  ]);
+
+  await User.findByIdAndUpdate(mentorId, {
+    'mentorProfile.rating': stats[0]?.avgRating ? Number(stats[0].avgRating.toFixed(1)) : 0,
+    'mentorProfile.totalReviews': stats[0]?.count || 0,
+  });
+}

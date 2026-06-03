@@ -96,6 +96,7 @@ export const documentService = {
   getBySubject: (subjectCode, params) => api.get(`/documents/subject/${subjectCode}`, { params }),
   getFeatured: () => api.get('/documents/featured'),
   getPopular: (params) => api.get('/documents/popular', { params }),
+  getTopRated: (params) => api.get('/documents/top-rated', { params }),
   getFavorites: () => api.get('/documents/favorites'),
   getDownloadHistory: (params) => api.get('/documents/download-history', { params }),
   create: (data) => api.post('/documents', data),
@@ -138,11 +139,15 @@ export const mentorService = {
   getAll: (params) => api.get('/mentors', { params }),
   getById: (id) => api.get(`/mentors/${id}`),
   getTop: (params) => api.get('/mentors/top', { params }),
+  getSuggestions: () => api.get('/mentors/suggestions'),
+  getReviews: (id, params) => api.get(`/mentors/${id}/reviews`, { params }),
   updateProfile: (id, data) => api.put(`/mentors/${id}/profile`, data),
+  activatePromotion: (data) => api.post('/mentors/me/promotion', data),
   createBooking: (data) => api.post('/mentors', data),
   getBookings: (params) => api.get('/mentors/bookings/list', { params }),
   updateBookingStatus: (id, data) => api.put(`/mentors/bookings/${id}/status`, data),
-  addReview: (id, data) => api.post(`/mentors/${id}/review`, data),
+  addReview: (id, data) => api.post(`/mentors/${id}/reviews`, data),
+  addBookingReview: (id, data) => api.post(`/mentors/bookings/${id}/review`, data),
 };
 
 export const aiService = {

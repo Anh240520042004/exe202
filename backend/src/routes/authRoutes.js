@@ -86,6 +86,9 @@ router.post(
     body('password')
       .notEmpty().withMessage('Mật khẩu không được để trống')
       .isLength({ min: 6 }).withMessage('Mật khẩu ít nhất 6 ký tự'),
+    body('role')
+      .optional()
+      .isIn(['student', 'mentor']).withMessage('Vai trò không hợp lệ'),
   ]),
   authController.register
 );

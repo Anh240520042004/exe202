@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { User, Mail, Lock, Eye, EyeOff } from 'lucide-react';
+import { GraduationCap, Mail, Lock, Eye, EyeOff, User, Users } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { register, clearError } from "../../store/slices/authSlice";
 import { Button, Input } from "../../components/ui";
@@ -17,6 +17,7 @@ export default function Register() {
     email: '',
     password: '',
     confirmPassword: '',
+    role: 'student',
   });
   const [showPassword, setShowPassword] = useState(false);
   const [localError, setLocalError] = useState('');
@@ -50,6 +51,7 @@ export default function Register() {
         name: formData.name,
         email: formData.email,
         password: formData.password,
+        role: formData.role,
       })).unwrap();
       toast.success('Đăng ký thành công! Đang chuyển đến trang chính...');
       navigate('/dashboard');
@@ -90,6 +92,38 @@ export default function Register() {
           onChange={handleChange}
         />
 
+        <div>
+          <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-200">
+            Vai trò
+          </label>
+          <div className="grid grid-cols-2 gap-3">
+            <button
+              type="button"
+              onClick={() => setFormData({ ...formData, role: 'student' })}
+              className={`flex items-center justify-center gap-2 rounded-2xl border px-4 py-3 transition-colors ${
+                formData.role === 'student'
+                  ? 'border-primary-400 bg-primary-400/30 text-white'
+                  : 'border-slate-200 dark:border-white/10 bg-white/40 dark:bg-white/5 text-gray-700 dark:text-gray-300 hover:bg-white/70 dark:hover:bg-white/10'
+              }`}
+            >
+              <GraduationCap className="w-5 h-5" />
+              Sinh viên
+            </button>
+            <button
+              type="button"
+              onClick={() => setFormData({ ...formData, role: 'mentor' })}
+              className={`flex items-center justify-center gap-2 rounded-2xl border px-4 py-3 transition-colors ${
+                formData.role === 'mentor'
+                  ? 'border-primary-400 bg-primary-400/30 text-white'
+                  : 'border-slate-200 dark:border-white/10 bg-white/40 dark:bg-white/5 text-gray-700 dark:text-gray-300 hover:bg-white/70 dark:hover:bg-white/10'
+              }`}
+            >
+              <Users className="w-5 h-5" />
+              Mentor
+            </button>
+          </div>
+        </div>
+
         <div className="relative">
           <Input
             type={showPassword ? 'text' : 'password'}
@@ -104,7 +138,7 @@ export default function Register() {
           <button
             type="button"
             onClick={() => setShowPassword(!showPassword)}
-            className="absolute right-3 top-[2.15rem] text-gray-400 hover:text-white transition-colors"
+            className="absolute right-3 top-[2.15rem] text-gray-400 hover:text-gray-700 dark:hover:text-white transition-colors"
           >
             {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
           </button>
