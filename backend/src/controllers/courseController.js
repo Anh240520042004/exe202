@@ -2,6 +2,7 @@ import Course from '../models/Course.js';
 import Document from '../models/Document.js';
 import User from '../models/User.js';
 import { apiSuccess, apiError } from '../utils/apiResponse.js';
+import { escapeRegex } from '../utils/security.js';
 
 // Generate unique course code
 const generateCourseCode = (name) => {
@@ -24,9 +25,10 @@ export const getCourses = async (req, res, next) => {
     if (semester) query.semester = semester;
     if (category) query.category = category;
     if (search) {
+      const escapedSearch = escapeRegex(search);
       query.$or = [
-        { code: { $regex: search, $options: 'i' } },
-        { name: { $regex: search, $options: 'i' } },
+        { code: { $regex: escapedSearch, $options: 'i' } },
+        { name: { $regex: escapedSearch, $options: 'i' } },
       ];
     }
 
@@ -95,9 +97,10 @@ export const getMyCourses = async (req, res, next) => {
     
     // Apply search filter if provided
     if (search) {
+      const escapedSearch = escapeRegex(search);
       query.$or = [
-        { code: { $regex: search, $options: 'i' } },
-        { name: { $regex: search, $options: 'i' } },
+        { code: { $regex: escapedSearch, $options: 'i' } },
+        { name: { $regex: escapedSearch, $options: 'i' } },
       ];
     }
 

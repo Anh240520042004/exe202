@@ -4,6 +4,7 @@ import config from '../config/index.js';
 export const apiLimiter = rateLimit({
   windowMs: config.rateLimit.windowMs,
   max: config.rateLimit.maxRequests,
+  skip: () => config.nodeEnv === 'development',
   message: {
     success: false,
     message: 'Quá nhiều yêu cầu, vui lòng thử lại sau',

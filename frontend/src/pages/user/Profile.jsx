@@ -63,7 +63,7 @@ const getTransactionIcon = (type) => {
 };
 
 const getTransactionColor = (type) => {
-  return type === 'income' ? 'text-green-600 bg-green-100' : 'text-red-600 bg-red-100';
+  return type === 'income' ? 'text-green-600 bg-green-100 dark:text-green-400 dark:bg-green-900/30' : 'text-red-600 bg-red-100 dark:text-red-400 dark:bg-red-900/30';
 };
 
 const getCategoryLabel = (category) => {
@@ -89,7 +89,6 @@ const getCategoryLabel = (category) => {
 export default function Profile() {
   const dispatch = useDispatch();
   const { profile, isLoading, error, transactions, transactionStats } = useSelector((state) => state.user);
-  const user = useSelector((state) => state.auth.user);
 
   const [profileData, setProfileData] = useState({
     name: '',
@@ -105,7 +104,6 @@ export default function Profile() {
     confirmPassword: '',
   });
 
-  const [isEditing, setIsEditing] = useState(false);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
 
   useEffect(() => {
@@ -143,7 +141,6 @@ export default function Profile() {
     try {
       await dispatch(updateProfile(profileData)).unwrap();
       toast.success('Cập nhật hồ sơ thành công!');
-      setIsEditing(false);
     } catch (err) {
       toast.error(err || 'Cập nhật thất bại');
     }
@@ -190,273 +187,269 @@ export default function Profile() {
   return (
     <LoginRequired title="Hồ sơ cá nhân" message="Bạn cần đăng nhập để xem hồ sơ của mình">
       <div className="space-y-6 animate-fade-in">
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Hồ sơ cá nhân</h1>
-        <p className="text-gray-500 dark:text-gray-400 mt-1">Quản lý thông tin tài khoản của bạn</p>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-1">
-          <Card>
-            <div className="text-center">
-              <div className="relative inline-block">
-                <img
-                  src={profileData.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${profileData.name}`}
-                  alt={profileData.name}
-                  className="w-32 h-32 rounded-full object-cover border-4 border-primary-100 dark:border-primary-800 mx-auto"
-                />
-                <button className="absolute bottom-0 right-0 p-2 bg-primary-500 text-white rounded-full hover:bg-primary-600 transition-colors">
-                  <Camera className="w-4 h-4" />
-                </button>
-              </div>
-              <h2 className="text-xl font-semibold text-gray-900 dark:text-white mt-4">
-                {profile?.name}
-              </h2>
-              <p className="text-gray-500 dark:text-gray-400">{profile?.email}</p>
-              <span className="inline-block mt-2 px-3 py-1 bg-primary-100 dark:bg-primary-400/15 text-primary-600 dark:text-primary-400 rounded-full text-sm font-medium">
-                {profile?.role === 'admin' ? 'Quản trị viên' : 'Người dùng'}
-              </span>
-            </div>
-
-            <div className="mt-6 pt-6 border-t glass-divider border space-y-4">
-              <div className="flex items-center gap-3 text-gray-600 dark:text-gray-400">
-                <User className="w-5 h-5" />
-                <span>Tham gia: {profile?.createdAt ? new Date(profile.createdAt).toLocaleDateString('vi-VN') : 'N/A'}</span>
-              </div>
-              <div className="flex items-center gap-3 text-gray-600 dark:text-gray-400">
-                <Mail className="w-5 h-5" />
-                <span>{profile?.email}</span>
+        {/* Beautiful Glass Profile Header Banner */}
+        <div className="glass-card overflow-hidden">
+          <div className="bg-gradient-to-br from-primary-500/15 via-primary-500/5 to-transparent p-6 md:p-10 flex flex-col md:flex-row items-center md:items-start gap-6">
+            <div className="relative group">
+              <img
+                src={profileData.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${profileData.name}`}
+                alt={profileData.name}
+                className="w-28 h-28 rounded-full object-cover border-4 border-white/80 dark:border-white/10 shadow-xl"
+              />
+              <div className="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                <Camera className="w-6 h-6 text-white" />
               </div>
             </div>
-          </Card>
+            <div className="flex-1 text-center md:text-left">
+              <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-1">{profile?.name}</h1>
+              <p className="text-gray-500 dark:text-gray-400 font-medium mb-4">{profile?.email}</p>
+              <div className="flex flex-wrap gap-2 justify-center md:justify-start">
+                <span className="px-3.5 py-1 bg-primary-100 dark:bg-primary-500/20 text-primary-700 dark:text-primary-300 rounded-full text-xs font-bold uppercase tracking-wider">
+                  {profile?.role === 'admin' ? 'Quản trị viên' : profile?.role === 'mentor' ? 'Mentor' : 'Sinh viên'}
+                </span>
+                <span className="px-3.5 py-1 bg-gray-100 dark:bg-white/10 text-gray-600 dark:text-gray-300 rounded-full text-xs font-semibold">
+                  Tham gia: {profile?.createdAt ? new Date(profile.createdAt).toLocaleDateString('vi-VN') : 'N/A'}
+                </span>
+              </div>
+            </div>
+          </div>
         </div>
 
-        <div className="lg:col-span-2">
-          <Card title="Thông tin cá nhân">
-            <form onSubmit={handleProfileSubmit}>
-              <div className="space-y-4">
-                <Input
-                  label="Họ tên"
-                  name="name"
-                  value={profileData.name}
-                  onChange={handleProfileChange}
-                  icon={User}
-                />
+        {/* Structured Grid Layout */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Main Info Form & Transactions (Left column - takes 2/3 space) */}
+          <div className="lg:col-span-2 space-y-6">
+            {/* Personal Details Form */}
+            <Card title="Thông tin cá nhân">
+              <form onSubmit={handleProfileSubmit}>
+                <div className="space-y-5">
+                  <Input
+                    label="Họ tên"
+                    name="name"
+                    value={profileData.name}
+                    onChange={handleProfileChange}
+                    icon={User}
+                  />
 
-                <Input
-                  label="Avatar URL"
-                  name="avatar"
-                  value={profileData.avatar}
-                  onChange={handleProfileChange}
-                  placeholder="https://..."
-                />
+                  <Input
+                    label="Avatar URL (Địa chỉ ảnh)"
+                    name="avatar"
+                    value={profileData.avatar}
+                    onChange={handleProfileChange}
+                    placeholder="Nhập đường dẫn ảnh liên kết..."
+                  />
 
-                <Input
-                  label="Email"
-                  value={profile?.email}
-                  icon={Mail}
-                  disabled
-                />
-              </div>
-
-              <div className="flex items-center justify-between mt-6 pt-6 border-t glass-divider border">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setShowPasswordModal(true)}
-                  className="gap-2"
-                >
-                  <Lock className="w-4 h-4" />
-                  Đổi mật khẩu
-                </Button>
-                <Button type="submit" className="gap-2" isLoading={isLoading}>
-                  <Save className="w-4 h-4" />
-                  Lưu thay đổi
-                </Button>
-              </div>
-            </form>
-          </Card>
-
-          <Card title="Hoạt động gần đây" className="mt-6">
-            {activities.length > 0 ? (
-              <div className="space-y-3">
-                {activities.slice(0, 10).map((activity, index) => {
-                  const Icon = ACTIVITY_ICONS[activity.type] || User;
-                  const label = ACTIVITY_LABELS[activity.type] || activity.description || 'Hoạt động';
-                  return (
-                    <div key={index} className="flex items-center gap-3 p-3 glass-subtle/50 rounded-xl">
-                      <div className="w-10 h-10 rounded-full bg-primary-100 dark:bg-primary-400/15 flex items-center justify-center">
-                        <Icon className="w-5 h-5 text-primary-600" />
-                      </div>
-                      <div className="flex-1">
-                        <p className="text-sm font-medium text-gray-900 dark:text-white">{label}</p>
-                        <p className="text-xs text-gray-500">{getRelativeTime(activity.createdAt)}</p>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            ) : (
-              <p className="text-gray-500 dark:text-gray-400 text-sm text-center py-4">
-                Chưa có hoạt động nào
-              </p>
-            )}
-          </Card>
-
-          {/* Transaction History Section */}
-          <Card title="Lịch sử giao dịch" className="mt-6">
-            {!showTransactionHistory ? (
-              <div className="text-center py-4">
-                <Receipt className="w-12 h-12 text-gray-400 mx-auto mb-3" />
-                <p className="text-gray-500 dark:text-gray-400 mb-4">
-                  Xem lịch sử các giao dịch mua tài liệu và dịch vụ
-                </p>
-                <Button
-                  variant="primary"
-                  onClick={() => setShowTransactionHistory(true)}
-                  className="gap-2"
-                >
-                  <Receipt className="w-4 h-4" />
-                  Xem lịch sử giao dịch
-                </Button>
-              </div>
-            ) : isLoading ? (
-              <div className="text-center py-8">
-                <div className="w-8 h-8 border-4 border-primary-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-                <p className="text-gray-500">Đang tải lịch sử giao dịch...</p>
-              </div>
-            ) : (
-              <div>
-                {/* Stats Summary */}
-                <div className="grid grid-cols-3 gap-4 mb-6">
-                  <div className="bg-green-50 dark:bg-green-900/20 rounded-xl p-4 text-center">
-                    <TrendingUp className="w-6 h-6 text-green-600 mx-auto mb-2" />
-                    <p className="text-2xl font-bold text-green-600">{formatCurrency(transactionStats.totalIncome)}</p>
-                    <p className="text-xs text-gray-500">Tổng thu</p>
-                  </div>
-                  <div className="bg-red-50 dark:bg-red-900/20 rounded-xl p-4 text-center">
-                    <TrendingDown className="w-6 h-6 text-red-600 mx-auto mb-2" />
-                    <p className="text-2xl font-bold text-red-600">{formatCurrency(transactionStats.totalExpense)}</p>
-                    <p className="text-xs text-gray-500">Tổng chi</p>
-                  </div>
-                  <div className="bg-primary-200/25 dark:bg-primary-400/10 rounded-xl p-4 text-center">
-                    <CreditCard className="w-6 h-6 text-primary-600 mx-auto mb-2" />
-                    <p className={`text-2xl font-bold ${transactionStats.balance >= 0 ? 'text-primary-600' : 'text-red-600'}`}>
-                      {formatCurrency(transactionStats.balance)}
-                    </p>
-                    <p className="text-xs text-gray-500">Số dư</p>
-                  </div>
+                  <Input
+                    label="Địa chỉ Email"
+                    value={profile?.email}
+                    icon={Mail}
+                    disabled
+                  />
                 </div>
 
-                {/* Transaction List */}
-                {transactions.length > 0 ? (
-                  <div className="space-y-3">
-                    {transactions.map((txn) => {
-                      const TxnIcon = getTransactionIcon(txn.type);
-                      const colorClass = getTransactionColor(txn.type);
-                      return (
-                        <div key={txn._id} className="flex items-center gap-3 p-3 glass-subtle/50 rounded-xl">
-                          <div className={`w-10 h-10 rounded-full flex items-center justify-center ${colorClass}`}>
-                            <TxnIcon className="w-5 h-5" />
-                          </div>
-                          <div className="flex-1">
-                            <p className="text-sm font-medium text-gray-900 dark:text-white">
-                              {txn.description || getCategoryLabel(txn.category)}
-                            </p>
-                            <div className="flex items-center gap-2 text-xs text-gray-500">
-                              <Calendar className="w-3 h-3" />
-                              {getRelativeTime(txn.date)}
-                              <span className="px-2 py-0.5 bg-gray-200 dark:bg-gray-700 rounded">
-                                {getCategoryLabel(txn.category)}
+                <div className="flex items-center justify-between mt-6 pt-6 border-t glass-divider border">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setShowPasswordModal(true)}
+                    className="gap-2 font-semibold"
+                  >
+                    <Lock className="w-4 h-4" />
+                    Đổi mật khẩu
+                  </Button>
+                  <Button type="submit" className="gap-2 font-semibold" isLoading={isLoading}>
+                    <Save className="w-4 h-4" />
+                    Lưu thay đổi
+                  </Button>
+                </div>
+              </form>
+            </Card>
+
+            {/* Transaction History Section */}
+            <Card title="Lịch sử giao dịch">
+              {!showTransactionHistory ? (
+                <div className="text-center py-6">
+                  <Receipt className="w-12 h-12 text-gray-400 dark:text-gray-500 mx-auto mb-3 opacity-60" />
+                  <p className="text-gray-500 dark:text-gray-400 mb-4 text-sm max-w-sm mx-auto">
+                    Xem lịch sử các giao dịch mua bán tài liệu và dịch vụ đã thực hiện
+                  </p>
+                  <Button
+                    variant="primary"
+                    onClick={() => setShowTransactionHistory(true)}
+                    className="gap-2 font-semibold"
+                  >
+                    <Receipt className="w-4 h-4" />
+                    Xem lịch sử giao dịch
+                  </Button>
+                </div>
+              ) : isLoading ? (
+                <div className="text-center py-8">
+                  <div className="w-8 h-8 border-4 border-primary-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+                  <p className="text-gray-500 dark:text-gray-400 text-sm">Đang tải lịch sử giao dịch...</p>
+                </div>
+              ) : (
+                <div className="space-y-6">
+                  {/* Stats Summary Panel */}
+                  <div className="grid grid-cols-3 gap-4">
+                    <div className="bg-green-50/70 dark:bg-green-950/20 border border-green-100 dark:border-green-900/20 rounded-2xl p-4 text-center">
+                      <TrendingUp className="w-5 h-5 text-green-600 dark:text-green-400 mx-auto mb-1.5" />
+                      <p className="text-lg font-bold text-green-600 dark:text-green-400">{formatCurrency(transactionStats.totalIncome)}</p>
+                      <p className="text-[10px] uppercase font-bold text-gray-400 dark:text-gray-500">Tổng thu</p>
+                    </div>
+                    <div className="bg-red-50/70 dark:bg-red-950/20 border border-red-100 dark:border-red-900/20 rounded-2xl p-4 text-center">
+                      <TrendingDown className="w-5 h-5 text-red-600 dark:text-red-400 mx-auto mb-1.5" />
+                      <p className="text-lg font-bold text-red-600 dark:text-red-400">{formatCurrency(transactionStats.totalExpense)}</p>
+                      <p className="text-[10px] uppercase font-bold text-gray-400 dark:text-gray-500">Tổng chi</p>
+                    </div>
+                    <div className="bg-primary-50/70 dark:bg-primary-950/20 border border-primary-100 dark:border-primary-900/20 rounded-2xl p-4 text-center">
+                      <CreditCard className="w-5 h-5 text-primary-600 dark:text-primary-400 mx-auto mb-1.5" />
+                      <p className={`text-lg font-bold ${transactionStats.balance >= 0 ? 'text-primary-600 dark:text-primary-400' : 'text-red-550'}`}>
+                        {formatCurrency(transactionStats.balance)}
+                      </p>
+                      <p className="text-[10px] uppercase font-bold text-gray-400 dark:text-gray-500">Số dư</p>
+                    </div>
+                  </div>
+
+                  {/* Transaction List */}
+                  {transactions.length > 0 ? (
+                    <div className="space-y-3 max-h-96 overflow-y-auto scrollbar-hide">
+                      {transactions.map((txn) => {
+                        const TxnIcon = getTransactionIcon(txn.type);
+                        const colorClass = getTransactionColor(txn.type);
+                        return (
+                          <div key={txn._id} className="flex items-center gap-3 p-3.5 bg-white/50 dark:bg-white/5 border border-gray-150 dark:border-white/5 rounded-xl hover:shadow-sm transition-all">
+                            <div className={`w-10 h-10 rounded-full flex items-center justify-center ${colorClass} flex-shrink-0`}>
+                              <TxnIcon className="w-5 h-5" />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">
+                                {txn.description || getCategoryLabel(txn.category)}
+                              </p>
+                              <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                <Calendar className="w-3.5 h-3.5 flex-shrink-0" />
+                                <span>{getRelativeTime(txn.date)}</span>
+                                <span className="px-2 py-0.5 bg-gray-100 dark:bg-white/10 rounded font-medium text-[10px]">
+                                  {getCategoryLabel(txn.category)}
+                                </span>
+                              </div>
+                            </div>
+                            <div className="text-right flex-shrink-0">
+                              <p className={`text-sm font-bold ${txn.type === 'income' ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+                                {txn.type === 'income' ? '+' : '-'}{formatCurrency(txn.amount)}
+                              </p>
+                              <span className={`inline-block text-[10px] font-bold px-2 py-0.5 mt-1 rounded ${
+                                txn.status === 'completed' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' :
+                                txn.status === 'pending' ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400' :
+                                'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
+                              }`}>
+                                {txn.status === 'completed' ? 'Hoàn thành' : 
+                                 txn.status === 'pending' ? 'Đang xử lý' : 
+                                 txn.status === 'failed' ? 'Thất bại' : 'Đã hủy'}
                               </span>
                             </div>
                           </div>
-                          <div className="text-right">
-                            <p className={`text-sm font-bold ${txn.type === 'income' ? 'text-green-600' : 'text-red-600'}`}>
-                              {txn.type === 'income' ? '+' : '-'}{formatCurrency(txn.amount)}
-                            </p>
-                            <span className={`text-xs px-2 py-0.5 rounded ${
-                              txn.status === 'completed' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' :
-                              txn.status === 'pending' ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400' :
-                              'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
-                            }`}>
-                              {txn.status === 'completed' ? 'Hoàn thành' : 
-                               txn.status === 'pending' ? 'Đang xử lý' : 
-                               txn.status === 'failed' ? 'Thất bại' : 'Đã hủy'}
-                            </span>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                ) : (
-                  <div className="text-center py-8">
-                    <Receipt className="w-12 h-12 text-gray-400 mx-auto mb-3" />
-                    <p className="text-gray-500 dark:text-gray-400">
-                      Chưa có giao dịch nào
-                    </p>
-                  </div>
-                )}
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <div className="text-center py-8">
+                      <Receipt className="w-10 h-10 text-gray-300 dark:text-gray-600 mx-auto mb-2 opacity-50" />
+                      <p className="text-gray-400 dark:text-gray-500 text-sm">
+                        Chưa thực hiện giao dịch nào
+                      </p>
+                    </div>
+                  )}
 
-                <div className="mt-4 text-center">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setShowTransactionHistory(false)}
-                  >
-                    Đóng
-                  </Button>
+                  <div className="text-center pt-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setShowTransactionHistory(false)}
+                      className="font-semibold"
+                    >
+                      Đóng lịch sử giao dịch
+                    </Button>
+                  </div>
                 </div>
-              </div>
-            )}
-          </Card>
-        </div>
-      </div>
-
-      <Modal
-        isOpen={showPasswordModal}
-        onClose={() => setShowPasswordModal(false)}
-        title="Đổi mật khẩu"
-        size="md"
-      >
-        <form onSubmit={handlePasswordSubmit} className="space-y-4">
-          <Input
-            type="password"
-            name="currentPassword"
-            label="Mật khẩu hiện tại"
-            placeholder="Nhập mật khẩu hiện tại"
-            icon={Lock}
-            value={passwordData.currentPassword}
-            onChange={handlePasswordChange}
-          />
-          <Input
-            type="password"
-            name="newPassword"
-            label="Mật khẩu mới"
-            placeholder="Nhập mật khẩu mới (ít nhất 6 ký tự)"
-            icon={Lock}
-            value={passwordData.newPassword}
-            onChange={handlePasswordChange}
-          />
-          <Input
-            type="password"
-            name="confirmPassword"
-            label="Xác nhận mật khẩu mới"
-            placeholder="Nhập lại mật khẩu mới"
-            icon={Lock}
-            value={passwordData.confirmPassword}
-            onChange={handlePasswordChange}
-          />
-          <div className="flex justify-end gap-3 mt-6">
-            <Button type="button" variant="secondary" onClick={() => setShowPasswordModal(false)}>
-              Hủy
-            </Button>
-            <Button type="submit" isLoading={isLoading}>
-              Xác nhận
-            </Button>
+              )}
+            </Card>
           </div>
-        </form>
-      </Modal>
+
+          {/* Activities list (Right column - takes 1/3 space) */}
+          <div className="lg:col-span-1 space-y-6">
+            <Card title="Hoạt động gần đây">
+              {activities.length > 0 ? (
+                <div className="space-y-3.5">
+                  {activities.slice(0, 10).map((activity, index) => {
+                    const Icon = ACTIVITY_ICONS[activity.type] || User;
+                    const label = ACTIVITY_LABELS[activity.type] || activity.description || 'Hoạt động';
+                    return (
+                      <div key={index} className="flex items-center gap-3 p-3 bg-white/40 dark:bg-white/5 border border-gray-150 dark:border-white/5 rounded-xl">
+                        <div className="w-10 h-10 rounded-xl bg-primary-50 dark:bg-primary-500/10 flex items-center justify-center flex-shrink-0">
+                          <Icon className="w-5 h-5 text-primary-600 dark:text-primary-400" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">{label}</p>
+                          <p className="text-[11px] text-gray-500 dark:text-gray-400 mt-0.5">{getRelativeTime(activity.createdAt)}</p>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <p className="text-gray-400 dark:text-gray-500 text-sm text-center py-6">
+                  Chưa ghi nhận hoạt động nào
+                </p>
+              )}
+            </Card>
+          </div>
+        </div>
+
+        {/* Change Password Modal */}
+        <Modal
+          isOpen={showPasswordModal}
+          onClose={() => setShowPasswordModal(false)}
+          title="Đổi mật khẩu"
+          size="md"
+        >
+          <form onSubmit={handlePasswordSubmit} className="space-y-4">
+            <Input
+              type="password"
+              name="currentPassword"
+              label="Mật khẩu hiện tại"
+              placeholder="Nhập mật khẩu hiện tại"
+              icon={Lock}
+              value={passwordData.currentPassword}
+              onChange={handlePasswordChange}
+            />
+            <Input
+              type="password"
+              name="newPassword"
+              label="Mật khẩu mới"
+              placeholder="Mật khẩu mới (ít nhất 6 ký tự)"
+              icon={Lock}
+              value={passwordData.newPassword}
+              onChange={handlePasswordChange}
+            />
+            <Input
+              type="password"
+              name="confirmPassword"
+              label="Xác nhận mật khẩu mới"
+              placeholder="Nhập lại mật khẩu mới"
+              icon={Lock}
+              value={passwordData.confirmPassword}
+              onChange={handlePasswordChange}
+            />
+            <div className="flex justify-end gap-3 mt-6 pt-4 border-t glass-divider border">
+              <Button type="button" variant="secondary" onClick={() => setShowPasswordModal(false)} className="font-semibold">
+                Hủy
+              </Button>
+              <Button type="submit" className="font-semibold" isLoading={isLoading}>
+                Xác nhận đổi mật khẩu
+              </Button>
+            </div>
+          </form>
+        </Modal>
       </div>
     </LoginRequired>
   );

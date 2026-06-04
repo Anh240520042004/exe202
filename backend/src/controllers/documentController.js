@@ -1,6 +1,7 @@
 import Document from '../models/Document.js';
 import Order from '../models/Order.js';
 import { apiSuccess, apiError } from '../utils/apiResponse.js';
+import { escapeRegex } from '../utils/security.js';
 import mongoose from 'mongoose';
 
 const categoryAliases = {
@@ -103,11 +104,11 @@ export const getDocuments = async (req, res, next) => {
       if (maxPrice) query.price.$lte = Number(maxPrice);
     }
     if (search) {
-      const searchLower = search.toLowerCase();
+      const escapedSearch = escapeRegex(search);
       andConditions.push({ $or: [
-        { title: { $regex: searchLower, $options: 'i' } },
-        { description: { $regex: searchLower, $options: 'i' } },
-        { subjectCode: { $regex: searchLower, $options: 'i' } }
+        { title: { $regex: escapedSearch, $options: 'i' } },
+        { description: { $regex: escapedSearch, $options: 'i' } },
+        { subjectCode: { $regex: escapedSearch, $options: 'i' } }
       ] });
     }
 
@@ -356,7 +357,21 @@ export const updateDocument = async (req, res, next) => {
       return next(apiError('Not authorized to update this document', 403));
     }
 
-    Object.assign(document, req.body);
+    // [SECURITY FIX] Whitelist allowed fields — prevents mass assignment attack
+    // Disallows: author, isActive, documentScope, ownerMentor, downloads, salesCount, rating, etc.
+    const ALLOWED_FIELDS = ['title', 'description', 'subjectCode', 'semester', 'tags', 'documentType', 'externalUrl'];
+    const ADMIN_EXTRA_FIELDS = ['price', 'isPremium', 'isActive', 'isFeatured', 'category'];
+
+    const allowedFields = req.user.role === 'admin'
+      ? [...ALLOWED_FIELDS, ...ADMIN_EXTRA_FIELDS]
+      : ALLOWED_FIELDS;
+
+    allowedFields.forEach((field) => {
+      if (req.body[field] !== undefined) {
+        document[field] = req.body[field];
+      }
+    });
+
     await document.save();
 
     res.json(apiSuccess(document, 'Document updated successfully'));
@@ -436,6 +451,12 @@ export const likeReview = async (req, res, next) => {
   try {
     const { id, reviewId } = req.params;
     const { type } = req.query;
+    const userId = req.user?.id;
+
+    // [SECURITY FIX] Require auth to vote on reviews
+    if (!userId) {
+      return next(apiError('Vui lòng đăng nhập để thực hiện hành động này', 401));
+    }
 
     const document = await Document.findById(id);
     if (!document) {
@@ -447,9 +468,28 @@ export const likeReview = async (req, res, next) => {
       return next(apiError('Review not found', 404));
     }
 
+    // [SECURITY FIX] Prevent spam: one vote per user per review
+    if (!review.likedBy) review.likedBy = [];
+    if (!review.dislikedBy) review.dislikedBy = [];
+
+    const alreadyLiked = review.likedBy.some((uid) => uid.toString() === userId);
+    const alreadyDisliked = review.dislikedBy.some((uid) => uid.toString() === userId);
+
     if (type === 'like') {
+      if (alreadyLiked) return res.json(apiSuccess({ likes: review.likes, dislikes: review.dislikes }, 'Bạn đã vote rồi'));
+      if (alreadyDisliked) {
+        review.dislikedBy = review.dislikedBy.filter((uid) => uid.toString() !== userId);
+        review.dislikes = Math.max(0, review.dislikes - 1);
+      }
+      review.likedBy.push(userId);
       review.likes += 1;
     } else {
+      if (alreadyDisliked) return res.json(apiSuccess({ likes: review.likes, dislikes: review.dislikes }, 'Bạn đã vote rồi'));
+      if (alreadyLiked) {
+        review.likedBy = review.likedBy.filter((uid) => uid.toString() !== userId);
+        review.likes = Math.max(0, review.likes - 1);
+      }
+      review.dislikedBy.push(userId);
       review.dislikes += 1;
     }
 
@@ -601,6 +641,21 @@ export const downloadDocument = async (req, res, next) => {
       return next(apiError('Document is no longer available', 404));
     }
 
+    // [SECURITY FIX] Block premium document download without payment
+    if (document.isPremium && document.price > 0) {
+      const hasPurchased = await Order.findOne({
+        user: req.user.id,
+        'documents.document': id,
+        paymentStatus: 'paid',
+      });
+
+      const isOwnerOrAdmin = document.author.toString() === req.user.id || req.user.role === 'admin';
+
+      if (!hasPurchased && !isOwnerOrAdmin) {
+        return next(apiError('Bạn cần mua tài liệu này trước khi tải xuống', 403));
+      }
+    }
+
     // Update download count on document
     document.downloads += 1;
     await document.save();
@@ -661,6 +716,8 @@ export const downloadDocument = async (req, res, next) => {
     next(error);
   }
 };
+
+
 
 export const getDownloadHistory = async (req, res, next) => {
   try {

@@ -41,7 +41,7 @@ export default function App() {
   return (
     <Routes>
       {/* Public pages */}
-      <Route path="/" element={<Navigate to="/dashboard" replace />} />
+      <Route path="/" element={<Homepage />} />
       <Route path="/login" element={
         !isAuthenticated ? <Login /> : <Navigate to="/dashboard" replace />
       } />

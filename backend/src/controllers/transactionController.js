@@ -1,5 +1,6 @@
 import { Transaction } from '../models/index.js';
 import ApiResponse from '../utils/apiResponse.js';
+import { escapeRegex } from '../utils/security.js';
 
 class TransactionController {
   async getAll(req, res, next) {
@@ -30,7 +31,7 @@ class TransactionController {
       }
 
       if (search) {
-        query.description = { $regex: search, $options: 'i' };
+        query.description = { $regex: escapeRegex(search), $options: 'i' };
       }
 
       const skip = (parseInt(page) - 1) * parseInt(limit);

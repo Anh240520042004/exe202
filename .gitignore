@@ -1,54 +1,106 @@
+# ===========================
 # Dependencies
+# ===========================
 node_modules/
-frontend/node_modules/
-backend/node_modules/
+**/node_modules/
 
-# Build outputs
+# ===========================
+# Environment Variables
+# ===========================
+# .env files are tracked intentionally for team sharing
+# IMPORTANT: Keep repo PRIVATE if .env contains real credentials
+.env.local
+.env.*.local
+
+# ===========================
+# Build Outputs
+# ===========================
+dist/
+build/
 frontend/dist/
 frontend/build/
 backend/dist/
 backend/build/
 
-# Environment variables
-.env
-.env.local
-.env.*.local
-.env.development
-.env.production
+# ===========================
+# Vite Cache & Build Artifacts
+# ===========================
+frontend/.vite/
+**/node_modules/.vite/
+*.tsbuildinfo
 
-# Vite cache & build artifacts
-frontend/node_modules/.vite/
-
+# ===========================
 # Logs
+# ===========================
 *.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
 
-# OS files
-.DS_Store
-Thumbs.db
-
-# IDE
-.vscode/
-.idea/
-*.swp
-*.swo
-
-# Secrets / credentials
-*.pem
-*.key
-credentials.json
-service-account-key.json
-
-# Misc
+# ===========================
+# Runtime & Temp Files
+# ===========================
 *.bak
 *.tmp
 *.temp
-
-# Uploads & user data
-uploads/
-frontend/uploads/
-
-# Cache
+*.swp
+*.swo
+.tmp/
+.temp/
 .cache/
+
+# ===========================
+# OS Files
+# ===========================
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# ===========================
+# IDE & Editor
+# ===========================
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+
+# ===========================
+# Secrets & Credentials
+# ===========================
+*.pem
+*.key
+*.cert
+*.crt
+credentials.json
+service-account-key.json
+firebase-adminsdk*.json
+
+# ===========================
+# User Uploads & Generated Files
+# ===========================
+backend/uploads/
+uploads/
+
+# ===========================
+# Coverage & Testing
+# ===========================
+coverage/
+.nyc_output/
+*.lcov
+
+# ===========================
+# Package Manager Lock Files (optional: keep if using a single PM)
+# Uncomment if you want to ignore lock files
+# ===========================
+# package-lock.json
+# yarn.lock
+
+# ===========================
+# Miscellaneous
+# ===========================
+*.local

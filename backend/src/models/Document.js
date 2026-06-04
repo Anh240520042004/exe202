@@ -93,6 +93,9 @@ const documentSchema = new mongoose.Schema({
     isVerified: { type: Boolean, default: false },
     likes: { type: Number, default: 0 },
     dislikes: { type: Number, default: 0 },
+    // [SECURITY] Track per-user votes to prevent spam — added for likeReview() fix
+    likedBy: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+    dislikedBy: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
     createdAt: { type: Date, default: Date.now }
   }],
   documentType: {

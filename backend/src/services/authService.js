@@ -10,31 +10,35 @@ class AuthService {
 
     const existingUser = await User.findOne({ email: normalizedEmail });
     if (existingUser) {
-      throw { statusCode: 400, message: 'Email da duoc su dung' };
+      throw { statusCode: 400, message: 'Email đã được sử dụng' };
     }
 
-    const verificationCode = emailService.generateVerificationCode();
-    const passwordHash = await bcrypt.hash(password, 10);
+    // Create user directly — no email verification required
+    const user = await User.create({
+      name,
+      email: normalizedEmail,
+      password,
+      role,
+      isEmailVerified: true,
+    });
 
-    await PendingRegistration.findOneAndUpdate(
-      { email: normalizedEmail },
-      {
-        name,
-        email: normalizedEmail,
-        passwordHash,
-        role,
-        emailVerificationToken: verificationCode,
-        emailVerificationExpire: new Date(Date.now() + 5 * 60 * 1000),
-      },
-      { upsert: true, new: true, setDefaultsOnInsert: true }
-    );
+    const accessToken = jwtHelper.generateAccessToken(user._id);
+    const refreshToken = jwtHelper.generateRefreshToken(user._id);
 
-    await emailService.sendEmailVerification({ name, email: normalizedEmail }, verificationCode);
+    user.refreshToken = refreshToken;
+    await user.save();
+
+    // Send welcome email (non-blocking)
+    try {
+      await emailService.sendWelcomeEmail(user);
+    } catch (err) {
+      console.error('Failed to send welcome email:', err);
+    }
 
     return {
-      email: normalizedEmail,
-      requiresVerification: true,
-      message: 'Ma xac thuc da duoc gui den email',
+      user: this.sanitizeUser(user),
+      accessToken,
+      refreshToken,
     };
   }
 

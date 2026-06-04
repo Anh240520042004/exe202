@@ -131,11 +131,16 @@ const authSlice = createSlice({
       })
       .addCase(register.fulfilled, (state, action) => {
         state.isLoading = false;
-        state.user = null;
-        state.accessToken = null;
-        state.refreshToken = null;
-        state.isAuthenticated = false;
-        state.success = true;
+        if (action.payload?.accessToken) {
+          state.user = action.payload.user;
+          state.accessToken = action.payload.accessToken;
+          state.refreshToken = action.payload.refreshToken;
+          state.isAuthenticated = true;
+          state.success = true;
+          localStorage.setItem('accessToken', action.payload.accessToken);
+          localStorage.setItem('refreshToken', action.payload.refreshToken);
+          localStorage.setItem('user', JSON.stringify(action.payload.user));
+        }
       })
       .addCase(register.rejected, (state, action) => {
         state.isLoading = false;

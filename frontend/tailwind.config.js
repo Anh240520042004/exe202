@@ -9,7 +9,7 @@ export default {
     extend: {
       colors: {
         primary: {
-          50: '#faf8ff',
+          50:  '#faf8ff',
           100: '#f3f0ff',
           200: '#ebe5ff',
           300: '#ddd6fe',
@@ -19,9 +19,10 @@ export default {
           700: '#8b6cf0',
           800: '#7c5ce8',
           900: '#6d4ed6',
+          950: '#4c1d95',
         },
         accent: {
-          50: '#f0fdff',
+          50:  '#f0fdff',
           100: '#e0f9fe',
           200: '#baf0f8',
           300: '#7dd9ed',
@@ -50,6 +51,7 @@ export default {
         'slide-up': 'slideUp 0.3s ease-out',
         'slide-down': 'slideDown 0.3s ease-out',
         'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+        'float': 'float 6s ease-in-out infinite',
       },
       keyframes: {
         fadeIn: {
@@ -63,6 +65,10 @@ export default {
         slideDown: {
           '0%': { transform: 'translateY(-10px)', opacity: '0' },
           '100%': { transform: 'translateY(0)', opacity: '1' },
+        },
+        float: {
+          '0%, 100%': { transform: 'translateY(0px)' },
+          '50%': { transform: 'translateY(-10px)' },
         },
       },
     },

@@ -62,8 +62,8 @@ export default function Register() {
         password: submittedData.password,
         role: submittedData.role,
       })).unwrap();
-      toast.success('Ma xac thuc da duoc gui den email. Vui long nhap ma de hoan tat dang ky.');
-      navigate('/verify-email', { state: { email: submittedData.email } });
+      toast.success('Đăng ký thành công! Chào mừng bạn đến với F.EdTech 🎉');
+      navigate('/dashboard');
     } catch (err) {
       toast.error(err || 'Đăng ký thất bại');
     }
