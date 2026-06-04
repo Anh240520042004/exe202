@@ -49,7 +49,6 @@ const badgeSchema = new mongoose.Schema({
   timestamps: true
 });
 
-badgeSchema.index({ code: 1 });
 badgeSchema.index({ category: 1 });
 
 const Badge = mongoose.model('Badge', badgeSchema);
