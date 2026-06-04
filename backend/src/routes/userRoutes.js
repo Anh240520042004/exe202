@@ -41,8 +41,17 @@ router.put('/settings', protect, userController.updateSettings.bind(userControll
 // ─── GET /api/users/:id ─────────────────────────────────────────────────
 router.get('/:id', optionalAuth, async (req, res, next) => {
   try {
+    // [SECURITY FIX] Do NOT expose email on public profile — email is PII
+    // Only return email if the requesting user is viewing their own profile or is admin
+    const isSelf = req.user?.id === req.params.id || req.user?._id?.toString() === req.params.id;
+    const isAdmin = req.user?.role === 'admin';
+
+    const selectFields = isSelf || isAdmin
+      ? 'name avatar role email bio studentProfile mentorProfile createdAt'
+      : 'name avatar role bio studentProfile mentorProfile createdAt';
+
     const user = await User.findById(req.params.id)
-      .select('name avatar role email bio studentProfile mentorProfile createdAt')
+      .select(selectFields)
       .lean();
 
     if (!user) return next(apiError('User not found', 404));

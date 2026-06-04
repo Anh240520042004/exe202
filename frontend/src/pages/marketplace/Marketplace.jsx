@@ -7,11 +7,11 @@ import { Book, BookOpen, ChevronRight, Download, Grid, Heart, List, Search, Star
 const categoryOptions = [
   { value: 'software_engineering', label: 'Software Engineering', hint: 'SWP, PRJ, DBI, MAD' },
   { value: 'marketing', label: 'Marketing', hint: 'COM, MKT' },
-  { value: 'communication', label: 'Truyen thong', hint: 'Communication' },
+  { value: 'communication', label: 'Truyền thông', hint: 'Communication' },
   { value: 'business', label: 'Kinh doanh', hint: 'Business' },
-  { value: 'design', label: 'Thiet ke', hint: 'Design' },
-  { value: 'data_science', label: 'Khoa hoc du lieu', hint: 'Data' },
-  { value: 'other', label: 'Khac', hint: 'Mon hoc khac' },
+  { value: 'design', label: 'Thiết kế', hint: 'Design' },
+  { value: 'data_science', label: 'Khoa học dữ liệu', hint: 'Data' },
+  { value: 'other', label: 'Khác', hint: 'Môn học khác' },
 ];
 
 const typeLabels = {
@@ -164,31 +164,31 @@ const Marketplace = () => {
     { value: 'pdf', label: 'PDF' },
     { value: 'slide', label: 'Slide' },
     { value: 'source_code', label: 'Source Code' },
-    { value: 'exam', label: 'De thi' },
-    { value: 'assignment', label: 'Bai tap' },
+    { value: 'exam', label: 'Đề thi' },
+    { value: 'assignment', label: 'Bài tập' },
     { value: 'checklist', label: 'Checklist' },
   ];
 
   const semesters = [
-    { value: '1', label: 'Hoc ky 1' },
-    { value: '2', label: 'Hoc ky 2' },
-    { value: '3', label: 'Hoc ky 3' },
+    { value: '1', label: 'Học kỳ 1' },
+    { value: '2', label: 'Học kỳ 2' },
+    { value: '3', label: 'Học kỳ 3' },
     { value: 'summer', label: 'Summer' },
   ];
 
   if (!selectedCategory) {
     return (
       <div className="min-h-screen">
-        <Hero title="Marketplace Hoc Lieu" subtitle="Chon chuyen nganh truoc khi vao mon hoc." />
+        <Hero title="Marketplace Học Liệu" subtitle="Chọn chuyên ngành trước khi vào môn học." />
         <div className="container mx-auto px-4 py-8">
-          <SectionTitle title="Chuyen nganh" />
+          <SectionTitle title="Chuyên ngành" />
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {categoryCounts.map((category) => (
               <SelectCard
                 key={category.value}
                 title={category.label}
                 subtitle={category.hint}
-                metric={`${category.documentCount} tai lieu`}
+                metric={`${category.documentCount} tài liệu`}
                 onClick={() => handleSelectCategory(category)}
               />
             ))}
@@ -203,8 +203,8 @@ const Marketplace = () => {
       <div className="min-h-screen">
         <Hero
           title={selectedCategory.label}
-          subtitle="Chon mon hoc de xem tai lieu."
-          backLabel="Quay lai chuyen nganh"
+          subtitle="Chọn môn học để xem tài liệu."
+          backLabel="Quay lại chuyên ngành"
           onBack={handleBackToCategories}
         >
           <div className="relative max-w-xl mt-6">
@@ -213,18 +213,18 @@ const Marketplace = () => {
               type="text"
               value={searchQuery}
               onChange={(event) => setSearchQuery(event.target.value)}
-              placeholder="Tim mon hoc (VD: SWP, PRJ...)"
+              placeholder="Tìm môn học (VD: SWP, PRJ...)"
               className="glass-input glass-hover-card w-full pl-12 pr-4 py-4 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-400/40"
             />
           </div>
         </Hero>
 
         <div className="container mx-auto px-4 py-8">
-          <SectionTitle title="Danh sach mon hoc" />
+          <SectionTitle title="Danh sách môn học" />
           {filteredSubjects.length === 0 ? (
             <div className="text-center py-12 glass-card rounded-2xl">
               <BookOpen size={48} className="mx-auto text-gray-400 mb-4" />
-              <p className="text-gray-500">Chua co mon hoc nao trong chuyen nganh nay.</p>
+              <p className="text-gray-500">Chưa có môn học nào trong chuyên ngành này.</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
@@ -233,7 +233,7 @@ const Marketplace = () => {
                   key={subject.code}
                   title={subject.code}
                   subtitle={selectedCategory.label}
-                  metric={`${subject.documentCount} tai lieu`}
+                  metric={`${subject.documentCount} tài liệu`}
                   onClick={() => handleSelectSubject(subject)}
                 />
               ))}
@@ -248,8 +248,8 @@ const Marketplace = () => {
     <div className="min-h-screen">
       <Hero
         title={selectedSubject.code}
-        subtitle={`${selectedCategory.label} - ${pagination.total} tai lieu`}
-        backLabel="Quay lai danh sach mon hoc"
+        subtitle={`${selectedCategory.label} - ${pagination.total} tài liệu`}
+        backLabel="Quay lại danh sách môn học"
         onBack={handleBackToSubjects}
       />
 
@@ -257,24 +257,24 @@ const Marketplace = () => {
         <div className="flex flex-col lg:flex-row gap-8">
           <aside className="lg:w-72">
             <div className="glass-card glass-hover-card rounded-2xl p-6 sticky top-4">
-              <h3 className="font-semibold text-lg mb-4">Bo loc</h3>
+              <h3 className="font-semibold text-lg mb-4">Bộ lọc</h3>
 
-              <FilterRadioGroup label="Loai tai lieu" name="type" options={types} value={localFilters.type} onChange={(value) => handleFilterChange('type', value)} />
-              <FilterRadioGroup label="Hoc ky" name="semester" options={semesters} value={localFilters.semester} onChange={(value) => handleFilterChange('semester', value)} />
+              <FilterRadioGroup label="Loại tài liệu" name="type" options={types} value={localFilters.type} onChange={(value) => handleFilterChange('type', value)} />
+              <FilterRadioGroup label="Học kỳ" name="semester" options={semesters} value={localFilters.semester} onChange={(value) => handleFilterChange('semester', value)} />
 
               <div className="mb-4">
-                <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">Khoang gia</label>
+                <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">Khoảng giá</label>
                 <div className="flex gap-2">
                   <input
                     type="number"
-                    placeholder="Tu"
+                    placeholder="Từ"
                     value={localFilters.minPrice}
                     onChange={(event) => handleFilterChange('minPrice', event.target.value)}
                     className="w-1/2 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl glass-input text-gray-900 dark:text-white text-sm"
                   />
                   <input
                     type="number"
-                    placeholder="Den"
+                    placeholder="Đến"
                     value={localFilters.maxPrice}
                     onChange={(event) => handleFilterChange('maxPrice', event.target.value)}
                     className="w-1/2 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl glass-input text-gray-900 dark:text-white text-sm"
@@ -284,14 +284,14 @@ const Marketplace = () => {
 
               <button onClick={handleClearFilters} className="w-full py-2 text-gray-600 dark:text-gray-400 glass-nav-hover rounded-xl flex items-center justify-center gap-2">
                 <X size={18} />
-                Xoa bo loc
+                Xóa bộ lọc
               </button>
             </div>
           </aside>
 
           <main className="flex-1">
             <div className="flex items-center justify-between mb-6">
-              <span className="text-gray-600 dark:text-gray-400">{pagination.total} tai lieu</span>
+              <span className="text-gray-600 dark:text-gray-400">{pagination.total} tài liệu</span>
               <div className="flex items-center gap-2">
                 <button onClick={() => setViewMode('grid')} className={`glass-nav-link glass-chip p-2 rounded-xl ${viewMode === 'grid' ? 'glass-nav-active text-primary-600' : 'glass-subtle text-gray-600'}`}>
                   <Grid size={20} />
@@ -315,9 +315,9 @@ const Marketplace = () => {
             ) : (
               <div className="text-center py-12 glass-card rounded-2xl">
                 <BookOpen size={48} className="mx-auto text-gray-400 mb-4" />
-                <p className="text-gray-500">Khong co tai lieu nao phu hop.</p>
+                <p className="text-gray-500">Không có tài liệu nào phù hợp.</p>
                 <button onClick={handleClearFilters} className="mt-4 px-4 py-2 bg-primary-400/70 text-white rounded-xl hover:bg-primary-500/75">
-                  Xoa bo loc
+                  Xóa bộ lọc
                 </button>
               </div>
             )}
@@ -376,7 +376,7 @@ const FilterRadioGroup = ({ label, name, options, value, onChange }) => (
       ))}
       <label className="flex items-center gap-2 cursor-pointer">
         <input type="radio" name={name} value="" checked={value === ''} onChange={() => onChange('')} className="w-4 h-4 text-primary-600" />
-        <span className="text-sm font-medium">Tat ca</span>
+        <span className="text-sm font-medium">Tất cả</span>
       </label>
     </div>
   </div>
@@ -412,7 +412,7 @@ const DocumentCard = ({ document, viewMode = 'grid', isAuthenticated, navigate }
           <div className="absolute top-3 left-3">
             <span className="px-2 py-1 bg-primary-400/70 text-white text-xs rounded-full flex items-center gap-1">
               <Star size={10} className="fill-yellow-400 text-yellow-400" />
-              Noi bat
+              Nổi bật
             </span>
           </div>
         )}
@@ -433,7 +433,7 @@ const DocumentCard = ({ document, viewMode = 'grid', isAuthenticated, navigate }
           </div>
         </div>
         <div className="flex items-center justify-between mt-3">
-          <span className="text-lg font-bold text-primary-600">{Number(document.price || 0).toLocaleString()}d</span>
+          <span className="text-lg font-bold text-primary-600">{Number(document.price || 0).toLocaleString()}đ</span>
           <button onClick={handleBuy} className="px-4 py-2 bg-primary-400/70 text-white text-sm font-medium rounded-xl hover:bg-primary-500/75 transition-colors">
             Mua ngay
           </button>

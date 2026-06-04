@@ -359,7 +359,7 @@ const MentorCourses = () => {
                   {/* Actions */}
                   <div className="flex items-center gap-2">
                     <div className="flex-1 px-3 py-2 glass-subtle rounded-xl text-xs text-gray-500 text-center">
-                      Tai lieu marketplace chi admin moi duoc dang. Tai lieu ca nhan dang tren profile mentor.
+                      Tài liệu marketplace chỉ admin mới được đăng. Tài liệu cá nhân đăng trên profile mentor.
                     </div>
                     <button
                       onClick={() => handleDeleteCourse(course.code)}

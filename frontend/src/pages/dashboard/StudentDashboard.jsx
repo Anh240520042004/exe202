@@ -72,7 +72,14 @@ const StudentDashboard = () => {
       <div className="glass-hero glass-hero-accent mx-4 mt-2 px-6 py-8 md:px-10">
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-wrap items-center gap-6">
-            <img src={profile.avatar} alt={profile.name} className="w-20 h-20 rounded-full border-4 border-white/20 object-cover" />
+            <img
+              src={profile.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(profile.name || 'U')}`}
+              alt={profile.name}
+              className="w-20 h-20 rounded-full border-4 border-white/20 object-cover"
+              onError={(e) => {
+                e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(profile.name || 'U')}&background=8b6cf0&color=fff`;
+              }}
+            />
             <div className="flex-1 min-w-[200px]">
               <h1 className="text-3xl font-bold text-slate-900 dark:text-white drop-shadow-sm">Welcome back, {profile.name}!</h1>
               <p className="text-slate-600 dark:text-gray-400 mt-1 font-medium">GPA: {profile.gpa} | Level {profile.level}</p>

@@ -2,6 +2,7 @@ import User from '../models/User.js';
 import MentorBooking from '../models/MentorBooking.js';
 import { apiSuccess, apiError } from '../utils/apiResponse.js';
 import mongoose from 'mongoose';
+import { escapeRegex } from '../utils/security.js';
 
 const mentorSelect = '-password -refreshToken';
 
@@ -38,13 +39,14 @@ export const getMentors = async (req, res, next) => {
       query['mentorProfile.promotion.paidUntil'] = { $gte: new Date() };
     }
     if (search) {
+      const escapedSearch = escapeRegex(search);
       query.$or = [
-        { name: { $regex: search, $options: 'i' } },
-        { 'mentorProfile.title': { $regex: search, $options: 'i' } },
-        { 'mentorProfile.expertise': { $regex: search, $options: 'i' } },
-        { 'mentorProfile.major': { $regex: search, $options: 'i' } },
-        { 'mentorProfile.projects.title': { $regex: search, $options: 'i' } },
-        { 'mentorProfile.achievements.title': { $regex: search, $options: 'i' } },
+        { name: { $regex: escapedSearch, $options: 'i' } },
+        { 'mentorProfile.title': { $regex: escapedSearch, $options: 'i' } },
+        { 'mentorProfile.expertise': { $regex: escapedSearch, $options: 'i' } },
+        { 'mentorProfile.major': { $regex: escapedSearch, $options: 'i' } },
+        { 'mentorProfile.projects.title': { $regex: escapedSearch, $options: 'i' } },
+        { 'mentorProfile.achievements.title': { $regex: escapedSearch, $options: 'i' } },
       ];
     }
 
@@ -461,10 +463,11 @@ export const getMentorSuggestions = async (req, res, next) => {
     const query = { role: 'mentor', 'mentorProfile.isAvailable': true };
     if (user?.role === 'mentor') query._id = { $ne: user._id };
     if (signalList.length > 0) {
+      const escapedPattern = signalList.map(s => escapeRegex(String(s))).join('|');
       query.$or = [
         { 'mentorProfile.expertise': { $in: signalList.map(s => String(s).toUpperCase()) } },
         { 'mentorProfile.major': { $in: signalList } },
-        { 'mentorProfile.title': { $regex: signalList.join('|'), $options: 'i' } },
+        { 'mentorProfile.title': { $regex: escapedPattern, $options: 'i' } },
       ];
     }
 

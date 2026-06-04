@@ -19,8 +19,8 @@ const typeLabels = {
   pdf: 'PDF',
   slide: 'Slide',
   source_code: 'Code',
-  exam: 'De thi',
-  assignment: 'Bai tap',
+  exam: 'Đề thi',
+  assignment: 'Bài tập',
   checklist: 'Checklist',
 };
 
@@ -49,7 +49,7 @@ export default function MentorProfile() {
         setDocuments(docRes.data?.data?.documents || []);
         setReviews(reviewRes.data?.data?.reviews || payload.recentReviews || []);
       } catch (error) {
-        toast.error(error.response?.data?.message || 'Khong the tai ho so mentor');
+        toast.error(error.response?.data?.message || 'Không thể tải hồ sơ mentor');
         navigate('/mentors');
       } finally {
         setLoading(false);
@@ -75,28 +75,28 @@ export default function MentorProfile() {
     <div className="min-h-screen">
       <section className="glass-hero glass-hero-purple mx-4 mt-2 px-6 py-8 md:px-10">
         <div className="max-w-7xl mx-auto">
-          <button onClick={() => navigate('/mentors')} className="glass-nav-link rounded-xl px-3 py-2 mb-5 flex items-center gap-2 text-sm">
+          <button onClick={() => navigate('/mentors')} className="glass-nav-link rounded-xl px-3 py-2 mb-5 flex items-center gap-2 text-sm font-semibold">
             <ArrowLeft className="w-4 h-4" />
-            Quay lai mentors
+            Quay lại Mentors
           </button>
 
           <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6">
             <div className="flex items-start gap-5">
-              <img src={mentor.avatar || avatarFor(mentor)} alt={mentor.name} className="w-24 h-24 rounded-2xl object-cover" />
+              <img src={mentor.avatar || avatarFor(mentor)} alt={mentor.name} className="w-24 h-24 rounded-2xl object-cover border-2 border-white/50 dark:border-white/10" />
               <div>
                 <h1 className="text-4xl font-bold text-gray-900 dark:text-white">{mentor.name}</h1>
                 <p className="text-lg text-gray-600 dark:text-gray-300 mt-1">{profile.title || profile.major || 'Mentor'}</p>
-                <div className="flex flex-wrap gap-3 mt-3 text-sm text-gray-600 dark:text-gray-300">
+                <div className="flex flex-wrap gap-3 mt-3 text-sm text-gray-600 dark:text-gray-300 font-medium">
                   <Rating value={profile.rating || profile.documentRating || stats?.averageRating || 0} />
-                  <span>{stats?.totalSessions || profile.totalSessions || 0} sessions</span>
-                  <span>{Number(profile.pricePerHour || 0).toLocaleString()}d/gio</span>
+                  <span>{stats?.totalSessions || profile.totalSessions || 0} buổi học</span>
+                  <span>{Number(profile.pricePerHour || 0).toLocaleString()}đ/giờ</span>
                 </div>
               </div>
             </div>
 
-            <button className="bg-primary-500 text-white rounded-xl px-5 py-3 flex items-center justify-center gap-2 hover:bg-primary-600">
+            <button className="bg-primary-500 text-white rounded-xl px-5 py-3 flex items-center justify-center gap-2 hover:bg-primary-600 font-semibold shadow-md hover:shadow-primary-500/20 transition-all">
               <Calendar className="w-5 h-5" />
-              Dat lich mentor
+              Đặt lịch Mentor
             </button>
           </div>
         </div>
@@ -104,17 +104,17 @@ export default function MentorProfile() {
 
       <main className="container mx-auto px-4 py-8 grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
-          <ProfileSection icon={GraduationCap} title="Ho so ca nhan">
-            <p className="text-gray-600 dark:text-gray-300">{profile.bio || 'Mentor chua cap nhat gioi thieu.'}</p>
+          <ProfileSection icon={GraduationCap} title="Hồ sơ cá nhân">
+            <p className="text-gray-600 dark:text-gray-300 leading-relaxed">{profile.bio || 'Mentor chưa cập nhật giới thiệu.'}</p>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-4">
-              <Stat label="Nganh" value={profile.major || '-'} />
+              <Stat label="Ngành" value={profile.major || '-'} />
               <Stat label="GPA" value={profile.gpa || '-'} />
-              <Stat label="Mon da qua" value={(profile.passedSubjects || []).length} />
-              <Stat label="Kinh nghiem" value={profile.experience ? 'Co' : '-'} />
+              <Stat label="Môn đã qua" value={(profile.passedSubjects || []).length} />
+              <Stat label="Kinh nghiệm" value={profile.experience ? 'Có' : '-'} />
             </div>
           </ProfileSection>
 
-          <ProfileSection icon={BookOpen} title="Tai lieu mentor upload len ho so">
+          <ProfileSection icon={BookOpen} title="Tài liệu mentor tải lên hồ sơ">
             {documents.length ? (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 {documents.map((doc) => (
@@ -126,9 +126,9 @@ export default function MentorProfile() {
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div className="min-w-0">
-                        <p className="font-semibold truncate">{doc.title}</p>
+                        <p className="font-semibold truncate text-gray-900 dark:text-white">{doc.title}</p>
                         <p className="text-xs text-gray-500 mt-1">
-                          {doc.subjectCode || 'Khong ro mon'} - {typeLabels[doc.documentType] || doc.documentType || 'PDF'}
+                          {doc.subjectCode || 'Không rõ môn'} - {typeLabels[doc.documentType] || doc.documentType || 'PDF'}
                         </p>
                       </div>
                       <FileText className="w-5 h-5 text-primary-500 flex-shrink-0" />
@@ -136,62 +136,62 @@ export default function MentorProfile() {
                     {doc.description && <p className="text-sm text-gray-600 dark:text-gray-400 mt-2 line-clamp-2">{doc.description}</p>}
                     <div className="flex items-center justify-between mt-3 text-xs text-gray-500">
                       <span>{doc.sourceType === 'google_drive' ? 'Google Drive' : doc.sourceType === 'external_link' ? 'External link' : 'File upload'}</span>
-                      <span>{doc.downloads || 0} luot xem</span>
+                      <span>{doc.downloads || 0} lượt xem</span>
                     </div>
                   </button>
                 ))}
               </div>
             ) : (
-              <p className="text-sm text-gray-500">Mentor chua upload tai lieu nao len ho so.</p>
+              <p className="text-sm text-gray-550 dark:text-gray-400">Mentor chưa tải tài liệu nào lên hồ sơ.</p>
             )}
           </ProfileSection>
 
-          <ProfileSection icon={Award} title="Thanh tuu">
-            <ItemList items={profile.achievements} empty="Chua co thanh tuu" render={(item) => (
+          <ProfileSection icon={Award} title="Thành tựu">
+            <ItemList items={profile.achievements} empty="Chưa có thành tựu" render={(item) => (
               <RichItem title={item.title} meta={[item.issuer, item.year].filter(Boolean).join(' - ')} description={item.description} />
             )} />
           </ProfileSection>
 
-          <ProfileSection icon={Briefcase} title="Project">
-            <ItemList items={profile.projects} empty="Chua co project" render={(item) => (
+          <ProfileSection icon={Briefcase} title="Dự án">
+            <ItemList items={profile.projects} empty="Chưa có dự án" render={(item) => (
               <RichItem title={item.title} meta={[item.role, (item.techStack || []).join(', ')].filter(Boolean).join(' - ')} description={item.description} link={item.url} />
             )} />
           </ProfileSection>
         </div>
 
         <aside className="space-y-6">
-          <ProfileSection icon={Star} title="Chuyen mon">
+          <ProfileSection icon={Star} title="Chuyên môn">
             <div className="flex flex-wrap gap-2">
               {(profile.expertise || []).length
-                ? profile.expertise.map((item) => <span key={item} className="glass-subtle rounded-lg px-3 py-1 text-sm">{item}</span>)
-                : <p className="text-sm text-gray-500">Chua cap nhat chuyen mon.</p>}
+                ? profile.expertise.map((item) => <span key={item} className="glass-subtle rounded-lg px-3 py-1 text-sm font-semibold">{item}</span>)
+                : <p className="text-sm text-gray-500">Chưa cập nhật chuyên môn.</p>}
             </div>
           </ProfileSection>
 
-          <ProfileSection icon={FileText} title="Demo va bai tap">
+          <ProfileSection icon={FileText} title="Demo và bài tập">
             <div className="space-y-3">
-              <ItemList items={profile.demoMaterials} empty="Chua co demo" render={(item) => (
+              <ItemList items={profile.demoMaterials} empty="Chưa có tài liệu demo" render={(item) => (
                 <RichItem title={item.title} meta={item.url} description={item.description} link={item.url} />
               )} />
-              <ItemList items={profile.exerciseTemplates} empty="Chua co bai tap mau" render={(item) => (
+              <ItemList items={profile.exerciseTemplates} empty="Chưa có bài tập mẫu" render={(item) => (
                 <RichItem title={item.title} meta={[item.subjectCode, item.level].filter(Boolean).join(' - ')} description={item.description} link={item.url} />
               )} />
             </div>
           </ProfileSection>
 
-          <ProfileSection icon={Star} title="Feedback">
-            <div className="space-y-3 max-h-96 overflow-y-auto">
+          <ProfileSection icon={Star} title="Đánh giá & Phản hồi">
+            <div className="space-y-3 max-h-96 overflow-y-auto scrollbar-hide">
               {reviews.length ? reviews.map((review) => (
                 <div key={review._id} className="glass-subtle rounded-xl p-3">
                   <div className="flex items-center justify-between gap-2">
-                    <p className="font-semibold text-sm">{review.user?.name || review.student?.name || 'Student'}</p>
+                    <p className="font-semibold text-sm text-gray-900 dark:text-white">{review.user?.name || review.student?.name || 'Học viên'}</p>
                     <Rating value={review.rating} />
                   </div>
                   {(review.comment || review.review?.comment) && (
-                    <p className="text-sm text-gray-500 mt-1">{review.comment || review.review?.comment}</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">{review.comment || review.review?.comment}</p>
                   )}
                 </div>
-              )) : <p className="text-sm text-gray-500">Chua co feedback.</p>}
+              )) : <p className="text-sm text-gray-400 dark:text-gray-500">Chưa có phản hồi.</p>}
             </div>
           </ProfileSection>
         </aside>
@@ -202,7 +202,7 @@ export default function MentorProfile() {
 
 const ProfileSection = ({ icon: Icon, title, children }) => (
   <section className="glass-card rounded-2xl p-5">
-    <h2 className="font-bold mb-3 flex items-center gap-2">
+    <h2 className="font-bold mb-3 flex items-center gap-2 text-gray-900 dark:text-white">
       <Icon className="w-5 h-5 text-primary-500" />
       {title}
     </h2>
@@ -211,14 +211,14 @@ const ProfileSection = ({ icon: Icon, title, children }) => (
 );
 
 const Stat = ({ label, value }) => (
-  <div className="glass-subtle rounded-lg p-3">
-    <p className="font-bold">{value}</p>
-    <p className="text-xs text-gray-500">{label}</p>
+  <div className="glass-subtle rounded-lg p-3 text-center">
+    <p className="font-bold text-gray-900 dark:text-white">{value}</p>
+    <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{label}</p>
   </div>
 );
 
 const Rating = ({ value }) => (
-  <span className="inline-flex items-center gap-1">
+  <span className="inline-flex items-center gap-1 font-semibold text-gray-950 dark:text-white">
     <Star className="w-4 h-4 fill-yellow-500 text-yellow-500" />
     <span>{Number(value || 0).toFixed(1)}</span>
   </span>
@@ -226,7 +226,7 @@ const Rating = ({ value }) => (
 
 const ItemList = ({ items = [], empty, render }) => (
   <div className="space-y-3">
-    {items.length ? items.map((item, index) => <div key={item._id || `${item.title}-${index}`}>{render(item)}</div>) : <p className="text-sm text-gray-500">{empty}</p>}
+    {items.length ? items.map((item, index) => <div key={item._id || `${item.title}-${index}`}>{render(item)}</div>) : <p className="text-sm text-gray-500 dark:text-gray-400">{empty}</p>}
   </div>
 );
 
@@ -234,8 +234,8 @@ const RichItem = ({ title, meta, description, link }) => (
   <div className="glass-subtle rounded-xl p-3">
     <div className="flex items-start justify-between gap-3">
       <div className="min-w-0">
-        <p className="font-semibold">{title || 'Untitled'}</p>
-        {meta && <p className="text-xs text-gray-500 truncate">{meta}</p>}
+        <p className="font-semibold text-gray-900 dark:text-white">{title || 'Chưa đặt tiêu đề'}</p>
+        {meta && <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{meta}</p>}
       </div>
       {link && <a href={link} target="_blank" rel="noreferrer" className="glass-nav-link p-1 rounded-lg"><ExternalLink className="w-4 h-4" /></a>}
     </div>

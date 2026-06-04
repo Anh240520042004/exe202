@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import brandMark from '../../assets/Screenshot 2026-06-02 153749.png';
 
 const sizeClasses = {
@@ -29,7 +30,10 @@ export default function BrandLogo({
   const safeSize = sizeClasses[size] ? size : 'md';
 
   return (
-    <div className={`flex items-center gap-3 ${className}`.trim()}>
+    <Link
+      to="/"
+      className={`flex items-center gap-3 ${className} cursor-pointer group select-none`.trim()}
+    >
       <div
         className={`
           ${sizeClasses[safeSize]}
@@ -37,6 +41,7 @@ export default function BrandLogo({
           dark:bg-white/84 dark:border-white/10
           shadow-md shadow-primary-500/15 overflow-hidden
           flex items-center justify-center
+          transition-transform duration-200 group-hover:scale-105 group-active:scale-95
         `}
       >
         <img
@@ -49,7 +54,7 @@ export default function BrandLogo({
 
       {showText && (
         <div className="leading-tight">
-          <h1 className={`font-bold text-gray-900 dark:text-white ${titleClasses[safeSize]}`}>
+          <h1 className={`font-bold text-gray-900 dark:text-white ${titleClasses[safeSize]} group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors`}>
             {title}
           </h1>
           <p className={`${taglineClasses[safeSize]} text-gray-500 dark:text-gray-400`}>
@@ -57,6 +62,6 @@ export default function BrandLogo({
           </p>
         </div>
       )}
-    </div>
+    </Link>
   );
 }

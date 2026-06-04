@@ -44,12 +44,12 @@ const protectedMenuItems = [
 ];
 
 const mentorItems = [
-  { path: '/mentor/documents', icon: BookOpen, label: 'Tai lieu ca nhan' },
+  { path: '/mentor/documents', icon: BookOpen, label: 'Tài liệu cá nhân' },
 ];
 
 const adminItems = [
   { path: '/admin', icon: Users, label: 'Admin Dashboard' },
-  { path: '/admin/documents', icon: FileText, label: 'Tai lieu Marketplace' },
+  { path: '/admin/documents', icon: FileText, label: 'Tài liệu Marketplace' },
   { path: '/admin/users', icon: Users, label: 'Quản lý Users' },
   { path: '/admin/forum-posts', icon: ShieldOff, label: 'Quản lý bài diễn đàn' },
   { path: '/admin/payments', icon: CreditCard, label: 'Duyệt thanh toán' },

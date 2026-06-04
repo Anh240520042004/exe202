@@ -145,7 +145,7 @@ export default function MentorNetwork() {
       setPopularDocs(popularRes.data?.data || []);
       setTopRatedDocs(ratedRes.data?.data || []);
     } catch (error) {
-      toast.error(error.response?.data?.message || 'Khong the tai du lieu mentor');
+      toast.error(error.response?.data?.message || 'Không thể tải dữ liệu mentor');
     } finally {
       setLoading(false);
     }
@@ -165,7 +165,7 @@ export default function MentorNetwork() {
             <div>
               <h1 className="text-4xl font-bold mb-3 text-gray-900 dark:text-white">Mentor Network</h1>
               <p className="text-lg text-gray-600 dark:text-gray-300 max-w-3xl">
-                Tim mentor theo mon hoc, nang luc thuc chien, project mau va feedback tu cac buoi hoc da hoan thanh.
+                Tìm mentor theo môn học, năng lực thực chiến, dự án mẫu và phản hồi từ các buổi học đã hoàn thành.
               </p>
             </div>
             <div className="grid grid-cols-3 gap-3 min-w-[320px]">
@@ -184,7 +184,7 @@ export default function MentorNetwork() {
 
         {suggestions.length > 0 && (
           <section>
-            <SectionTitle icon={Sparkles} title={isMentorUser ? 'Goi y mentor cung linh vuc' : 'Goi y mentor phu hop'} />
+            <SectionTitle icon={Sparkles} title={isMentorUser ? 'Gợi ý mentor cùng lĩnh vực' : 'Gợi ý mentor phù hợp'} />
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
               {suggestions.slice(0, 4).map(mentor => (
                 <MentorCard key={mentor._id} mentor={mentor} compact onOpen={() => navigate(`/mentors/${mentor._id}`)} onBook={() => setBookingMentor(mentor)} />
@@ -195,14 +195,14 @@ export default function MentorNetwork() {
 
         <section>
           <div className="flex flex-col xl:flex-row xl:items-center xl:justify-between gap-4 mb-5">
-            <SectionTitle icon={Search} title="Tim kiem mentor" />
+            <SectionTitle icon={Search} title="Tìm kiếm mentor" />
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3 w-full xl:w-auto">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                 <input
                   value={filters.search}
                   onChange={(event) => setFilters(prev => ({ ...prev, search: event.target.value }))}
-                  placeholder="Ten, ky nang, project..."
+                  placeholder="Tên, kỹ năng, dự án..."
                   className="glass-input w-full md:w-72 pl-10 pr-3 py-2.5"
                 />
               </div>
@@ -211,7 +211,7 @@ export default function MentorNetwork() {
                 onChange={(event) => setFilters(prev => ({ ...prev, subject: event.target.value }))}
                 className="glass-input px-3 py-2.5"
               >
-                <option value="">Tat ca mon</option>
+                <option value="">Tất cả môn</option>
                 {subjects.map(subject => <option key={subject} value={subject}>{subject}</option>)}
               </select>
               <select
@@ -219,9 +219,9 @@ export default function MentorNetwork() {
                 onChange={(event) => setFilters(prev => ({ ...prev, sortBy: event.target.value }))}
                 className="glass-input px-3 py-2.5"
               >
-                <option value="rating">Rating tot nhat</option>
-                <option value="mentorProfile.totalSessions">Nhieu session</option>
-                <option value="mentorProfile.pricePerHour">Gia cao den thap</option>
+                <option value="rating">Đánh giá tốt nhất</option>
+                <option value="mentorProfile.totalSessions">Nhiều buổi học nhất</option>
+                <option value="mentorProfile.pricePerHour">Giá từ cao đến thấp</option>
               </select>
             </div>
           </div>
@@ -237,7 +237,7 @@ export default function MentorNetwork() {
               ))}
             </div>
           ) : (
-            <div className="glass-card rounded-2xl p-10 text-center text-gray-500">Khong tim thay mentor phu hop.</div>
+            <div className="glass-card rounded-2xl p-10 text-center text-gray-500">Không tìm thấy mentor phù hợp.</div>
           )}
         </section>
       </main>
@@ -285,10 +285,10 @@ const FeatureStrip = ({ topMentors, popularDocs, topRatedDocs, onOpenMentor }) =
         </button>
       ))}
     </FeaturePanel>
-    <FeaturePanel title="Tai lieu xem nhieu" icon={BookOpen}>
-      {popularDocs.map(doc => <DocumentMini key={doc._id} doc={doc} metric={`${doc.downloads || 0} luot tai`} />)}
+    <FeaturePanel title="Tài liệu xem nhiều" icon={BookOpen}>
+      {popularDocs.map(doc => <DocumentMini key={doc._id} doc={doc} metric={`${doc.downloads || 0} lượt tải`} />)}
     </FeaturePanel>
-    <FeaturePanel title="Rating tot nhat" icon={Star}>
+    <FeaturePanel title="Đánh giá tốt nhất" icon={Star}>
       {topRatedDocs.map(doc => <DocumentMini key={doc._id} doc={doc} metric={`${doc.rating || doc.avgRating || 0} sao`} />)}
     </FeaturePanel>
   </section>
@@ -321,7 +321,7 @@ const MentorCard = ({ mentor, onOpen, onBook, compact = false }) => {
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
             <h3 className="font-bold truncate">{mentor.name}</h3>
-            {promoted && <span className="text-[10px] bg-amber-500 text-white px-2 py-0.5 rounded-full">Uu tien</span>}
+            {promoted && <span className="text-[10px] bg-amber-500 text-white px-2 py-0.5 rounded-full">Ưu tiên</span>}
           </div>
           <p className="text-sm text-gray-500 truncate">{p.title || p.major || 'Mentor'}</p>
           <div className="flex items-center gap-2 mt-1 text-sm">
@@ -331,7 +331,7 @@ const MentorCard = ({ mentor, onOpen, onBook, compact = false }) => {
         </div>
       </div>
 
-      {!compact && <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-3 min-h-[3.75rem]">{p.bio || p.experience || 'Mentor chua cap nhat gioi thieu.'}</p>}
+      {!compact && <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-3 min-h-[3.75rem]">{p.bio || p.experience || 'Mentor chưa cập nhật giới thiệu.'}</p>}
 
       <div className="flex flex-wrap gap-2">
         {(p.expertise || []).slice(0, compact ? 3 : 5).map(item => <span key={item} className="glass-subtle rounded-lg px-2 py-1 text-xs">{item}</span>)}
@@ -345,12 +345,12 @@ const MentorCard = ({ mentor, onOpen, onBook, compact = false }) => {
 
       <div className="flex items-center justify-between pt-3 border-t glass-divider">
         <div>
-          <p className="text-lg font-bold text-primary-600">{Number(p.pricePerHour || 0).toLocaleString()}d</p>
-          <p className="text-xs text-gray-500">moi gio</p>
+          <p className="text-lg font-bold text-primary-600">{Number(p.pricePerHour || 0).toLocaleString()}đ</p>
+          <p className="text-xs text-gray-500">mỗi giờ</p>
         </div>
         <div className="flex gap-2">
-          <button onClick={onOpen} className="glass-nav-link px-3 py-2 rounded-xl">Ho so</button>
-          <button onClick={onBook} className="bg-primary-500 text-white px-3 py-2 rounded-xl hover:bg-primary-600">Dat lich</button>
+          <button onClick={onOpen} className="glass-nav-link px-3 py-2 rounded-xl">Hồ sơ</button>
+          <button onClick={onBook} className="bg-primary-500 text-white px-3 py-2 rounded-xl hover:bg-primary-600">Đặt lịch</button>
         </div>
       </div>
     </div>
@@ -398,12 +398,12 @@ const MentorDetailModal = ({ mentor, onClose, onBook, navigate }) => {
     setSubmitting(true);
     try {
       await mentorService.addReview(mentor._id, reviewForm);
-      toast.success('Da gui feedback mentor');
+      toast.success('Đã gửi phản hồi thành công');
       const res = await mentorService.getReviews(mentor._id);
       setReviews(res.data?.data?.reviews || []);
       setReviewForm({ rating: 5, comment: '' });
     } catch (error) {
-      toast.error(error.response?.data?.message || 'Chi co the review sau buoi hoc da hoan thanh');
+      toast.error(error.response?.data?.message || 'Chỉ có thể đánh giá sau buổi học đã hoàn thành');
     } finally {
       setSubmitting(false);
     }
@@ -420,9 +420,9 @@ const MentorDetailModal = ({ mentor, onClose, onBook, navigate }) => {
               <p className="text-gray-500">{p.title || p.major}</p>
               <div className="flex flex-wrap gap-3 mt-2 text-sm">
                 <Rating value={p.documentRating || 0} />
-                <span>{p.documentReviewCount || 0} danh gia tai lieu</span>
+                <span>{p.documentReviewCount || 0} đánh giá tài liệu</span>
                 <span>{p.totalSessions || 0} sessions</span>
-                <span>{Number(p.pricePerHour || 0).toLocaleString()}d/gio</span>
+                <span>{Number(p.pricePerHour || 0).toLocaleString()}đ/giờ</span>
               </div>
             </div>
           </div>
@@ -431,34 +431,34 @@ const MentorDetailModal = ({ mentor, onClose, onBook, navigate }) => {
 
         <div className="p-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 space-y-6">
-            <DetailSection icon={GraduationCap} title="Thong tin ca nhan">
-              <p className="text-gray-600 dark:text-gray-300">{p.bio || 'Mentor chua cap nhat gioi thieu.'}</p>
+            <DetailSection icon={GraduationCap} title="Thông tin cá nhân">
+              <p className="text-gray-600 dark:text-gray-300">{p.bio || 'Mentor chưa cập nhật giới thiệu.'}</p>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-4">
-                <Stat label="Nganh" value={p.major || '-'} />
+                <Stat label="Ngành" value={p.major || '-'} />
                 <Stat label="GPA" value={p.gpa || '-'} />
-                <Stat label="Mon da qua" value={(p.passedSubjects || []).length} />
-                <Stat label="Kinh nghiem" value={p.experience ? 'Co' : '-'} />
+                <Stat label="Môn đã qua" value={(p.passedSubjects || []).length} />
+                <Stat label="Kinh nghiệm" value={p.experience ? 'Có' : '-'} />
               </div>
             </DetailSection>
 
-            <DetailSection icon={Award} title="Thanh tuu">
-              <ItemList items={p.achievements} empty="Chua co thanh tuu" render={a => <RichItem title={a.title} meta={[a.issuer, a.year].filter(Boolean).join(' - ')} description={a.description} />} />
+            <DetailSection icon={Award} title="Thành tựu">
+              <ItemList items={p.achievements} empty="Chưa có thành tựu" render={a => <RichItem title={a.title} meta={[a.issuer, a.year].filter(Boolean).join(' - ')} description={a.description} />} />
             </DetailSection>
 
-            <DetailSection icon={FileText} title="Mau demo va bai tap">
+            <DetailSection icon={FileText} title="Mẫu demo và bài tập">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <ItemList items={p.demoMaterials} empty="Chua co demo" render={m => <RichItem title={m.title} meta={m.url} description={m.description} link={m.url} />} />
-                <ItemList items={p.exerciseTemplates} empty="Chua co bai tap mau" render={e => <RichItem title={e.title} meta={`${e.subjectCode || ''} ${e.level || ''}`} description={e.description} link={e.url} />} />
+                <ItemList items={p.demoMaterials} empty="Chưa có bản demo" render={m => <RichItem title={m.title} meta={m.url} description={m.description} link={m.url} />} />
+                <ItemList items={p.exerciseTemplates} empty="Chưa có bài tập mẫu" render={e => <RichItem title={e.title} meta={`${e.subjectCode || ''} ${e.level || ''}`} description={e.description} link={e.url} />} />
               </div>
             </DetailSection>
 
             <DetailSection icon={Briefcase} title="Project">
-              <ItemList items={p.projects} empty="Chua co project" render={project => (
+              <ItemList items={p.projects} empty="Chưa có project" render={project => (
                 <RichItem title={project.title} meta={[project.role, (project.techStack || []).join(', ')].filter(Boolean).join(' - ')} description={project.description} link={project.url} />
               )} />
             </DetailSection>
 
-            <DetailSection icon={BookOpen} title="Tai lieu cua mentor">
+            <DetailSection icon={BookOpen} title="Tài liệu của mentor">
               {mentorDocuments.length ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   {mentorDocuments.map((doc) => (
@@ -471,20 +471,20 @@ const MentorDetailModal = ({ mentor, onClose, onBook, navigate }) => {
                       <div className="flex items-start justify-between gap-3">
                         <div>
                           <p className="font-semibold">{doc.title}</p>
-                          <p className="text-xs text-gray-500 mt-1">{doc.subjectCode || 'Khong ro mon'} • {doc.documentType || 'pdf'}</p>
+                          <p className="text-xs text-gray-500 mt-1">{doc.subjectCode || 'Không rõ môn'} • {doc.documentType || 'pdf'}</p>
                         </div>
                         <Rating value={doc.avgRating || doc.rating || 0} />
                       </div>
                       {doc.description && <p className="text-sm text-gray-600 dark:text-gray-400 mt-2 line-clamp-2">{doc.description}</p>}
                       <div className="flex items-center justify-between mt-3 text-xs text-gray-500">
-                        <span>{doc.reviewCount || doc.totalReviews || 0} danh gia</span>
+                        <span>{doc.reviewCount || doc.totalReviews || 0} đánh giá</span>
                         <span>{doc.sourceType === 'google_drive' ? 'Google Drive' : doc.sourceType === 'external_link' ? 'External link' : 'File upload'}</span>
                       </div>
                     </button>
                   ))}
                 </div>
               ) : (
-                <p className="text-sm text-gray-500">Chua co tai lieu.</p>
+                <p className="text-sm text-gray-500">Chưa có tài liệu.</p>
               )}
             </DetailSection>
           </div>
@@ -493,7 +493,7 @@ const MentorDetailModal = ({ mentor, onClose, onBook, navigate }) => {
             <div className="glass-card rounded-2xl p-5">
               <button onClick={onBook} className="w-full bg-primary-500 text-white rounded-xl py-3 font-semibold hover:bg-primary-600 flex items-center justify-center gap-2">
                 <Calendar className="w-5 h-5" />
-                Dat lich mentor
+                Đặt lịch mentor
               </button>
               <div className="flex flex-wrap gap-2 mt-4">
                 {(p.expertise || []).map(item => <span key={item} className="glass-subtle rounded-lg px-2 py-1 text-xs">{item}</span>)}
@@ -506,9 +506,9 @@ const MentorDetailModal = ({ mentor, onClose, onBook, navigate }) => {
                 <select value={reviewForm.rating} onChange={e => setReviewForm(prev => ({ ...prev, rating: Number(e.target.value) }))} className="glass-input w-full px-3 py-2">
                   {[5, 4, 3, 2, 1].map(n => <option key={n} value={n}>{n} sao</option>)}
                 </select>
-                <textarea value={reviewForm.comment} onChange={e => setReviewForm(prev => ({ ...prev, comment: e.target.value }))} rows={3} className="glass-input w-full px-3 py-2" placeholder="Feedback sau buoi hoc..." />
+                <textarea value={reviewForm.comment} onChange={e => setReviewForm(prev => ({ ...prev, comment: e.target.value }))} rows={3} className="glass-input w-full px-3 py-2" placeholder="Feedback sau buổi học..." />
                 <button disabled={submitting} className="w-full glass-nav-link bg-primary-400/70 text-white rounded-xl py-2 disabled:opacity-50">
-                  {submitting ? 'Dang gui...' : 'Gui feedback'}
+                  {submitting ? 'Đang gửi...' : 'Gửi feedback'}
                 </button>
               </form>
               <div className="space-y-3 max-h-80 overflow-y-auto">
@@ -520,7 +520,7 @@ const MentorDetailModal = ({ mentor, onClose, onBook, navigate }) => {
                     </div>
                     {review.comment && <p className="text-sm text-gray-500 mt-1">{review.comment}</p>}
                   </div>
-                )) : <p className="text-sm text-gray-500">Chua co feedback.</p>}
+                )) : <p className="text-sm text-gray-500">Chưa có feedback.</p>}
               </div>
             </div>
           </aside>
@@ -592,12 +592,12 @@ const MentorDocumentManager = ({ user, onChanged }) => {
     event.preventDefault();
 
     if (sourceType === 'upload' && !selectedFile) {
-      toast.error('Vui long chon file');
+      toast.error('Vui lòng chọn file');
       return;
     }
 
     if (sourceType !== 'upload' && !form.externalUrl) {
-      toast.error('Vui long nhap link tai lieu');
+      toast.error('Vui lòng nhập link tài liệu');
       return;
     }
 
@@ -614,28 +614,28 @@ const MentorDocumentManager = ({ user, onChanged }) => {
     try {
       setUploading(true);
       await documentService.createMentorProfile(formData);
-      toast.success('Da them tai lieu ca nhan');
+      toast.success('Đã thêm tài liệu cá nhân thành công');
       setForm({ title: '', description: '', subjectCode: '', semester: '1', documentType: 'pdf', tags: '', externalUrl: '' });
       setSelectedFile(null);
       setSourceType('upload');
       await loadDocuments();
       onChanged?.();
     } catch (error) {
-      toast.error(error.response?.data?.message || 'Khong the them tai lieu');
+      toast.error(error.response?.data?.message || 'Không thể thêm tài liệu');
     } finally {
       setUploading(false);
     }
   };
 
   const handleDelete = async (docId) => {
-    if (!window.confirm('Ban co chac muon xoa tai lieu nay?')) return;
+    if (!window.confirm('Bạn có chắc muốn xóa tài liệu này?')) return;
     try {
       await documentService.delete(docId);
-      toast.success('Da xoa tai lieu');
+      toast.success('Đã xóa tài liệu thành công');
       await loadDocuments();
       onChanged?.();
     } catch (error) {
-      toast.error(error.response?.data?.message || 'Khong the xoa tai lieu');
+      toast.error(error.response?.data?.message || 'Không thể xóa tài liệu');
     }
   };
 
@@ -643,7 +643,7 @@ const MentorDocumentManager = ({ user, onChanged }) => {
     <section className="glass-card rounded-2xl p-5 mt-6">
       <div className="flex items-center gap-2 mb-4">
         <FileText className="w-5 h-5 text-primary-500" />
-        <h3 className="text-xl font-bold">Tai lieu ca nhan cua mentor</h3>
+        <h3 className="text-xl font-bold">Tài liệu cá nhân của mentor</h3>
       </div>
 
       <form onSubmit={handleUpload} className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
@@ -702,14 +702,14 @@ const MentorDocumentManager = ({ user, onChanged }) => {
       </form>
 
       {loading ? (
-        <p className="text-sm text-gray-500">Dang tai danh sach tai lieu...</p>
+        <p className="text-sm text-gray-500">Đang tải danh sách tài liệu...</p>
       ) : documents.length ? (
         <div className="space-y-3">
           {documents.map((doc) => (
             <div key={doc._id} className="glass-subtle rounded-xl p-4 flex items-start justify-between gap-3">
               <div>
                 <p className="font-semibold">{doc.title}</p>
-                <p className="text-xs text-gray-500 mt-1">{doc.subjectCode || 'Khong ro mon'} • {doc.documentType || 'pdf'} • {doc.sourceType === 'google_drive' ? 'Google Drive' : doc.sourceType === 'external_link' ? 'External link' : 'File upload'}</p>
+                <p className="text-xs text-gray-500 mt-1">{doc.subjectCode || 'Không rõ môn'} • {doc.documentType || 'pdf'} • {doc.sourceType === 'google_drive' ? 'Google Drive' : doc.sourceType === 'external_link' ? 'External link' : 'File upload'}</p>
                 {doc.description && <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">{doc.description}</p>}
               </div>
               <button type="button" onClick={() => handleDelete(doc._id)} className="text-red-500 hover:text-red-600">
@@ -719,7 +719,7 @@ const MentorDocumentManager = ({ user, onChanged }) => {
           ))}
         </div>
       ) : (
-        <p className="text-sm text-gray-500">Chua co tai lieu ca nhan nao.</p>
+        <p className="text-sm text-gray-500">Chưa có tài liệu cá nhân nào.</p>
       )}
     </section>
   );
@@ -743,10 +743,10 @@ const MentorProfileEditor = ({ user, onSaved }) => {
       const res = await mentorService.updateProfile(user._id, formToPayload(form));
       const updated = res.data?.data;
       if (updated) localStorage.setItem('user', JSON.stringify(updated));
-      toast.success('Da cap nhat profile mentor');
+      toast.success('Đã cập nhật profile mentor');
       onSaved?.();
     } catch (error) {
-      toast.error(error.response?.data?.message || 'Khong the cap nhat profile');
+      toast.error(error.response?.data?.message || 'Không thể cập nhật profile');
     } finally {
       setSaving(false);
     }
@@ -759,14 +759,14 @@ const MentorProfileEditor = ({ user, onSaved }) => {
         mentorId: user._id,
         days: 7,
         priorityScore: 100,
-        campaignName: 'Uu tien tim kiem 7 ngay',
+        campaignName: 'Ưu tiên tìm kiếm 7 ngày',
       });
       const updated = res.data?.data?.mentor;
       if (updated) localStorage.setItem('user', JSON.stringify(updated));
-      toast.success('Da bat uu tien de xuat trong 7 ngay');
+      toast.success('Đã bật ưu tiên đề xuất trong 7 ngày');
       onSaved?.();
     } catch (error) {
-      toast.error(error.response?.data?.message || 'Khong the bat uu tien de xuat');
+      toast.error(error.response?.data?.message || 'Không thể bật ưu tiên đề xuất');
     } finally {
       setPromoting(false);
     }
@@ -779,11 +779,11 @@ const MentorProfileEditor = ({ user, onSaved }) => {
     <section className="glass-card rounded-2xl p-5">
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-4">
         <div>
-          <h2 className="text-2xl font-bold flex items-center gap-2"><BadgeCheck className="w-6 h-6 text-primary-500" />Profile mentor cua ban</h2>
+          <h2 className="text-2xl font-bold flex items-center gap-2"><BadgeCheck className="w-6 h-6 text-primary-500" />Profile mentor của bạn</h2>
           <p className="text-sm text-gray-500 mt-1">
             {isPromoted
-              ? `Dang duoc uu tien den ${new Date(promotion.paidUntil).toLocaleDateString('vi-VN')}`
-              : 'Bat goi uu tien de len dau ket qua tim kiem va goi y.'}
+              ? `Đang được ưu tiên đến ${new Date(promotion.paidUntil).toLocaleDateString('vi-VN')}`
+              : 'Bật gói ưu tiên để lên đầu kết quả tìm kiếm và gợi ý.'}
           </p>
         </div>
         <button
@@ -793,32 +793,32 @@ const MentorProfileEditor = ({ user, onSaved }) => {
           className="bg-amber-500 text-white rounded-xl px-4 py-2.5 flex items-center justify-center gap-2 disabled:opacity-50"
         >
           {promoting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Crown className="w-4 h-4" />}
-          Uu tien 7 ngay
+          Ưu tiên 7 ngày
         </button>
       </div>
       <form onSubmit={submit} className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <Input label="Ho ten" value={form.name} onChange={v => update('name', v)} />
+        <Input label="Họ tên" value={form.name} onChange={v => update('name', v)} />
         <Input label="Avatar URL" value={form.avatar} onChange={v => update('avatar', v)} />
-        <Input label="Chuc danh" value={form.title} onChange={v => update('title', v)} />
-        <Input label="Nganh" value={form.major} onChange={v => update('major', v)} />
+        <Input label="Chức danh" value={form.title} onChange={v => update('title', v)} />
+        <Input label="Ngành" value={form.major} onChange={v => update('major', v)} />
         <Input label="GPA" value={form.gpa} onChange={v => update('gpa', v)} />
-        <Input label="Gia moi gio" value={form.pricePerHour} onChange={v => update('pricePerHour', v)} />
-        <Input label="Chuyen mon, cach nhau bang dau phay" value={form.expertise} onChange={v => update('expertise', v)} className="lg:col-span-2" />
-        <Input label="Mon da qua, cach nhau bang dau phay" value={form.passedSubjects} onChange={v => update('passedSubjects', v)} className="lg:col-span-2" />
-        <Textarea label="Gioi thieu ca nhan" value={form.bio} onChange={v => update('bio', v)} />
-        <Textarea label="Kinh nghiem" value={form.experience} onChange={v => update('experience', v)} />
-        <Textarea label="Thanh tuu: title | issuer | year | description" value={form.achievements} onChange={v => update('achievements', v)} />
-        <Textarea label="Demo: title | url | description" value={form.demoMaterials} onChange={v => update('demoMaterials', v)} />
-        <Textarea label="Bai tap mau: title | subject | level | url | description" value={form.exerciseTemplates} onChange={v => update('exerciseTemplates', v)} />
-        <Textarea label="Project: title | role | tech1, tech2 | url | description" value={form.projects} onChange={v => update('projects', v)} />
+        <Input label="Giá mỗi giờ" value={form.pricePerHour} onChange={v => update('pricePerHour', v)} />
+        <Input label="Chuyên môn (cách nhau bằng dấu phẩy)" value={form.expertise} onChange={v => update('expertise', v)} className="lg:col-span-2" />
+        <Input label="Môn đã qua (cách nhau bằng dấu phẩy)" value={form.passedSubjects} onChange={v => update('passedSubjects', v)} className="lg:col-span-2" />
+        <Textarea label="Giới thiệu cá nhân" value={form.bio} onChange={v => update('bio', v)} />
+        <Textarea label="Kinh nghiệm" value={form.experience} onChange={v => update('experience', v)} />
+        <Textarea label="Thành tựu: Tên | Đơn vị cấp | Năm | Mô tả" value={form.achievements} onChange={v => update('achievements', v)} />
+        <Textarea label="Demo: Tiêu đề | URL | Mô tả" value={form.demoMaterials} onChange={v => update('demoMaterials', v)} />
+        <Textarea label="Bài tập mẫu: Tiêu đề | Môn học | Cấp độ | URL | Mô tả" value={form.exerciseTemplates} onChange={v => update('exerciseTemplates', v)} />
+        <Textarea label="Dự án / Project: Tên dự án | Vai trò | Công nghệ | URL | Mô tả" value={form.projects} onChange={v => update('projects', v)} />
         <label className="flex items-center gap-2 text-sm">
           <input type="checkbox" checked={form.isAvailable} onChange={e => update('isAvailable', e.target.checked)} />
-          Dang nhan lich mentor
+          Đang nhận lịch mentor
         </label>
         <div className="lg:col-span-2 flex justify-end">
           <button disabled={saving} className="bg-primary-500 text-white rounded-xl px-5 py-2.5 flex items-center gap-2 disabled:opacity-50">
             {saving && <Loader2 className="w-4 h-4 animate-spin" />}
-            Luu profile
+            Lưu profile
           </button>
         </div>
       </form>
@@ -856,10 +856,10 @@ const BookingModal = ({ mentor, onClose }) => {
     setSubmitting(true);
     try {
       await mentorService.createBooking({ ...form, mentorId: mentor._id });
-      toast.success('Da tao lich mentor');
+      toast.success('Đã tạo lịch mentor thành công');
       onClose();
     } catch (error) {
-      toast.error(error.response?.data?.message || 'Khong the tao lich mentor');
+      toast.error(error.response?.data?.message || 'Không thể tạo lịch mentor');
     } finally {
       setSubmitting(false);
     }
@@ -872,25 +872,25 @@ const BookingModal = ({ mentor, onClose }) => {
           <div className="flex items-center gap-3">
             <img src={mentor.avatar || avatarFor(mentor)} alt={mentor.name} className="w-12 h-12 rounded-full" />
             <div>
-              <h3 className="font-bold text-lg">Dat lich voi {mentor.name}</h3>
-              <p className="text-sm text-gray-500">{Number(mentor.mentorProfile?.pricePerHour || 0).toLocaleString()}d/gio</p>
+              <h3 className="font-bold text-lg">Đặt lịch với {mentor.name}</h3>
+              <p className="text-sm text-gray-500">{Number(mentor.mentorProfile?.pricePerHour || 0).toLocaleString()}đ/giờ</p>
             </div>
           </div>
           <button type="button" onClick={onClose} className="glass-nav-link p-2 rounded-xl"><X className="w-5 h-5" /></button>
         </div>
         <select required value={form.subject} onChange={e => setForm(prev => ({ ...prev, subject: e.target.value }))} className="glass-input w-full px-3 py-2">
-          <option value="">Chon mon</option>
+          <option value="">Chọn môn</option>
           {(mentor.mentorProfile?.expertise || subjects).map(subject => <option key={subject} value={subject}>{subject}</option>)}
         </select>
-        <input required value={form.topic} onChange={e => setForm(prev => ({ ...prev, topic: e.target.value }))} placeholder="Chu de can mentor" className="glass-input w-full px-3 py-2" />
+        <input required value={form.topic} onChange={e => setForm(prev => ({ ...prev, topic: e.target.value }))} placeholder="Chủ đề cần mentor" className="glass-input w-full px-3 py-2" />
         <div className="grid grid-cols-3 gap-3">
           <input required type="date" value={form.date} onChange={e => setForm(prev => ({ ...prev, date: e.target.value }))} className="glass-input px-3 py-2" />
           <input required type="time" value={form.startTime} onChange={e => setForm(prev => ({ ...prev, startTime: e.target.value }))} className="glass-input px-3 py-2" />
           <input required type="time" value={form.endTime} onChange={e => setForm(prev => ({ ...prev, endTime: e.target.value }))} className="glass-input px-3 py-2" />
         </div>
-        <textarea value={form.notes} onChange={e => setForm(prev => ({ ...prev, notes: e.target.value }))} rows={3} placeholder="Ghi chu them" className="glass-input w-full px-3 py-2" />
+        <textarea value={form.notes} onChange={e => setForm(prev => ({ ...prev, notes: e.target.value }))} rows={3} placeholder="Ghi chú thêm" className="glass-input w-full px-3 py-2" />
         <button disabled={submitting} className="w-full bg-primary-500 text-white rounded-xl py-3 disabled:opacity-50">
-          {submitting ? 'Dang tao lich...' : 'Xac nhan dat lich'}
+          {submitting ? 'Đang tạo lịch...' : 'Xác nhận đặt lịch'}
         </button>
       </form>
     </div>

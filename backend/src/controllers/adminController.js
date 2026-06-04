@@ -1,5 +1,6 @@
 import { User, Transaction, Settings } from '../models/index.js';
 import ApiResponse from '../utils/apiResponse.js';
+import { escapeRegex } from '../utils/security.js';
 
 class AdminController {
   async getAllUsers(req, res, next) {
@@ -8,9 +9,10 @@ class AdminController {
 
       const query = {};
       if (search) {
+        const escapedSearch = escapeRegex(search);
         query.$or = [
-          { name: { $regex: search, $options: 'i' } },
-          { email: { $regex: search, $options: 'i' } },
+          { name: { $regex: escapedSearch, $options: 'i' } },
+          { email: { $regex: escapedSearch, $options: 'i' } },
         ];
       }
       if (role) query.role = role;
@@ -110,7 +112,7 @@ class AdminController {
 
       const query = {};
       if (search) {
-        query.description = { $regex: search, $options: 'i' };
+        query.description = { $regex: escapeRegex(search), $options: 'i' };
       }
       if (type) query.type = type;
 

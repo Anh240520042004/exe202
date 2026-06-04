@@ -24,7 +24,8 @@ router.put(
       .normalizeEmail(),
     body('role')
       .optional()
-      .isIn(['user', 'admin']).withMessage('Role không hợp lệ'),
+      // [FIX] Added 'mentor' — previously missing, admin couldn't set user as mentor
+      .isIn(['user', 'student', 'mentor', 'admin']).withMessage('Role không hợp lệ'),
   ]),
   adminController.updateUser
 );

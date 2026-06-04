@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -11,7 +12,7 @@
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 
-  /* Liquid Glass — bo tròn hơn, trong suốt hơn, tông nhẹ */
+  /* Liquid Glass */
   --glass-blur: 22px;
   --glass-saturate: 150%;
   --glass-radius-sm: 0.875rem;
@@ -402,9 +403,10 @@ body {
   .glass-input-auth:focus {
     border-color: rgba(167, 139, 250, 0.45);
     box-shadow: 0 0 0 3px rgba(167, 139, 250, 0.15);
+    outline: none;
   }
 
-  /* Chat container — bo góc, trong suốt */
+  /* Chat container */
   .chat-shell {
     @apply glass-base;
     background: var(--glass-bg-subtle);
@@ -475,25 +477,11 @@ body {
     border-radius: var(--glass-radius-sm);
     border-color: var(--glass-border-subtle);
   }
-
-  .glass-toast {
-    background: var(--glass-bg-elevated) !important;
-    backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
-    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
-    border: 1px solid var(--glass-border) !important;
-    border-radius: var(--glass-radius) !important;
-    color: inherit !important;
-    box-shadow: var(--glass-shadow) !important;
-  }
 }
 
 @keyframes iosMeshShift {
-  0% {
-    transform: scale(1) translate(0, 0);
-  }
-  100% {
-    transform: scale(1.04) translate(1.5%, -0.5%);
-  }
+  0% { transform: scale(1) translate(0, 0); }
+  100% { transform: scale(1.04) translate(1.5%, -0.5%); }
 }
 
 .gradient-bg {
@@ -521,12 +509,8 @@ body {
 }
 
 @keyframes shimmer {
-  0% {
-    background-position: -200% 0;
-  }
-  100% {
-    background-position: 200% 0;
-  }
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
 }
 
 .skeleton {
