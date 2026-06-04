@@ -5,16 +5,12 @@ node_modules/
 **/node_modules/
 
 # ===========================
-# Environment Variables (SENSITIVE - never commit!)
+# Environment Variables
 # ===========================
-.env
+# .env files are tracked intentionally for team sharing
+# IMPORTANT: Keep repo PRIVATE if .env contains real credentials
 .env.local
 .env.*.local
-.env.development
-.env.production
-.env.staging
-backend/.env
-frontend/.env
 
 # ===========================
 # Build Outputs
