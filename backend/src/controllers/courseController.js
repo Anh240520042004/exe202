@@ -69,7 +69,8 @@ export const getCourseByCode = async (req, res, next) => {
 
     const documents = await Document.find({
       course: course._id,
-      isActive: true
+      isActive: true,
+      documentScope: { $in: ['marketplace', null] },
     })
       .populate('author', 'name avatar')
       .sort({ createdAt: -1 });
@@ -201,8 +202,8 @@ export const addDocumentToCourse = async (req, res, next) => {
       return next(apiError('Course not found', 404));
     }
 
-    if (course.mentor.toString() !== req.user.id && req.user.role !== 'admin') {
-      return next(apiError('You can only add documents to your own courses', 403));
+    if (req.user.role !== 'admin') {
+      return next(apiError('Only admin can add marketplace documents', 403));
     }
 
     const { title, description, price, documentType, tags, sourceType, externalUrl } = req.body;
@@ -270,7 +271,9 @@ export const addDocumentToCourse = async (req, res, next) => {
       description,
       course: course._id,
       subjectCode: code,
+      category: course.category || 'other',
       author: req.user.id,
+      documentScope: 'marketplace',
       price: price || 0,
       fileUrl: docFileUrl,
       fileName: docFileName,
@@ -301,8 +304,8 @@ export const updateCourseDocument = async (req, res, next) => {
       return next(apiError('Course not found', 404));
     }
 
-    if (course.mentor.toString() !== req.user.id && req.user.role !== 'admin') {
-      return next(apiError('You can only update documents in your own courses', 403));
+    if (req.user.role !== 'admin') {
+      return next(apiError('Only admin can update marketplace documents', 403));
     }
 
     const document = await Document.findOne({ _id: docId, course: course._id });
@@ -370,9 +373,8 @@ export const removeDocumentFromCourse = async (req, res, next) => {
       return next(apiError('Course not found', 404));
     }
 
-    // Check if user is the mentor of this course
-    if (course.mentor.toString() !== req.user.id && req.user.role !== 'admin') {
-      return next(apiError('You can only remove documents from your own courses', 403));
+    if (req.user.role !== 'admin') {
+      return next(apiError('Only admin can remove marketplace documents', 403));
     }
 
     // Remove document from course
@@ -392,7 +394,7 @@ export const removeDocumentFromCourse = async (req, res, next) => {
 export const getPopularSubjects = async (req, res, next) => {
   try {
     const subjects = await Document.aggregate([
-      { $match: { isActive: true } },
+      { $match: { isActive: true, documentScope: { $in: ['marketplace', null] } } },
       { $group: { _id: '$subjectCode', count: { $sum: 1 }, totalDownloads: { $sum: '$downloads' } } },
       { $sort: { count: -1 } },
       { $limit: 10 },

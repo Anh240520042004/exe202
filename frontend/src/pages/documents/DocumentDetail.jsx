@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Heart, ShoppingCart, Star, FileText, Download, Clock, BookOpen, Share2, MessageSquare } from 'lucide-react';
 import axios from 'axios';
 import { useSelector } from 'react-redux';
@@ -24,7 +24,6 @@ export default function DocumentDetail() {
 
   const [document, setDocument] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [relatedDocs, setRelatedDocs] = useState([]);
   const [activeTab, setActiveTab] = useState('preview');
   const [owned, setOwned] = useState(false);
 
@@ -34,15 +33,16 @@ export default function DocumentDetail() {
         const { data } = await axios.get(`${API_URL}/api/documents/${id}`);
         setDocument(data.data);
 
-        // Check if owned
-        if (isAuthenticated) {
-          const ordersRes = await axios.get(`${API_URL}/api/orders/my-orders`, {
+        if (data.data?.documentScope === 'mentor_profile') {
+          setOwned(true);
+        } else if (isAuthenticated) {
+          const ordersRes = await axios.get(`${API_URL}/api/orders`, {
             headers: { Authorization: `Bearer ${accessToken}` }
           });
           const orders = ordersRes.data?.data || [];
-          const isOwned = orders.some(o =>
-            o.items?.some(item => item.document?._id === id || item.document === id) &&
-            o.paymentStatus === 'paid'
+          const isOwned = orders.some((order) =>
+            order.documents?.some((item) => item.document?._id === id || item.document === id) &&
+            order.paymentStatus === 'paid'
           );
           setOwned(isOwned);
         }
@@ -59,6 +59,15 @@ export default function DocumentDetail() {
   const handleBuy = () => {
     if (!isAuthenticated) return navigate('/login');
     navigate(`/checkout/document/${id}`);
+  };
+
+  const isMentorProfileDocument = document?.documentScope === 'mentor_profile';
+
+  const openDocument = () => {
+    const targetUrl = document?.externalUrl || (document?.fileUrl?.startsWith('http') ? document.fileUrl : `${API_URL}${document?.fileUrl || ''}`);
+    if (targetUrl) {
+      window.open(targetUrl, '_blank', 'noopener,noreferrer');
+    }
   };
 
   if (loading) {
@@ -108,8 +117,13 @@ export default function DocumentDetail() {
                     </span>
                   )}
                   <span className="px-3 py-1 bg-blue-500/20 text-blue-300 text-xs rounded-full border border-blue-500/20">
-                    {typeLabels[document.type] || document.type}
+                    {typeLabels[document.documentType] || document.documentType}
                   </span>
+                  {isMentorProfileDocument && (
+                    <span className="px-3 py-1 bg-emerald-500/20 text-emerald-300 text-xs rounded-full border border-emerald-500/20">
+                      Tai lieu mentor
+                    </span>
+                  )}
                   {document.isPremium && (
                     <span className="px-3 py-1 bg-yellow-500/20 text-yellow-300 text-xs rounded-full border border-yellow-500/20">
                       Premium
@@ -121,14 +135,14 @@ export default function DocumentDetail() {
                 <h1 className="text-3xl font-bold text-white mb-4 leading-tight">{document.title}</h1>
 
                 <div className="flex items-center gap-4 mb-6">
-                  {document.uploadedBy && (
+                  {document.author && (
                     <div className="flex items-center gap-2">
                       <img
-                        src={document.uploadedBy.avatar}
-                        alt={document.uploadedBy.name}
+                        src={document.author.avatar}
+                        alt={document.author.name}
                         className="w-8 h-8 rounded-full object-cover"
                       />
-                      <span className="text-white/60 text-sm">{document.uploadedBy.name}</span>
+                      <span className="text-white/60 text-sm">{document.author.name}</span>
                     </div>
                   )}
                   <div className="flex items-center gap-1">
@@ -138,7 +152,7 @@ export default function DocumentDetail() {
                   </div>
                   <div className="flex items-center gap-1 text-white/40 text-sm">
                     <Download className="w-4 h-4" />
-                    <span>{document.downloadCount || 0} lượt tải</span>
+                    <span>{document.downloads || 0} lượt tải</span>
                   </div>
                 </div>
 
@@ -155,7 +169,7 @@ export default function DocumentDetail() {
                   <div className="text-center">
                     <FileText className="w-5 h-5 text-white/30 mx-auto mb-1" />
                     <p className="text-white/40 text-xs">Loại</p>
-                    <p className="text-white text-sm font-medium">{typeLabels[document.type] || document.type}</p>
+                    <p className="text-white text-sm font-medium">{typeLabels[document.documentType] || document.documentType}</p>
                   </div>
                   <div className="text-center">
                     <BookOpen className="w-5 h-5 text-white/30 mx-auto mb-1" />
@@ -223,29 +237,46 @@ export default function DocumentDetail() {
           <div className="lg:w-80 flex-shrink-0">
             <div className="sticky top-24 bg-white/[0.03] backdrop-blur-sm border border-white/[0.06] rounded-2xl p-6 space-y-4">
               <div className="text-center">
-                <div className="text-4xl font-bold text-white mb-1">
-                  {document.price?.toLocaleString('vi-VN')} <span className="text-lg text-white/50">VNĐ</span>
-                </div>
-                {document.originalPrice && document.originalPrice > document.price && (
-                  <div className="flex items-center justify-center gap-2">
-                    <span className="text-white/30 line-through text-sm">
-                      {document.originalPrice.toLocaleString('vi-VN')} VNĐ
-                    </span>
-                    <span className="px-2 py-0.5 bg-red-500/20 text-red-400 text-xs rounded-full">
-                      -{Math.round((1 - document.price / document.originalPrice) * 100)}%
-                    </span>
-                  </div>
+                {isMentorProfileDocument ? (
+                  <>
+                    <div className="text-4xl font-bold text-white mb-1">Tai lieu mentor</div>
+                    <div className="text-sm text-white/50">Xem truc tiep va danh gia tren trang nay</div>
+                  </>
+                ) : (
+                  <>
+                    <div className="text-4xl font-bold text-white mb-1">
+                      {document.price?.toLocaleString('vi-VN')} <span className="text-lg text-white/50">VNĐ</span>
+                    </div>
+                    {document.originalPrice && document.originalPrice > document.price && (
+                      <div className="flex items-center justify-center gap-2">
+                        <span className="text-white/30 line-through text-sm">
+                          {document.originalPrice.toLocaleString('vi-VN')} VNĐ
+                        </span>
+                        <span className="px-2 py-0.5 bg-red-500/20 text-red-400 text-xs rounded-full">
+                          -{Math.round((1 - document.price / document.originalPrice) * 100)}%
+                        </span>
+                      </div>
+                    )}
+                  </>
                 )}
               </div>
 
-              {owned ? (
-                <Link
-                  to={`/checkout/document/${id}`}
+              {isMentorProfileDocument ? (
+                <button
+                  onClick={openDocument}
                   className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-green-500/20 border border-green-500/30 text-green-400 rounded-xl font-semibold hover:bg-green-500/30 transition-colors"
                 >
                   <Download className="w-5 h-5" />
-                  Tải tài liệu
-                </Link>
+                  Mo tai lieu
+                </button>
+              ) : owned ? (
+                <button
+                  onClick={openDocument}
+                  className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-green-500/20 border border-green-500/30 text-green-400 rounded-xl font-semibold hover:bg-green-500/30 transition-colors"
+                >
+                  <Download className="w-5 h-5" />
+                  Tai tai lieu
+                </button>
               ) : (
                 <button
                   onClick={handleBuy}
@@ -264,7 +295,7 @@ export default function DocumentDetail() {
               <div className="pt-4 border-t border-white/5 space-y-2 text-sm">
                 <div className="flex justify-between">
                   <span className="text-white/40">Loại file</span>
-                  <span className="text-white/70">{typeLabels[document.type] || document.type}</span>
+                  <span className="text-white/70">{typeLabels[document.documentType] || document.documentType}</span>
                 </div>
                 {document.pageCount && (
                   <div className="flex justify-between">

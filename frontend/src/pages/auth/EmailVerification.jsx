@@ -39,9 +39,9 @@ export default function EmailVerification() {
 
     try {
       await dispatch(verifyEmail({ code: verificationCode, email })).unwrap();
-      toast.success('Xác thực email thành công! Đang chuyển đến trang đăng nhập...');
+      toast.success('Xac thuc email thanh cong! Dang chuyen den dashboard...');
       setTimeout(() => {
-        navigate('/login');
+        navigate('/dashboard');
       }, 1500);
     } catch (err) {
       toast.error(err || 'Mã xác thực không đúng');
@@ -56,8 +56,8 @@ export default function EmailVerification() {
 
     setIsResending(true);
     try {
-      await dispatch(resendVerification({ email })).unwrap();
-      toast.success('Mã xác thực mới đã được gửi!');
+      await dispatch(resendVerification(email)).unwrap();
+      toast.success('Ma xac thuc moi da duoc gui!');
       setCodeSent(true);
     } catch (err) {
       toast.error(err || 'Không thể gửi lại mã');

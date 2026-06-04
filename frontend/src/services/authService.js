@@ -57,11 +57,22 @@ export const authService = {
 
   verifyEmail: async (data) => {
     const response = await api.post('/auth/verify-email', data);
-    return response.data.data;
+    const result = response.data.data;
+    if (result.accessToken) {
+      localStorage.setItem('accessToken', result.accessToken);
+      if (result.refreshToken) {
+        localStorage.setItem('refreshToken', result.refreshToken);
+      }
+      if (result.user) {
+        localStorage.setItem('user', JSON.stringify(result.user));
+      }
+    }
+    return result;
   },
 
   resendVerification: async (email) => {
-    const response = await api.post('/auth/resend-verification', { email });
+    const normalizedEmail = typeof email === 'string' ? email : email?.email;
+    const response = await api.post('/auth/resend-verification', { email: normalizedEmail });
     return response.data.data;
   },
 };

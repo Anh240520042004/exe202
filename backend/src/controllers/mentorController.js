@@ -8,7 +8,8 @@ const mentorSelect = '-password -refreshToken';
 const promotedSort = (sortBy, order) => ({
   'mentorProfile.promotion.isPromoted': -1,
   'mentorProfile.promotion.priorityScore': -1,
-  [sortBy === 'rating' ? 'mentorProfile.rating' : sortBy]: order === 'asc' ? 1 : -1,
+  [sortBy === 'rating' ? 'mentorProfile.documentRating' : sortBy]: order === 'asc' ? 1 : -1,
+  'mentorProfile.documentReviewCount': -1,
 });
 
 export const getMentors = async (req, res, next) => {
@@ -494,7 +495,8 @@ export const getTopMentors = async (req, res, next) => {
       .sort({
         'mentorProfile.promotion.isPromoted': -1,
         'mentorProfile.promotion.priorityScore': -1,
-        'mentorProfile.rating': -1,
+        'mentorProfile.documentRating': -1,
+        'mentorProfile.documentReviewCount': -1,
         'mentorProfile.totalSessions': -1,
       })
       .limit(Number(limit));

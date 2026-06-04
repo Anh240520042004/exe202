@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import {
   Award,
@@ -15,6 +16,8 @@ import {
   Search,
   Sparkles,
   Star,
+  Trash2,
+  Upload,
   UserRound,
   X,
 } from 'lucide-react';
@@ -101,6 +104,7 @@ const formToPayload = (form) => ({
 });
 
 export default function MentorNetwork() {
+  const navigate = useNavigate();
   const { user, isAuthenticated } = useSelector((state) => state.auth);
   const [mentors, setMentors] = useState([]);
   const [topMentors, setTopMentors] = useState([]);
@@ -149,7 +153,7 @@ export default function MentorNetwork() {
 
   const averageRating = useMemo(() => {
     if (!mentors.length) return '0.0';
-    const total = mentors.reduce((sum, mentor) => sum + Number(mentor.mentorProfile?.rating || 0), 0);
+    const total = mentors.reduce((sum, mentor) => sum + Number(mentor.mentorProfile?.documentRating || 0), 0);
     return (total / mentors.length).toFixed(1);
   }, [mentors]);
 
@@ -167,7 +171,7 @@ export default function MentorNetwork() {
             <div className="grid grid-cols-3 gap-3 min-w-[320px]">
               <Metric icon={UserRound} label="Mentor" value={mentors.length} />
               <Metric icon={Star} label="Rating" value={averageRating} />
-              <Metric icon={MessageCircle} label="Review" value={mentors.reduce((sum, m) => sum + Number(m.mentorProfile?.totalReviews || 0), 0)} />
+              <Metric icon={MessageCircle} label="Review" value={mentors.reduce((sum, m) => sum + Number(m.mentorProfile?.documentReviewCount || 0), 0)} />
             </div>
           </div>
         </div>
@@ -176,14 +180,14 @@ export default function MentorNetwork() {
       <main className="container mx-auto px-4 py-8 space-y-8">
         {isMentorUser && <MentorProfileEditor user={user} onSaved={loadData} />}
 
-        <FeatureStrip topMentors={topMentors} popularDocs={popularDocs} topRatedDocs={topRatedDocs} onOpenMentor={setSelectedMentor} />
+        <FeatureStrip topMentors={topMentors} popularDocs={popularDocs} topRatedDocs={topRatedDocs} onOpenMentor={(mentor) => navigate(`/mentors/${mentor._id}`)} />
 
         {suggestions.length > 0 && (
           <section>
             <SectionTitle icon={Sparkles} title={isMentorUser ? 'Goi y mentor cung linh vuc' : 'Goi y mentor phu hop'} />
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
               {suggestions.slice(0, 4).map(mentor => (
-                <MentorCard key={mentor._id} mentor={mentor} compact onOpen={() => setSelectedMentor(mentor)} onBook={() => setBookingMentor(mentor)} />
+                <MentorCard key={mentor._id} mentor={mentor} compact onOpen={() => navigate(`/mentors/${mentor._id}`)} onBook={() => setBookingMentor(mentor)} />
               ))}
             </div>
           </section>
@@ -229,7 +233,7 @@ export default function MentorNetwork() {
           ) : mentors.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
               {mentors.map(mentor => (
-                <MentorCard key={mentor._id} mentor={mentor} onOpen={() => setSelectedMentor(mentor)} onBook={() => setBookingMentor(mentor)} />
+                <MentorCard key={mentor._id} mentor={mentor} onOpen={() => navigate(`/mentors/${mentor._id}`)} onBook={() => setBookingMentor(mentor)} />
               ))}
             </div>
           ) : (
@@ -239,7 +243,12 @@ export default function MentorNetwork() {
       </main>
 
       {selectedMentor && (
-        <MentorDetailModal mentor={selectedMentor} onClose={() => setSelectedMentor(null)} onBook={() => setBookingMentor(selectedMentor)} />
+        <MentorDetailModal
+          mentor={selectedMentor}
+          onClose={() => setSelectedMentor(null)}
+          onBook={() => setBookingMentor(selectedMentor)}
+          navigate={navigate}
+        />
       )}
       {bookingMentor && <BookingModal mentor={bookingMentor} onClose={() => setBookingMentor(null)} />}
     </div>
@@ -272,7 +281,7 @@ const FeatureStrip = ({ topMentors, popularDocs, topRatedDocs, onOpenMentor }) =
             <p className="font-semibold truncate">{mentor.name}</p>
             <p className="text-xs text-gray-500 truncate">{mentor.mentorProfile?.title || 'Mentor'}</p>
           </div>
-          <Rating value={mentor.mentorProfile?.rating || 0} />
+          <Rating value={mentor.mentorProfile?.documentRating || 0} />
         </button>
       ))}
     </FeaturePanel>
@@ -316,8 +325,8 @@ const MentorCard = ({ mentor, onOpen, onBook, compact = false }) => {
           </div>
           <p className="text-sm text-gray-500 truncate">{p.title || p.major || 'Mentor'}</p>
           <div className="flex items-center gap-2 mt-1 text-sm">
-            <Rating value={p.rating || 0} />
-            <span className="text-gray-400">({p.totalReviews || 0})</span>
+            <Rating value={p.documentRating || 0} />
+            <span className="text-gray-400">({p.documentReviewCount || 0})</span>
           </div>
         </div>
       </div>
@@ -362,16 +371,26 @@ const Rating = ({ value }) => (
   </span>
 );
 
-const MentorDetailModal = ({ mentor, onClose, onBook }) => {
+const MentorDetailModal = ({ mentor, onClose, onBook, navigate }) => {
   const p = mentor.mentorProfile || {};
   const [reviews, setReviews] = useState([]);
+  const [mentorDocuments, setMentorDocuments] = useState([]);
   const [reviewForm, setReviewForm] = useState({ rating: 5, comment: '' });
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    mentorService.getReviews(mentor._id)
-      .then(res => setReviews(res.data?.data?.reviews || []))
-      .catch(() => setReviews([]));
+    Promise.all([
+      mentorService.getReviews(mentor._id),
+      documentService.getMentorDocuments(mentor._id),
+    ])
+      .then(([reviewRes, docRes]) => {
+        setReviews(reviewRes.data?.data?.reviews || []);
+        setMentorDocuments(docRes.data?.data?.documents || []);
+      })
+      .catch(() => {
+        setReviews([]);
+        setMentorDocuments([]);
+      });
   }, [mentor._id]);
 
   const submitReview = async (event) => {
@@ -400,7 +419,8 @@ const MentorDetailModal = ({ mentor, onClose, onBook }) => {
               <h2 className="text-2xl font-bold">{mentor.name}</h2>
               <p className="text-gray-500">{p.title || p.major}</p>
               <div className="flex flex-wrap gap-3 mt-2 text-sm">
-                <Rating value={p.rating || 0} />
+                <Rating value={p.documentRating || 0} />
+                <span>{p.documentReviewCount || 0} danh gia tai lieu</span>
                 <span>{p.totalSessions || 0} sessions</span>
                 <span>{Number(p.pricePerHour || 0).toLocaleString()}d/gio</span>
               </div>
@@ -436,6 +456,36 @@ const MentorDetailModal = ({ mentor, onClose, onBook }) => {
               <ItemList items={p.projects} empty="Chua co project" render={project => (
                 <RichItem title={project.title} meta={[project.role, (project.techStack || []).join(', ')].filter(Boolean).join(' - ')} description={project.description} link={project.url} />
               )} />
+            </DetailSection>
+
+            <DetailSection icon={BookOpen} title="Tai lieu cua mentor">
+              {mentorDocuments.length ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  {mentorDocuments.map((doc) => (
+                    <button
+                      key={doc._id}
+                      type="button"
+                      onClick={() => navigate(`/documents/${doc._id}`)}
+                      className="glass-subtle rounded-xl p-4 text-left hover:bg-white/10 transition-colors"
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div>
+                          <p className="font-semibold">{doc.title}</p>
+                          <p className="text-xs text-gray-500 mt-1">{doc.subjectCode || 'Khong ro mon'} • {doc.documentType || 'pdf'}</p>
+                        </div>
+                        <Rating value={doc.avgRating || doc.rating || 0} />
+                      </div>
+                      {doc.description && <p className="text-sm text-gray-600 dark:text-gray-400 mt-2 line-clamp-2">{doc.description}</p>}
+                      <div className="flex items-center justify-between mt-3 text-xs text-gray-500">
+                        <span>{doc.reviewCount || doc.totalReviews || 0} danh gia</span>
+                        <span>{doc.sourceType === 'google_drive' ? 'Google Drive' : doc.sourceType === 'external_link' ? 'External link' : 'File upload'}</span>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-sm text-gray-500">Chua co tai lieu.</p>
+              )}
             </DetailSection>
           </div>
 
@@ -505,6 +555,175 @@ const RichItem = ({ title, meta, description, link }) => (
     {description && <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">{description}</p>}
   </div>
 );
+
+const MentorDocumentManager = ({ user, onChanged }) => {
+  const [documents, setDocuments] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [uploading, setUploading] = useState(false);
+  const [sourceType, setSourceType] = useState('upload');
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [form, setForm] = useState({
+    title: '',
+    description: '',
+    subjectCode: '',
+    semester: '1',
+    documentType: 'pdf',
+    tags: '',
+    externalUrl: '',
+  });
+
+  const loadDocuments = async () => {
+    try {
+      setLoading(true);
+      const res = await documentService.getMentorDocuments(user._id, { limit: 50 });
+      setDocuments(res.data?.data?.documents || []);
+    } catch {
+      setDocuments([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadDocuments();
+  }, [user._id]);
+
+  const handleUpload = async (event) => {
+    event.preventDefault();
+
+    if (sourceType === 'upload' && !selectedFile) {
+      toast.error('Vui long chon file');
+      return;
+    }
+
+    if (sourceType !== 'upload' && !form.externalUrl) {
+      toast.error('Vui long nhap link tai lieu');
+      return;
+    }
+
+    const formData = new FormData();
+    if (selectedFile) formData.append('file', selectedFile);
+    if (form.title) formData.append('title', form.title);
+    if (form.description) formData.append('description', form.description);
+    if (form.subjectCode) formData.append('subjectCode', form.subjectCode);
+    if (form.semester) formData.append('semester', form.semester);
+    formData.append('documentType', form.documentType);
+    if (form.tags) formData.append('tags', form.tags);
+    if (sourceType !== 'upload') formData.append('externalUrl', form.externalUrl);
+
+    try {
+      setUploading(true);
+      await documentService.createMentorProfile(formData);
+      toast.success('Da them tai lieu ca nhan');
+      setForm({ title: '', description: '', subjectCode: '', semester: '1', documentType: 'pdf', tags: '', externalUrl: '' });
+      setSelectedFile(null);
+      setSourceType('upload');
+      await loadDocuments();
+      onChanged?.();
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Khong the them tai lieu');
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleDelete = async (docId) => {
+    if (!window.confirm('Ban co chac muon xoa tai lieu nay?')) return;
+    try {
+      await documentService.delete(docId);
+      toast.success('Da xoa tai lieu');
+      await loadDocuments();
+      onChanged?.();
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Khong the xoa tai lieu');
+    }
+  };
+
+  return (
+    <section className="glass-card rounded-2xl p-5 mt-6">
+      <div className="flex items-center gap-2 mb-4">
+        <FileText className="w-5 h-5 text-primary-500" />
+        <h3 className="text-xl font-bold">Tai lieu ca nhan cua mentor</h3>
+      </div>
+
+      <form onSubmit={handleUpload} className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
+        <div className="lg:col-span-2 flex flex-wrap gap-2">
+          {[
+            { value: 'upload', label: 'Upload file' },
+            { value: 'google_drive', label: 'Google Drive' },
+            { value: 'external_link', label: 'Link khac' },
+          ].map((option) => (
+            <button
+              key={option.value}
+              type="button"
+              onClick={() => {
+                setSourceType(option.value);
+                setSelectedFile(null);
+                setForm((prev) => ({ ...prev, externalUrl: '' }));
+              }}
+              className={`px-4 py-2 rounded-xl border ${sourceType === option.value ? 'bg-primary-500 text-white border-primary-500' : 'glass-nav-hover'}`}
+            >
+              {option.label}
+            </button>
+          ))}
+        </div>
+
+        {sourceType === 'upload' ? (
+          <label className="block lg:col-span-2">
+            <span className="block text-sm font-medium mb-1 text-gray-600 dark:text-gray-300">File tai lieu</span>
+            <input type="file" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.zip,.rar,.pptx,.xlsx,.txt" onChange={(e) => setSelectedFile(e.target.files?.[0] || null)} className="glass-input w-full px-3 py-2" />
+          </label>
+        ) : (
+          <Input label={sourceType === 'google_drive' ? 'Link Google Drive' : 'Link tai lieu'} value={form.externalUrl} onChange={(v) => setForm((prev) => ({ ...prev, externalUrl: v }))} className="lg:col-span-2" />
+        )}
+
+        <Input label="Tieu de" value={form.title} onChange={(v) => setForm((prev) => ({ ...prev, title: v }))} />
+        <Input label="Mon hoc" value={form.subjectCode} onChange={(v) => setForm((prev) => ({ ...prev, subjectCode: v.toUpperCase() }))} />
+        <Input label="Hoc ky" value={form.semester} onChange={(v) => setForm((prev) => ({ ...prev, semester: v }))} />
+        <Input label="Tags" value={form.tags} onChange={(v) => setForm((prev) => ({ ...prev, tags: v }))} />
+        <div>
+          <span className="block text-sm font-medium mb-1 text-gray-600 dark:text-gray-300">Loai tai lieu</span>
+          <select value={form.documentType} onChange={(e) => setForm((prev) => ({ ...prev, documentType: e.target.value }))} className="glass-input w-full px-3 py-2">
+            <option value="pdf">PDF</option>
+            <option value="slide">Slide</option>
+            <option value="source_code">Source Code</option>
+            <option value="exam">De thi</option>
+            <option value="assignment">Bai tap</option>
+            <option value="checklist">Checklist</option>
+          </select>
+        </div>
+        <Textarea label="Mo ta" value={form.description} onChange={(v) => setForm((prev) => ({ ...prev, description: v }))} />
+        <div className="lg:col-span-2 flex justify-end">
+          <button disabled={uploading} className="bg-primary-500 text-white rounded-xl px-5 py-2.5 flex items-center gap-2 disabled:opacity-50">
+            {uploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
+            Dang tai lieu
+          </button>
+        </div>
+      </form>
+
+      {loading ? (
+        <p className="text-sm text-gray-500">Dang tai danh sach tai lieu...</p>
+      ) : documents.length ? (
+        <div className="space-y-3">
+          {documents.map((doc) => (
+            <div key={doc._id} className="glass-subtle rounded-xl p-4 flex items-start justify-between gap-3">
+              <div>
+                <p className="font-semibold">{doc.title}</p>
+                <p className="text-xs text-gray-500 mt-1">{doc.subjectCode || 'Khong ro mon'} • {doc.documentType || 'pdf'} • {doc.sourceType === 'google_drive' ? 'Google Drive' : doc.sourceType === 'external_link' ? 'External link' : 'File upload'}</p>
+                {doc.description && <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">{doc.description}</p>}
+              </div>
+              <button type="button" onClick={() => handleDelete(doc._id)} className="text-red-500 hover:text-red-600">
+                <Trash2 className="w-4 h-4" />
+              </button>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <p className="text-sm text-gray-500">Chua co tai lieu ca nhan nao.</p>
+      )}
+    </section>
+  );
+};
 
 const MentorProfileEditor = ({ user, onSaved }) => {
   const [form, setForm] = useState({ ...emptyProfile, name: user?.name || '', avatar: user?.avatar || '' });

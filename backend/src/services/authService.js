@@ -1,51 +1,56 @@
+import bcrypt from 'bcryptjs';
 import jwtHelper from '../utils/jwtHelper.js';
-import { User } from '../models/index.js';
+import { PendingRegistration, User } from '../models/index.js';
 import emailService from './emailService.js';
 
 class AuthService {
   async register(userData) {
     const { name, email, password, role = 'student' } = userData;
+    const normalizedEmail = email.toLowerCase().trim();
 
-    const existingUser = await User.findOne({ email });
+    const existingUser = await User.findOne({ email: normalizedEmail });
     if (existingUser) {
-      throw { statusCode: 400, message: 'Email đã được sử dụng' };
+      throw { statusCode: 400, message: 'Email da duoc su dung' };
     }
 
-    const user = await User.create({ name, email, password, role });
+    const verificationCode = emailService.generateVerificationCode();
+    const passwordHash = await bcrypt.hash(password, 10);
 
-    // Auto-verify email - skip email verification step
-    user.isEmailVerified = true;
-    user.emailVerificationToken = undefined;
-    user.emailVerificationExpire = undefined;
-    await user.save();
+    await PendingRegistration.findOneAndUpdate(
+      { email: normalizedEmail },
+      {
+        name,
+        email: normalizedEmail,
+        passwordHash,
+        role,
+        emailVerificationToken: verificationCode,
+        emailVerificationExpire: new Date(Date.now() + 5 * 60 * 1000),
+      },
+      { upsert: true, new: true, setDefaultsOnInsert: true }
+    );
 
-    // Generate tokens for immediate login
-    const accessToken = jwtHelper.generateAccessToken(user._id);
-    const refreshToken = jwtHelper.generateRefreshToken(user._id);
-
-    user.refreshToken = refreshToken;
-    await user.save();
+    await emailService.sendEmailVerification({ name, email: normalizedEmail }, verificationCode);
 
     return {
-      user: this.sanitizeUser(user),
-      accessToken,
-      refreshToken,
+      email: normalizedEmail,
+      requiresVerification: true,
+      message: 'Ma xac thuc da duoc gui den email',
     };
   }
 
   async verifyEmail(userId, code) {
     const user = await User.findById(userId).select('+emailVerificationToken +emailVerificationExpire');
-    
+
     if (!user) {
-      throw { statusCode: 404, message: 'Không tìm thấy người dùng' };
+      throw { statusCode: 404, message: 'Khong tim thay nguoi dung' };
     }
 
     if (user.isEmailVerified) {
-      return { message: 'Email đã được xác thực trước đó' };
+      return { message: 'Email da duoc xac thuc truoc do' };
     }
 
     if (!user.verifyEmailCode(code)) {
-      throw { statusCode: 400, message: 'Mã xác thực không đúng hoặc đã hết hạn' };
+      throw { statusCode: 400, message: 'Ma xac thuc khong dung hoac da het han' };
     }
 
     user.isEmailVerified = true;
@@ -53,22 +58,65 @@ class AuthService {
     user.emailVerificationExpire = undefined;
     await user.save();
 
-    return { message: 'Xác thực email thành công' };
+    return { message: 'Xac thuc email thanh cong' };
   }
 
   async verifyEmailByCode(email, code) {
-    const user = await User.findOne({ email }).select('+emailVerificationToken +emailVerificationExpire');
-    
+    const normalizedEmail = email.toLowerCase().trim();
+    const pending = await PendingRegistration.findOne({ email: normalizedEmail })
+      .select('+passwordHash +emailVerificationToken');
+
+    if (pending) {
+      if (pending.emailVerificationToken !== code || Date.now() > pending.emailVerificationExpire) {
+        throw { statusCode: 400, message: 'Ma xac thuc khong dung hoac da het han' };
+      }
+
+      const existingUser = await User.findOne({ email: normalizedEmail });
+      if (existingUser) {
+        await PendingRegistration.deleteOne({ _id: pending._id });
+        throw { statusCode: 400, message: 'Email da duoc su dung' };
+      }
+
+      const user = await User.create({
+        name: pending.name,
+        email: pending.email,
+        password: pending.passwordHash,
+        role: pending.role,
+        isEmailVerified: true,
+      });
+
+      const accessToken = jwtHelper.generateAccessToken(user._id);
+      const refreshToken = jwtHelper.generateRefreshToken(user._id);
+
+      user.refreshToken = refreshToken;
+      await user.save();
+      await PendingRegistration.deleteOne({ _id: pending._id });
+
+      try {
+        await emailService.sendWelcomeEmail(user);
+      } catch (err) {
+        console.error('Failed to send welcome email:', err);
+      }
+
+      return {
+        user: this.sanitizeUser(user),
+        accessToken,
+        refreshToken,
+      };
+    }
+
+    const user = await User.findOne({ email: normalizedEmail }).select('+emailVerificationToken +emailVerificationExpire');
+
     if (!user) {
-      throw { statusCode: 404, message: 'Không tìm thấy người dùng' };
+      throw { statusCode: 404, message: 'Khong tim thay dang ky cho email nay' };
     }
 
     if (user.isEmailVerified) {
-      return { message: 'Email đã được xác thực trước đó' };
+      return { message: 'Email da duoc xac thuc truoc do' };
     }
 
     if (!user.verifyEmailCode(code)) {
-      throw { statusCode: 400, message: 'Mã xác thực không đúng hoặc đã hết hạn' };
+      throw { statusCode: 400, message: 'Ma xac thuc khong dung hoac da het han' };
     }
 
     user.isEmailVerified = true;
@@ -76,53 +124,55 @@ class AuthService {
     user.emailVerificationExpire = undefined;
     await user.save();
 
-    // Send welcome email
-    try {
-      await emailService.sendWelcomeEmail(user);
-    } catch (err) {
-      console.error('Failed to send welcome email:', err);
-    }
-
-    return { message: 'Xác thực email thành công' };
+    return { message: 'Xac thuc email thanh cong' };
   }
 
   async resendVerificationCode(email) {
-    const user = await User.findOne({ email });
-    
+    const normalizedEmail = email.toLowerCase().trim();
+    const pending = await PendingRegistration.findOne({ email: normalizedEmail });
+
+    if (pending) {
+      const verificationCode = emailService.generateVerificationCode();
+      pending.emailVerificationToken = verificationCode;
+      pending.emailVerificationExpire = new Date(Date.now() + 5 * 60 * 1000);
+      await pending.save();
+
+      await emailService.sendEmailVerification(pending, verificationCode);
+      return { message: 'Ma xac thuc moi da duoc gui' };
+    }
+
+    const user = await User.findOne({ email: normalizedEmail });
+
     if (!user) {
-      throw { statusCode: 404, message: 'Email không tồn tại' };
+      throw { statusCode: 404, message: 'Email khong ton tai hoac chua dang ky' };
     }
 
     if (user.isEmailVerified) {
-      return { message: 'Email đã được xác thực trước đó' };
+      return { message: 'Email da duoc xac thuc truoc do' };
     }
 
     const verificationCode = user.getEmailVerificationToken();
     await user.save();
 
-    try {
-      await emailService.sendEmailVerification(user, verificationCode);
-    } catch (err) {
-      console.error('Failed to send verification email:', err);
-    }
+    await emailService.sendEmailVerification(user, verificationCode);
 
-    return { message: 'Mã xác thực mới đã được gửi' };
+    return { message: 'Ma xac thuc moi da duoc gui' };
   }
 
   async login(email, password) {
     const user = await User.findOne({ email }).select('+password');
 
     if (!user) {
-      throw { statusCode: 401, message: 'Email hoặc mật khẩu không đúng' };
+      throw { statusCode: 401, message: 'Email hoac mat khau khong dung' };
     }
 
     if (!user.isActive) {
-      throw { statusCode: 401, message: 'Tài khoản đã bị vô hiệu hóa' };
+      throw { statusCode: 401, message: 'Tai khoan da bi vo hieu hoa' };
     }
 
     const isMatch = await user.matchPassword(password);
     if (!isMatch) {
-      throw { statusCode: 401, message: 'Email hoặc mật khẩu không đúng' };
+      throw { statusCode: 401, message: 'Email hoac mat khau khong dung' };
     }
 
     const accessToken = jwtHelper.generateAccessToken(user._id);
@@ -130,18 +180,15 @@ class AuthService {
 
     user.refreshToken = refreshToken;
     user.lastLogin = new Date();
-    
-    // Log activity
     user.activities = user.activities || [];
     user.activities.unshift({
       type: 'login',
-      description: 'Đăng nhập vào hệ thống',
-      createdAt: new Date()
+      description: 'Dang nhap vao he thong',
+      createdAt: new Date(),
     });
-    
+
     await user.save();
 
-    // Update study streak for students (async)
     if (user.role === 'student') {
       const { updateStreak } = await import('../controllers/gamificationController.js');
       setImmediate(() => updateStreak(user._id));
@@ -156,19 +203,19 @@ class AuthService {
 
   async logout(userId) {
     await User.findByIdAndUpdate(userId, { refreshToken: null });
-    return { message: 'Đăng xuất thành công' };
+    return { message: 'Dang xuat thanh cong' };
   }
 
   async refreshToken(refreshToken) {
     if (!refreshToken) {
-      throw { statusCode: 401, message: 'Refresh token không hợp lệ' };
+      throw { statusCode: 401, message: 'Refresh token khong hop le' };
     }
 
     const decoded = jwtHelper.verifyRefreshToken(refreshToken);
     const user = await User.findById(decoded.id).select('+refreshToken');
 
     if (!user || user.refreshToken !== refreshToken) {
-      throw { statusCode: 401, message: 'Refresh token không hợp lệ' };
+      throw { statusCode: 401, message: 'Refresh token khong hop le' };
     }
 
     const newAccessToken = jwtHelper.generateAccessToken(user._id);
@@ -187,15 +234,15 @@ class AuthService {
     const user = await User.findOne({ email });
 
     if (!user) {
-      throw { statusCode: 404, message: 'Email không tồn tại' };
+      throw { statusCode: 404, message: 'Email khong ton tai' };
     }
 
     const resetToken = user.getResetPasswordToken();
     await user.save();
 
-    await this.sendPasswordResetEmail(user, resetToken);
+    await emailService.sendPasswordResetEmail(user, resetToken);
 
-    return { message: 'Email đặt lại mật khẩu đã được gửi' };
+    return { message: 'Email dat lai mat khau da duoc gui' };
   }
 
   async resetPassword(token, newPassword) {
@@ -205,7 +252,7 @@ class AuthService {
     });
 
     if (!user) {
-      throw { statusCode: 400, message: 'Token không hợp lệ hoặc đã hết hạn' };
+      throw { statusCode: 400, message: 'Token khong hop le hoac da het han' };
     }
 
     user.password = newPassword;
@@ -213,7 +260,7 @@ class AuthService {
     user.resetPasswordExpire = undefined;
     await user.save();
 
-    return { message: 'Mật khẩu đã được đặt lại thành công' };
+    return { message: 'Mat khau da duoc dat lai thanh cong' };
   }
 
   sanitizeUser(user) {

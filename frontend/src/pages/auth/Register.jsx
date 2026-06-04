@@ -33,28 +33,37 @@ export default function Register() {
     e.preventDefault();
     setLocalError('');
 
-    if (!formData.name || !formData.email || !formData.password || !formData.confirmPassword) {
+    const formValues = new FormData(e.currentTarget);
+    const submittedData = {
+      name: String(formValues.get('name') || '').trim(),
+      email: String(formValues.get('email') || '').trim(),
+      password: String(formValues.get('password') || ''),
+      confirmPassword: String(formValues.get('confirmPassword') || ''),
+      role: formData.role,
+    };
+
+    if (!submittedData.name || !submittedData.email || !submittedData.password || !submittedData.confirmPassword) {
       setLocalError('Vui lòng điền đầy đủ thông tin');
       return;
     }
-    if (formData.password !== formData.confirmPassword) {
+    if (submittedData.password !== submittedData.confirmPassword) {
       setLocalError('Mật khẩu xác nhận không khớp');
       return;
     }
-    if (formData.password.length < 6) {
+    if (submittedData.password.length < 6) {
       setLocalError('Mật khẩu phải có ít nhất 6 ký tự');
       return;
     }
 
     try {
       await dispatch(register({
-        name: formData.name,
-        email: formData.email,
-        password: formData.password,
-        role: formData.role,
+        name: submittedData.name,
+        email: submittedData.email,
+        password: submittedData.password,
+        role: submittedData.role,
       })).unwrap();
-      toast.success('Đăng ký thành công! Đang chuyển đến trang chính...');
-      navigate('/dashboard');
+      toast.success('Ma xac thuc da duoc gui den email. Vui long nhap ma de hoan tat dang ky.');
+      navigate('/verify-email', { state: { email: submittedData.email } });
     } catch (err) {
       toast.error(err || 'Đăng ký thất bại');
     }

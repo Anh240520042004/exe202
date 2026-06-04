@@ -14,12 +14,17 @@ const documentSchema = new mongoose.Schema({
   course: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Course',
-    required: true
+    default: null
   },
   subjectCode: {
     type: String,
     uppercase: true,
     trim: true
+  },
+  category: {
+    type: String,
+    enum: ['software_engineering', 'marketing', 'communication', 'business', 'design', 'data_science', 'other'],
+    default: 'other'
   },
   semester: {
     type: String,
@@ -34,6 +39,16 @@ const documentSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
     required: true
+  },
+  ownerMentor: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    default: null
+  },
+  documentScope: {
+    type: String,
+    enum: ['marketplace', 'mentor_profile'],
+    default: 'marketplace'
   },
   price: {
     type: Number,
@@ -57,7 +72,17 @@ const documentSchema = new mongoose.Schema({
     min: 0,
     max: 5
   },
+  avgRating: {
+    type: Number,
+    default: 0,
+    min: 0,
+    max: 5
+  },
   totalReviews: {
+    type: Number,
+    default: 0
+  },
+  reviewCount: {
     type: Number,
     default: 0
   },
@@ -126,10 +151,12 @@ const documentSchema = new mongoose.Schema({
 });
 
 documentSchema.index({ title: 'text', description: 'text', subjectCode: 'text' });
-documentSchema.index({ subjectCode: 1, semester: 1 });
+documentSchema.index({ category: 1, subjectCode: 1, semester: 1 });
 documentSchema.index({ price: 1 });
 documentSchema.index({ rating: -1 });
 documentSchema.index({ downloads: -1 });
+documentSchema.index({ documentScope: 1, isActive: 1 });
+documentSchema.index({ ownerMentor: 1, documentScope: 1, isActive: 1 });
 
 const Document = mongoose.model('Document', documentSchema);
 

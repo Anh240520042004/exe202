@@ -10,12 +10,13 @@ import UserProfile from './pages/user/UserProfile';
 import { TransactionsList, CreateTransaction } from './pages/transactions';
 import Marketplace from './pages/marketplace/Marketplace';
 import Checkout from './pages/checkout/Checkout';
-import { MentorNetwork, MentorCourses } from './pages/mentor';
+import { MentorNetwork, MentorDocuments, MentorProfile } from './pages/mentor';
 import { MyDocuments, DownloadHistory } from './pages/documents';
 import DocumentDetail from './pages/documents/DocumentDetail';
 import AIAssistant from './pages/ai/AIAssistant';
 import Gamification from './pages/gamification/Gamification';
 import AdminDashboard from './pages/admin/AdminDashboard';
+import AdminDocuments from './pages/admin/AdminDocuments';
 import PaymentResult from './pages/payment/PaymentResult';
 import AdminPayments from './pages/admin/AdminPayments';
 import AdminForumPosts from './pages/admin/AdminForumPosts';
@@ -62,7 +63,9 @@ export default function App() {
         <Route path="/marketplace" element={<Marketplace />} />
         <Route path="/checkout/:type/:id" element={<Checkout />} />
         <Route path="/mentors" element={<MentorNetwork />} />
-        <Route path="/mentor/courses" element={<MentorCourses />} />
+        <Route path="/mentors/:id" element={<MentorProfile />} />
+        <Route path="/mentor/documents" element={<MentorDocuments />} />
+        <Route path="/mentor/courses" element={<Navigate to="/mentor/documents" replace />} />
         <Route path="/ai" element={<AIAssistant />} />
         <Route path="/gamification" element={<Gamification />} />
         <Route path="/transactions" element={<TransactionsList />} />
@@ -80,6 +83,7 @@ export default function App() {
         {user?.role === 'admin' && (
           <>
             <Route path="/admin" element={<AdminDashboard />} />
+            <Route path="/admin/documents" element={<AdminDocuments />} />
             <Route path="/admin/payments" element={<AdminPayments />} />
             <Route path="/admin/forum-posts" element={<AdminForumPosts />} />
           </>

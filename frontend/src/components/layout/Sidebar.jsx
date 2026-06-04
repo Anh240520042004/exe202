@@ -23,6 +23,7 @@ import {
   MessageSquare,
   ShieldOff,
   PenSquare,
+  FileText,
 } from 'lucide-react';
 
 const menuItems = [
@@ -43,11 +44,12 @@ const protectedMenuItems = [
 ];
 
 const mentorItems = [
-  { path: '/mentor/courses', icon: BookOpen, label: 'Quản lý Khóa học' },
+  { path: '/mentor/documents', icon: BookOpen, label: 'Tai lieu ca nhan' },
 ];
 
 const adminItems = [
   { path: '/admin', icon: Users, label: 'Admin Dashboard' },
+  { path: '/admin/documents', icon: FileText, label: 'Tai lieu Marketplace' },
   { path: '/admin/users', icon: Users, label: 'Quản lý Users' },
   { path: '/admin/forum-posts', icon: ShieldOff, label: 'Quản lý bài diễn đàn' },
   { path: '/admin/payments', icon: CreditCard, label: 'Duyệt thanh toán' },

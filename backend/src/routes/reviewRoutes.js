@@ -4,11 +4,11 @@ import { protect } from '../middleware/auth.js';
 import Review from '../models/Review.js';
 import Order from '../models/Order.js';
 import Document from '../models/Document.js';
+import User from '../models/User.js';
 import { apiSuccess, apiError } from '../utils/apiResponse.js';
 
 const router = express.Router();
 
-// ─── GET /api/documents/:docId/reviews ──────────────────────────────────
 router.get('/documents/:docId/reviews', async (req, res, next) => {
   try {
     const { page = 1, limit = 20 } = req.query;
@@ -18,7 +18,8 @@ router.get('/documents/:docId/reviews', async (req, res, next) => {
     const [reviews, total, stats, distribution] = await Promise.all([
       Review.find({ document: req.params.docId, isDeleted: false })
         .sort({ createdAt: -1 })
-        .skip(skip).limit(Number(limit))
+        .skip(skip)
+        .limit(Number(limit))
         .populate('user', 'name avatar')
         .lean(),
       Review.countDocuments({ document: req.params.docId, isDeleted: false }),
@@ -35,8 +36,8 @@ router.get('/documents/:docId/reviews', async (req, res, next) => {
 
     const avgRating = stats[0]?.avgRating ? Number(stats[0].avgRating.toFixed(1)) : 0;
     const count = stats[0]?.count || 0;
-    const ratingDist = [5, 4, 3, 2, 1].map(n => {
-      const found = distribution.find(d => d._id === n);
+    const ratingDist = [5, 4, 3, 2, 1].map((n) => {
+      const found = distribution.find((d) => d._id === n);
       return { rating: n, count: found?.count || 0 };
     });
 
@@ -52,7 +53,6 @@ router.get('/documents/:docId/reviews', async (req, res, next) => {
   }
 });
 
-// ─── POST /api/documents/:docId/reviews ─────────────────────────────────
 router.post('/documents/:docId/reviews', protect, async (req, res, next) => {
   try {
     const { rating, comment = '' } = req.body;
@@ -60,12 +60,31 @@ router.post('/documents/:docId/reviews', protect, async (req, res, next) => {
       return next(apiError('Rating must be 1-5', 400));
     }
 
-    const purchased = await Order.findOne({
-      user: req.user.id,
-      'items.document': req.params.docId,
-      paymentStatus: 'paid',
-    });
-    if (!purchased) return next(apiError('You must purchase this document to review', 403));
+    if (req.user.role !== 'student') {
+      return next(apiError('Only students can review documents', 403));
+    }
+
+    const document = await Document.findById(req.params.docId);
+    if (!document || !document.isActive) {
+      return next(apiError('Document not found', 404));
+    }
+
+    if (document.documentScope !== 'mentor_profile') {
+      const purchased = await Order.findOne({
+        user: req.user.id,
+        'documents.document': req.params.docId,
+        paymentStatus: 'paid',
+      });
+
+      const student = await User.findById(req.user.id).select('studentProfile.downloadHistory');
+      const hasDownloaded = student?.studentProfile?.downloadHistory?.some(
+        (entry) => entry.document?.toString() === req.params.docId,
+      );
+
+      if (!purchased && !hasDownloaded) {
+        return next(apiError('You must purchase or download this marketplace document before reviewing', 403));
+      }
+    }
 
     const existing = await Review.findOne({ document: req.params.docId, user: req.user.id });
     if (existing) return next(apiError('You already reviewed this document', 400));
@@ -86,7 +105,6 @@ router.post('/documents/:docId/reviews', protect, async (req, res, next) => {
   }
 });
 
-// ─── PUT /api/reviews/:id ───────────────────────────────────────────────
 router.put('/:id', protect, async (req, res, next) => {
   try {
     const review = await Review.findById(req.params.id);
@@ -107,7 +125,6 @@ router.put('/:id', protect, async (req, res, next) => {
   }
 });
 
-// ─── DELETE /api/reviews/:id ─────────────────────────────────────────────
 router.delete('/:id', protect, async (req, res, next) => {
   try {
     const review = await Review.findById(req.params.id);
@@ -130,17 +147,54 @@ router.delete('/:id', protect, async (req, res, next) => {
 
 async function recalcDocumentRating(docId) {
   const stats = await Review.aggregate([
-    { $match: { document: docId, isDeleted: false } },
+    { $match: { document: new mongoose.Types.ObjectId(docId), isDeleted: false } },
     { $group: { _id: null, avgRating: { $avg: '$rating' }, count: { $sum: 1 } } },
   ]);
-  if (stats[0]) {
-    await Document.findByIdAndUpdate(docId, {
-      avgRating: Number(stats[0].avgRating.toFixed(1)),
-      reviewCount: stats[0].count,
-    });
-  } else {
-    await Document.findByIdAndUpdate(docId, { avgRating: 0, reviewCount: 0 });
+
+  const avgRating = stats[0]?.avgRating ? Number(stats[0].avgRating.toFixed(1)) : 0;
+  const count = stats[0]?.count || 0;
+
+  const document = await Document.findByIdAndUpdate(
+    docId,
+    {
+      avgRating,
+      reviewCount: count,
+      rating: avgRating,
+      totalReviews: count,
+    },
+    { new: true },
+  );
+
+  if (document?.documentScope === 'mentor_profile' && document.ownerMentor) {
+    await recalcMentorDocumentRating(document.ownerMentor);
   }
+}
+
+async function recalcMentorDocumentRating(mentorId) {
+  const docs = await Document.find({
+    ownerMentor: mentorId,
+    documentScope: 'mentor_profile',
+    isActive: true,
+  }).select('_id');
+
+  if (!docs.length) {
+    await User.findByIdAndUpdate(mentorId, {
+      'mentorProfile.documentRating': 0,
+      'mentorProfile.documentReviewCount': 0,
+    });
+    return;
+  }
+
+  const docIds = docs.map((doc) => doc._id);
+  const stats = await Review.aggregate([
+    { $match: { document: { $in: docIds }, isDeleted: false } },
+    { $group: { _id: null, avgRating: { $avg: '$rating' }, count: { $sum: 1 } } },
+  ]);
+
+  await User.findByIdAndUpdate(mentorId, {
+    'mentorProfile.documentRating': stats[0]?.avgRating ? Number(stats[0].avgRating.toFixed(1)) : 0,
+    'mentorProfile.documentReviewCount': stats[0]?.count || 0,
+  });
 }
 
 export default router;

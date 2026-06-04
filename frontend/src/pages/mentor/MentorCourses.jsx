@@ -358,16 +358,9 @@ const MentorCourses = () => {
 
                   {/* Actions */}
                   <div className="flex items-center gap-2">
-                    <button
-                      onClick={() => {
-                        setSelectedCourse(course);
-                        setShowDocumentModal(true);
-                      }}
-                      className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-primary-400/70 text-white text-sm font-medium rounded-xl hover:bg-primary-500/75 transition-colors"
-                    >
-                      <Upload size={16} />
-                      Thêm Tài Liệu
-                    </button>
+                    <div className="flex-1 px-3 py-2 glass-subtle rounded-xl text-xs text-gray-500 text-center">
+                      Tai lieu marketplace chi admin moi duoc dang. Tai lieu ca nhan dang tren profile mentor.
+                    </div>
                     <button
                       onClick={() => handleDeleteCourse(course.code)}
                       className="p-2 text-red-600 hover:bg-red-50 rounded-xl transition-colors"

@@ -328,6 +328,16 @@ const userSchema = new mongoose.Schema(
         default: 0,
       },
 
+      documentRating: {
+        type: Number,
+        default: 0,
+      },
+
+      documentReviewCount: {
+        type: Number,
+        default: 0,
+      },
+
       availability: {
         type: Map,
         of: [availabilitySlotSchema],
@@ -355,6 +365,10 @@ const userSchema = new mongoose.Schema(
 // =========================
 userSchema.pre('save', async function (next) {
   if (!this.isModified('password')) {
+    return next();
+  }
+
+  if (typeof this.password === 'string' && this.password.startsWith('$2')) {
     return next();
   }
 

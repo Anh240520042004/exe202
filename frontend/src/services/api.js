@@ -97,13 +97,20 @@ export const documentService = {
   getFeatured: () => api.get('/documents/featured'),
   getPopular: (params) => api.get('/documents/popular', { params }),
   getTopRated: (params) => api.get('/documents/top-rated', { params }),
+  getMentorDocuments: (mentorId, params) => api.get(`/documents/mentor/${mentorId}`, { params }),
   getFavorites: () => api.get('/documents/favorites'),
   getDownloadHistory: (params) => api.get('/documents/download-history', { params }),
   create: (data) => api.post('/documents', data),
+  createMarketplace: (formData) => api.post('/documents/marketplace', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  }),
+  createMentorProfile: (formData) => api.post('/documents/mentor-profile', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  }),
   update: (id, data) => api.put(`/documents/${id}`, data),
   delete: (id) => api.delete(`/documents/${id}`),
   addToFavorites: (documentId) => api.post('/documents/favorites', { documentId }),
-  addReview: (id, data) => api.post(`/documents/${id}/reviews`, data),
+  addReview: (id, data) => api.post(`/reviews/documents/${id}/reviews`, data),
   likeReview: (id, reviewId, type) => api.put(`/documents/${id}/reviews/${reviewId}/like`, { type }),
   download: (id) => api.get(`/documents/${id}/download`),
 };

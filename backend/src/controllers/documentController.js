@@ -3,6 +3,63 @@ import Order from '../models/Order.js';
 import { apiSuccess, apiError } from '../utils/apiResponse.js';
 import mongoose from 'mongoose';
 
+const categoryAliases = {
+  se: 'software_engineering',
+  software_engineering: 'software_engineering',
+  marketing: 'marketing',
+  communication: 'communication',
+  business: 'business',
+  design: 'design',
+  data_science: 'data_science',
+  other: 'other',
+};
+
+const categorySubjectPrefixes = {
+  software_engineering: ['SWP', 'PRJ', 'DBI', 'MAD'],
+  marketing: ['COM', 'MKT'],
+};
+
+const normalizeCategory = (category, subjectCode = '') => {
+  const key = String(category || '').trim().toLowerCase();
+  if (categoryAliases[key]) return categoryAliases[key];
+
+  const subject = String(subjectCode || '').trim().toUpperCase();
+  const matchedCategory = Object.entries(categorySubjectPrefixes).find(([, prefixes]) =>
+    prefixes.some((prefix) => subject.startsWith(prefix))
+  );
+
+  return matchedCategory?.[0] || 'other';
+};
+
+const validateExternalUrl = (externalUrl) => {
+  if (!externalUrl) return null;
+
+  try {
+    const url = new URL(externalUrl);
+    const validHosts = ['drive.google.com', 'docs.google.com', 'www.dropbox.com', 'onedrive.live.com', 'sharepoint.com'];
+    if (!validHosts.some((host) => url.hostname.includes(host))) {
+      return 'Please provide a valid Google Drive, Dropbox, OneDrive, or SharePoint link';
+    }
+    return null;
+  } catch {
+    return 'Invalid URL format';
+  }
+};
+
+const fileTypeMap = {
+  pdf: 'pdf',
+  doc: 'doc',
+  docx: 'docx',
+  jpg: 'jpg',
+  jpeg: 'jpeg',
+  png: 'png',
+  zip: 'zip',
+  rar: 'rar',
+  pptx: 'pptx',
+  xlsx: 'xlsx',
+  txt: 'txt',
+};
+
 export const getDocuments = async (req, res, next) => {
   try {
     const {
@@ -17,10 +74,25 @@ export const getDocuments = async (req, res, next) => {
       search,
       type,
       isPremium,
+      scope,
+      category,
     } = req.query;
 
-    const query = { isActive: true };
+    const query = {
+      isActive: true,
+      documentScope: scope === 'mentor_profile' ? 'mentor_profile' : { $in: ['marketplace', null] },
+    };
 
+    const andConditions = [];
+
+    if (category) {
+      const normalizedCategory = normalizeCategory(category);
+      const legacyPrefixes = categorySubjectPrefixes[normalizedCategory] || [];
+      andConditions.push({ $or: [
+        { category: normalizedCategory },
+        ...(legacyPrefixes.length ? [{ subjectCode: { $regex: `^(${legacyPrefixes.join('|')})`, $options: 'i' } }] : []),
+      ] });
+    }
     if (subjectCode) query.subjectCode = subjectCode.toUpperCase();
     if (semester) query.semester = semester;
     if (type) query.documentType = type;
@@ -32,12 +104,14 @@ export const getDocuments = async (req, res, next) => {
     }
     if (search) {
       const searchLower = search.toLowerCase();
-      query.$or = [
+      andConditions.push({ $or: [
         { title: { $regex: searchLower, $options: 'i' } },
         { description: { $regex: searchLower, $options: 'i' } },
         { subjectCode: { $regex: searchLower, $options: 'i' } }
-      ];
+      ] });
     }
+
+    if (andConditions.length) query.$and = andConditions;
 
     console.log('Final query:', JSON.stringify(query));
 
@@ -87,12 +161,183 @@ export const getDocumentById = async (req, res, next) => {
 
 export const createDocument = async (req, res, next) => {
   try {
+    const requestedScope = req.body.documentScope || 'marketplace';
+
+    if (requestedScope === 'marketplace' && req.user.role !== 'admin') {
+      return next(apiError('Only admin can create marketplace documents', 403));
+    }
+
+    if (requestedScope === 'mentor_profile' && req.user.role !== 'mentor') {
+      return next(apiError('Only mentors can create mentor profile documents', 403));
+    }
+
     const documentData = {
       ...req.body,
       author: req.user.id,
+      documentScope: requestedScope,
+      ownerMentor: requestedScope === 'mentor_profile' ? req.user.id : null,
     };
     const document = await Document.create(documentData);
     res.status(201).json(apiSuccess(document, 'Document created successfully'));
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const createMarketplaceDocument = async (req, res, next) => {
+  try {
+    if (req.user.role !== 'admin') {
+      return next(apiError('Only admin can create marketplace documents', 403));
+    }
+
+    const { title, description, subjectCode, category, semester, price, documentType, tags, externalUrl } = req.body;
+    const file = req.file;
+
+    if (!subjectCode) {
+      return next(apiError('Subject code is required', 400));
+    }
+
+    if (!file && !externalUrl) {
+      return next(apiError('File or external URL is required', 400));
+    }
+
+    if (file && externalUrl) {
+      return next(apiError('Please provide either a file OR an external URL, not both', 400));
+    }
+
+    const urlError = validateExternalUrl(externalUrl);
+    if (urlError) return next(apiError(urlError, 400));
+
+    const normalizedSubject = subjectCode.toUpperCase();
+    const ext = file ? file.originalname.split('.').pop().toLowerCase() : null;
+
+    const document = await Document.create({
+      title: title || (file ? file.originalname : 'Marketplace document'),
+      description,
+      subjectCode: normalizedSubject,
+      category: normalizeCategory(category, normalizedSubject),
+      semester: semester || '1',
+      author: req.user.id,
+      ownerMentor: null,
+      documentScope: 'marketplace',
+      price: Number(price) || 0,
+      isPremium: Number(price) > 0,
+      fileUrl: file ? `/uploads/documents/${file.filename}` : '',
+      fileName: file ? file.originalname : (title || 'External marketplace document'),
+      fileType: file ? (fileTypeMap[ext] || 'pdf') : 'pdf',
+      fileSize: file ? file.size : 0,
+      documentType: documentType || 'pdf',
+      tags: tags ? tags.split(',').map((tag) => tag.trim()).filter(Boolean) : [],
+      sourceType: externalUrl ? (externalUrl.includes('drive.google.com') ? 'google_drive' : 'external_link') : 'upload',
+      externalUrl: externalUrl || '',
+    });
+
+    res.status(201).json(apiSuccess(document, 'Marketplace document created successfully'));
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getMentorDocuments = async (req, res, next) => {
+  try {
+    const { mentorId } = req.params;
+    const { page = 1, limit = 12 } = req.query;
+    const skip = (Number(page) - 1) * Number(limit);
+
+    const query = {
+      ownerMentor: mentorId,
+      documentScope: 'mentor_profile',
+      isActive: true,
+    };
+
+    const [documents, total] = await Promise.all([
+      Document.find(query)
+        .populate('author', 'name avatar')
+        .sort({ avgRating: -1, rating: -1, createdAt: -1 })
+        .skip(skip)
+        .limit(Number(limit)),
+      Document.countDocuments(query),
+    ]);
+
+    res.json(apiSuccess({
+      documents,
+      pagination: {
+        page: Number(page),
+        limit: Number(limit),
+        total,
+        pages: Math.ceil(total / Number(limit)),
+      },
+    }));
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const createMentorProfileDocument = async (req, res, next) => {
+  try {
+    if (req.user.role !== 'mentor') {
+      return next(apiError('Only mentors can upload mentor profile documents', 403));
+    }
+
+    const { title, description, subjectCode, semester, documentType, tags, externalUrl } = req.body;
+    const file = req.file;
+
+    if (!file && !externalUrl) {
+      return next(apiError('File or external URL is required', 400));
+    }
+
+    if (file && externalUrl) {
+      return next(apiError('Please provide either a file OR an external URL, not both', 400));
+    }
+
+    if (externalUrl) {
+      try {
+        const url = new URL(externalUrl);
+        const validHosts = ['drive.google.com', 'docs.google.com', 'www.dropbox.com', 'onedrive.live.com', 'sharepoint.com'];
+        if (!validHosts.some((host) => url.hostname.includes(host))) {
+          return next(apiError('Please provide a valid Google Drive, Dropbox, OneDrive, or SharePoint link', 400));
+        }
+      } catch {
+        return next(apiError('Invalid URL format', 400));
+      }
+    }
+
+    const ext = file ? file.originalname.split('.').pop().toLowerCase() : null;
+    const fileTypeMap = {
+      pdf: 'pdf',
+      doc: 'doc',
+      docx: 'docx',
+      jpg: 'jpg',
+      jpeg: 'jpeg',
+      png: 'png',
+      zip: 'zip',
+      rar: 'rar',
+      pptx: 'pptx',
+      xlsx: 'xlsx',
+      txt: 'txt',
+    };
+
+    const document = await Document.create({
+      title: title || (file ? file.originalname : 'Mentor profile document'),
+      description,
+      subjectCode: subjectCode?.toUpperCase?.() || '',
+      semester: semester || '1',
+      author: req.user.id,
+      ownerMentor: req.user.id,
+      documentScope: 'mentor_profile',
+      price: 0,
+      isPremium: false,
+      fileUrl: file ? `/uploads/documents/${file.filename}` : '',
+      fileName: file ? file.originalname : (title || 'External mentor document'),
+      fileType: file ? (fileTypeMap[ext] || 'pdf') : 'pdf',
+      fileSize: file ? file.size : 0,
+      documentType: documentType || 'pdf',
+      tags: tags ? tags.split(',').map(tag => tag.trim()).filter(Boolean) : [],
+      sourceType: externalUrl ? (externalUrl.includes('drive.google.com') ? 'google_drive' : 'external_link') : 'upload',
+      externalUrl: externalUrl || '',
+    });
+
+    res.status(201).json(apiSuccess(document, 'Mentor profile document created successfully'));
   } catch (error) {
     next(error);
   }
@@ -220,9 +465,10 @@ export const getDocumentsBySubject = async (req, res, next) => {
     const { subjectCode } = req.params;
     const { page = 1, limit = 12 } = req.query;
 
-    const query = { 
-      subjectCode: subjectCode.toUpperCase(), 
-      isActive: true 
+    const query = {
+      subjectCode: subjectCode.toUpperCase(),
+      isActive: true,
+      documentScope: { $in: ['marketplace', null] },
     };
 
     const skip = (Number(page) - 1) * Number(limit);
@@ -252,9 +498,10 @@ export const getDocumentsBySubject = async (req, res, next) => {
 
 export const getFeaturedDocuments = async (req, res, next) => {
   try {
-    const documents = await Document.find({ 
+    const documents = await Document.find({
       isActive: true,
-      $or: [{ isFeatured: true }, { rating: { $gte: 4 } }]
+      documentScope: 'marketplace',
+      $or: [{ isFeatured: true }, { rating: { $gte: 4 } }, { avgRating: { $gte: 4 } }]
     })
       .populate('author', 'name avatar')
       .sort({ rating: -1, downloads: -1 })
@@ -270,7 +517,7 @@ export const getPopularDocuments = async (req, res, next) => {
   try {
     const { limit = 10 } = req.query;
 
-    const documents = await Document.find({ isActive: true })
+    const documents = await Document.find({ isActive: true, documentScope: { $in: ['marketplace', null] } })
       .populate('author', 'name avatar')
       .sort({ downloads: -1, salesCount: -1 })
       .limit(Number(limit));
@@ -285,9 +532,9 @@ export const getTopRatedDocuments = async (req, res, next) => {
   try {
     const { limit = 10 } = req.query;
 
-    const documents = await Document.find({ isActive: true })
+    const documents = await Document.find({ isActive: true, documentScope: { $in: ['marketplace', null] } })
       .populate('author', 'name avatar')
-      .sort({ rating: -1, avgRating: -1, totalReviews: -1, reviewCount: -1, downloads: -1 })
+      .sort({ avgRating: -1, rating: -1, reviewCount: -1, totalReviews: -1, downloads: -1 })
       .limit(Number(limit));
 
     res.json(apiSuccess(documents));

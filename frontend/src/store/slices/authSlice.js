@@ -16,7 +16,6 @@ export const register = createAsyncThunk(
   async (userData, { rejectWithValue }) => {
     try {
       const result = await authService.register(userData);
-      localStorage.setItem('user', JSON.stringify(result.user));
       return result;
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Đăng ký thất bại');
@@ -132,10 +131,10 @@ const authSlice = createSlice({
       })
       .addCase(register.fulfilled, (state, action) => {
         state.isLoading = false;
-        state.user = action.payload.user;
-        state.accessToken = action.payload.accessToken;
-        state.refreshToken = action.payload.refreshToken;
-        state.isAuthenticated = true;
+        state.user = null;
+        state.accessToken = null;
+        state.refreshToken = null;
+        state.isAuthenticated = false;
         state.success = true;
       })
       .addCase(register.rejected, (state, action) => {
@@ -185,10 +184,12 @@ const authSlice = createSlice({
       })
       .addCase(verifyEmail.fulfilled, (state, action) => {
         state.isLoading = false;
-        if (state.user) {
-          state.user.isEmailVerified = true;
+        if (action.payload.user && action.payload.accessToken) {
+          state.user = action.payload.user;
+          state.accessToken = action.payload.accessToken;
+          state.refreshToken = action.payload.refreshToken;
+          state.isAuthenticated = true;
         }
-        localStorage.setItem('user', JSON.stringify(state.user));
       })
       .addCase(verifyEmail.rejected, (state, action) => {
         state.isLoading = false;
