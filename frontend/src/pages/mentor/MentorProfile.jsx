@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 import toast from 'react-hot-toast';
+import FollowListModal from '../../components/user/FollowListModal';
 import {
   ArrowLeft,
   Award,
@@ -14,6 +16,7 @@ import {
   Star,
 } from 'lucide-react';
 import { documentService, mentorService } from '../../services/api';
+import { userService } from '../../services/userService';
 
 const typeLabels = {
   pdf: 'PDF',
@@ -27,25 +30,32 @@ const typeLabels = {
 export default function MentorProfile() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { user: currentUser } = useSelector((state) => state.auth);
   const [mentor, setMentor] = useState(null);
   const [stats, setStats] = useState(null);
   const [documents, setDocuments] = useState([]);
   const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [followModalType, setFollowModalType] = useState(null);
 
   useEffect(() => {
     const loadProfile = async () => {
       setLoading(true);
       try {
-        const [mentorRes, docRes, reviewRes] = await Promise.all([
+        const [mentorRes, docRes, reviewRes, userProfile] = await Promise.all([
           mentorService.getById(id),
           documentService.getMentorDocuments(id, { limit: 100 }),
           mentorService.getReviews(id, { limit: 8 }),
+          userService.getUserProfile(id),
         ]);
 
         const payload = mentorRes.data?.data || {};
         setMentor(payload.mentor || null);
-        setStats(payload.stats || null);
+        setStats({
+          ...(payload.stats || {}),
+          followerCount: userProfile?.stats?.followerCount ?? 0,
+          followeeCount: userProfile?.stats?.followeeCount ?? 0,
+        });
         setDocuments(docRes.data?.data?.documents || []);
         setReviews(reviewRes.data?.data?.reviews || payload.recentReviews || []);
       } catch (error) {
@@ -91,6 +101,24 @@ export default function MentorProfile() {
                   <span>{stats?.totalSessions || profile.totalSessions || 0} buổi học</span>
                   <span>{Number(profile.pricePerHour || 0).toLocaleString()}đ/giờ</span>
                 </div>
+                <div className="flex flex-wrap gap-3 mt-3">
+                  <button
+                    type="button"
+                    onClick={() => setFollowModalType('followers')}
+                    className="glass-subtle rounded-xl px-4 py-2 text-left hover:bg-white/10 transition-colors"
+                  >
+                    <p className="font-bold text-gray-900 dark:text-white">{stats?.followerCount ?? 0}</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">Followers</p>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setFollowModalType('following')}
+                    className="glass-subtle rounded-xl px-4 py-2 text-left hover:bg-white/10 transition-colors"
+                  >
+                    <p className="font-bold text-gray-900 dark:text-white">{stats?.followeeCount ?? 0}</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">Following</p>
+                  </button>
+                </div>
               </div>
             </div>
 
@@ -101,6 +129,14 @@ export default function MentorProfile() {
           </div>
         </div>
       </section>
+
+      <FollowListModal
+        isOpen={Boolean(followModalType)}
+        onClose={() => setFollowModalType(null)}
+        userId={id}
+        type={followModalType || 'followers'}
+        currentUserId={currentUser?.id || currentUser?._id}
+      />
 
       <main className="container mx-auto px-4 py-8 grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">

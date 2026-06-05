@@ -7,6 +7,21 @@ export const userService = {
     return data?.user ? { ...data.user, stats: data.stats } : data;
   },
 
+  getFollowers: async (userId, params = {}) => {
+    const response = await api.get(`/users/${userId}/followers`, { params });
+    return response.data.data;
+  },
+
+  getFollowing: async (userId, params = {}) => {
+    const response = await api.get(`/users/${userId}/following`, { params });
+    return response.data.data;
+  },
+
+  getUserProfile: async (userId) => {
+    const response = await api.get(`/users/${userId}`);
+    return response.data.data;
+  },
+
   updateProfile: async (data) => {
     const response = await api.put('/users/profile', data);
     const updated = response.data.data;

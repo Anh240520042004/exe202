@@ -16,7 +16,6 @@ const SEPAY_CONFIG = {
   webhookUrl: process.env.SEPAY_WEBHOOK_URL || 'http://localhost:5000/api/payments/sepay-webhook',
   baseUrl: process.env.SEPAY_BASE_URL || 'https://api.sepay.vn',
 };
-
 // =========================
 // VNPay Functions (SDK)
 // =========================
@@ -31,7 +30,6 @@ export function createVNPayUrl(paymentData) {
     testMode: true,
     hashAlgorithm: 'SHA512',
   });
-
   const date = new Date();
   const tomorrow = new Date(date.getTime() + 24 * 60 * 60 * 1000);
 

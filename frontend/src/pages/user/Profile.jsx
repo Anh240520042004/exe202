@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import FollowListModal from '../../components/user/FollowListModal';
 import { useDispatch, useSelector } from 'react-redux';
 import { Camera, User, Mail, Lock, Save, Download, BookOpen, Users, Receipt, CreditCard, ArrowUpRight, ArrowDownRight, TrendingUp, TrendingDown, Calendar } from 'lucide-react';
 import toast from 'react-hot-toast';
@@ -105,6 +106,7 @@ export default function Profile() {
   });
 
   const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [followModalType, setFollowModalType] = useState(null);
 
   useEffect(() => {
     dispatch(fetchProfile());
@@ -214,6 +216,27 @@ export default function Profile() {
             </div>
           </div>
         </div>
+
+        <Card title="Kết nối">
+          <div className="grid grid-cols-2 gap-4">
+            <button
+              type="button"
+              onClick={() => setFollowModalType('followers')}
+              className="bg-white/40 dark:bg-white/5 border border-gray-150 dark:border-white/5 rounded-2xl p-4 text-center hover:shadow-sm transition-all"
+            >
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">{profile?.stats?.followerCount ?? 0}</p>
+              <p className="text-xs uppercase font-bold text-gray-400 dark:text-gray-500 mt-1">Followers</p>
+            </button>
+            <button
+              type="button"
+              onClick={() => setFollowModalType('following')}
+              className="bg-white/40 dark:bg-white/5 border border-gray-150 dark:border-white/5 rounded-2xl p-4 text-center hover:shadow-sm transition-all"
+            >
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">{profile?.stats?.followeeCount ?? 0}</p>
+              <p className="text-xs uppercase font-bold text-gray-400 dark:text-gray-500 mt-1">Following</p>
+            </button>
+          </div>
+        </Card>
 
         {/* Structured Grid Layout */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -404,6 +427,14 @@ export default function Profile() {
             </Card>
           </div>
         </div>
+
+        <FollowListModal
+          isOpen={Boolean(followModalType)}
+          onClose={() => setFollowModalType(null)}
+          userId={profile?._id}
+          type={followModalType || 'followers'}
+          currentUserId={profile?._id}
+        />
 
         {/* Change Password Modal */}
         <Modal

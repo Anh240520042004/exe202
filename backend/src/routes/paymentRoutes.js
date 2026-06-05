@@ -6,8 +6,7 @@ import {
   createSePayPayment,
 } from '../services/paymentService.js';
 import { VNPay, ProductCode, VnpLocale, dateFormat } from 'vnpay';
-import Order from '../models/Order.js';
-import Payment from '../models/Payment.js';
+import Order from '../models/Order.js';import Payment from '../models/Payment.js';
 import Transaction from '../models/Transaction.js';
 import Document from '../models/Document.js';
 import Notification from '../models/Notification.js';
@@ -43,8 +42,12 @@ const createNotification = async (userId, title, message, type = 'info') => {
   await Notification.create({ user: userId, title, message, type });
 };
 
+const isConfiguredSePayApiKey = (apiKey) => Boolean(
+  apiKey && apiKey !== 'your_sepay_api_key' && apiKey !== 'YOUR_SEPAY_API_KEY'
+);
+
 // ─── Create QR payment (VNPay direct) ─────────────────────────────────────────
-router.post('/create-qr', async (req, res, next) => {
+router.post('/create-qr', protect, async (req, res, next) => {
   try {
     const { orderId } = req.body;
     if (!orderId) return next(apiError('Order ID is required', 400));
@@ -295,14 +298,16 @@ router.post('/sepay-webhook', async (req, res) => {
   console.log('========================================\n');
 
   try {
-    // FIX 1: Xác thực API key trong Authorization header
-    const apiKey = process.env.SEPAY_API_KEY;
-    if (apiKey && apiKey !== 'your_sepay_api_key') {
-      const authHeader = req.headers['authorization'];
-      if (authHeader !== `Apikey ${apiKey}`) {
-        console.warn('[SePay] Unauthorized webhook request');
-        return res.status(200).json({ success: false, message: 'Unauthorized' });
-      }
+    const apiKey = process.env.SEPAY_API_KEY || '';
+    if (!isConfiguredSePayApiKey(apiKey)) {
+      console.warn('[SePay] SEPAY_API_KEY is not configured');
+      return res.status(200).json({ success: false, message: 'SePay webhook is not configured' });
+    }
+
+    const authHeader = req.headers.authorization;
+    if (authHeader !== `Apikey ${apiKey}`) {
+      console.warn('[SePay] Unauthorized webhook request');
+      return res.status(200).json({ success: false, message: 'Unauthorized' });
     }
 
     // FIX 2: Dùng đúng tên field theo SePay API docs
@@ -372,9 +377,20 @@ router.post('/sepay-webhook', async (req, res) => {
       return res.status(200).json({ success: true, message: 'Already processed' });
     }
 
-    // Lấy số tiền từ webhook (SePay gửi string hoặc number)
-    const receivedAmount = parseFloat(amount);
+    const receivedAmount = Number(amount);
     console.log('[SePay] Received amount:', receivedAmount, '| Order amount:', order.totalAmount);
+
+    if (!Number.isFinite(receivedAmount) || Math.round(receivedAmount) !== Math.round(order.totalAmount)) {
+      console.warn('[SePay] Amount mismatch:', receivedAmount, '| Expected:', order.totalAmount);
+      return res.status(200).json({ success: false, message: 'Amount mismatch' });
+    }
+
+    const expectedAccountNumber = `${process.env.SEPAY_ACCOUNT_NUMBER || ''}`.trim();
+    const actualAccountNumber = `${accountNumber || ''}`.trim();
+    if (expectedAccountNumber && actualAccountNumber && actualAccountNumber !== expectedAccountNumber) {
+      console.warn('[SePay] Account mismatch:', actualAccountNumber, '| Expected:', expectedAccountNumber);
+      return res.status(200).json({ success: false, message: 'Account mismatch' });
+    }
 
     // Cập nhật Payment
     const payment = await Payment.findById(transaction.paymentId);
@@ -516,63 +532,8 @@ router.get('/check/:transactionCode', protect, async (req, res, next) => {
   }
 });
 
-// ─── Debug: Test webhook manually ─────────────────────────────────────────────
-router.post('/test-webhook', async (req, res) => {
-  console.log('[Test] Simulating SePay webhook...');
-  console.log('[Test] Body:', JSON.stringify(req.body, null, 2));
-
-  // Gọi webhook logic tương tự
-  const {
-    transferType = 'in',
-    amount = '50000',
-    content = 'FPTAIEZ12345678',
-    code = 'FPTAIEZ12345678',
-    description = '',
-  } = req.body;
-
-  const rawContent = content || code || description || '';
-  const orderIdMatch = rawContent.match(/FPTAIEZ([a-zA-Z0-9]+)/i);
-
-  if (!orderIdMatch) {
-    return res.json({ success: false, message: 'No FPTAIEZ code found' });
-  }
-
-  const transactionCode = orderIdMatch[0].toUpperCase();
-  console.log('[Test] Looking for transaction:', transactionCode);
-
-  const transaction = await Transaction.findOne({
-    transactionCode,
-    status: 'pending',
-    paymentMethod: 'sepay'
-  }).populate('orderId');
-
-  if (!transaction) {
-    return res.json({ success: false, message: 'Transaction not found', transactionCode });
-  }
-
-  console.log('[Test] Found transaction:', transaction._id);
-  console.log('[Test] Order:', transaction.orderId?._id);
-  console.log('[Test] Order status:', transaction.orderId?.paymentStatus);
-
-  // Simulate update
-  const order = transaction.orderId;
-  order.paymentStatus = 'paid';
-  order.status = 'completed';
-  await order.save();
-
-  transaction.status = 'completed';
-  await transaction.save();
-
-  return res.json({
-    success: true,
-    message: 'Test successful!',
-    transactionId: transaction._id,
-    orderId: order._id
-  });
-});
-
 // ─── Debug: Get all pending transactions ──────────────────────────────────────
-router.get('/debug-transactions', protect, async (req, res) => {
+router.get('/debug-transactions', protect, adminOnly, async (req, res) => {
   const transactions = await Transaction.find({
     user: req.user.id,
     paymentMethod: 'sepay'

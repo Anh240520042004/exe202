@@ -5,6 +5,7 @@ import { Heart, MessageCircle, Eye, User, Clock, Shield } from 'lucide-react';
 import axios from 'axios';
 import { useSelector } from 'react-redux';
 import toast from 'react-hot-toast';
+import FollowListModal from '../../components/user/FollowListModal';
 
 const API_URL = (import.meta.env.VITE_API_URL || 'http://localhost:5000').replace(/\/api\/?$/, '');
 
@@ -18,6 +19,7 @@ export default function UserProfile() {
   const [stats, setStats] = useState(null);
   const [isFollowing, setIsFollowing] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [followModalType, setFollowModalType] = useState(null);
 
   // Use ref so token value is always current inside effect (not stale closure)
   const tokenRef = useRef(accessToken);
@@ -101,6 +103,9 @@ export default function UserProfile() {
     }
   };
 
+  const openFollowModal = (type) => setFollowModalType(type);
+  const closeFollowModal = () => setFollowModalType(null);
+
   if (loading) {
     return (
       <div className="min-h-[420px] glass-card flex items-center justify-center">
@@ -147,14 +152,14 @@ export default function UserProfile() {
                 )}
 
                 <div className="flex flex-wrap items-center justify-center sm:justify-start gap-6 mb-5">
-                  <div className="text-center">
+                  <button type="button" onClick={() => openFollowModal('followers')} className="text-center hover:opacity-80 transition-opacity">
                     <span className="text-xl font-bold text-gray-900 dark:text-white">{stats?.followerCount ?? 0}</span>
                     <p className="text-gray-500 dark:text-gray-400 text-xs">Followers</p>
-                  </div>
-                  <div className="text-center">
+                  </button>
+                  <button type="button" onClick={() => openFollowModal('following')} className="text-center hover:opacity-80 transition-opacity">
                     <span className="text-xl font-bold text-gray-900 dark:text-white">{stats?.followeeCount ?? 0}</span>
                     <p className="text-gray-500 dark:text-gray-400 text-xs">Following</p>
-                  </div>
+                  </button>
                   <div className="text-center">
                     <span className="text-xl font-bold text-gray-900 dark:text-white">{stats?.postCount ?? 0}</span>
                     <p className="text-gray-500 dark:text-gray-400 text-xs">Bài viết</p>
@@ -186,6 +191,14 @@ export default function UserProfile() {
           </div>
         </div>
       </div>
+
+      <FollowListModal
+        isOpen={Boolean(followModalType)}
+        onClose={closeFollowModal}
+        userId={userId}
+        type={followModalType || 'followers'}
+        currentUserId={currentUserId}
+      />
 
       {/* Posts */}
       <div className="max-w-4xl mx-auto py-2">
