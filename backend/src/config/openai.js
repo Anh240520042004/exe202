@@ -3,12 +3,12 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-const openaiClient = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY || '',
-});
-
 const hasValue = (value) => Boolean(value && !value.startsWith('your_') && value !== 'your_openai_api_key_here');
+const isGoogleAiKey = (value) => hasValue(value);
+const isOpenAiKey = (value) => hasValue(value) && /^sk-[A-Za-z0-9]/.test(value);
+
 const geminiApiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY || '';
+const openAiApiKey = process.env.OPENAI_API_KEY || '';
 const geminiModel = (process.env.GEMINI_MODEL || 'gemini-2.5-flash').replace(/^models\//, '');
 
 const toGeminiRequest = ({ messages, max_tokens, temperature }) => {
@@ -70,16 +70,38 @@ const callGemini = async (params) => {
   };
 };
 
+const callOpenAI = async (params) => {
+  const openaiClient = new OpenAI({
+    apiKey: openAiApiKey,
+  });
+
+  return openaiClient.chat.completions.create(params);
+};
+
 const createCompletion = async (params) => {
-  if (hasValue(geminiApiKey)) {
-    return callGemini(params);
+  const providerErrors = [];
+
+  if (isGoogleAiKey(geminiApiKey)) {
+    try {
+      return await callGemini(params);
+    } catch (error) {
+      providerErrors.push(`Gemini: ${error.message}`);
+    }
   }
 
-  if (hasValue(process.env.OPENAI_API_KEY)) {
-    return openaiClient.chat.completions.create(params);
+  if (isOpenAiKey(openAiApiKey)) {
+    try {
+      return await callOpenAI(params);
+    } catch (error) {
+      providerErrors.push(`OpenAI: ${error.message}`);
+    }
   }
 
-  throw new Error('No AI API key configured. Set GEMINI_API_KEY or OPENAI_API_KEY.');
+  if (providerErrors.length > 0) {
+    throw new Error(providerErrors.join(' | '));
+  }
+
+  throw new Error('No valid AI API key configured. Set GEMINI_API_KEY or OPENAI_API_KEY.');
 };
 
 const openai = {
