@@ -111,7 +111,7 @@ export const documentService = {
   delete: (id) => api.delete(`/documents/${id}`),
   addToFavorites: (documentId) => api.post('/documents/favorites', { documentId }),
   addReview: (id, data) => api.post(`/reviews/documents/${id}/reviews`, data),
-  likeReview: (id, reviewId, type) => api.put(`/documents/${id}/reviews/${reviewId}/like`, { type }),
+  likeReview: (id, reviewId, type) => api.put(`/documents/${id}/reviews/${reviewId}/like?type=${type}`),
   download: (id) => api.get(`/documents/${id}/download`),
 };
 

@@ -318,15 +318,15 @@ export default function Homepage() {
 
       if (docsRes.status === 'fulfilled' && docsRes.value.ok) {
         const data = await docsRes.value.json();
-        setDocuments(data?.data?.slice(0, 6) || []);
+        setDocuments(Array.isArray(data?.data) ? data.data.slice(0, 6) : []);
       }
       if (mentorsRes.status === 'fulfilled' && mentorsRes.value.ok) {
         const data = await mentorsRes.value.json();
-        setMentors((data?.data || []).slice(0, 6));
+        setMentors(Array.isArray(data?.data) ? data.data.slice(0, 6) : []);
       }
       if (postsRes.status === 'fulfilled' && postsRes.value.ok) {
         const data = await postsRes.value.json();
-        setPosts((data?.data?.posts || []).slice(0, 6));
+        setPosts(Array.isArray(data?.data?.posts) ? data.data.posts.slice(0, 6) : []);
       }
     } catch (err) {
       console.error('Homepage fetch error:', err);

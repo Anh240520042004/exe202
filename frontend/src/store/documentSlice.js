@@ -131,16 +131,8 @@ const documentSlice = createSlice({
       .addCase(fetchDocuments.fulfilled, (state, action) => {
         state.isLoading = false;
         const payload = action.payload;
-        // Handle various response structures
-        state.documents = payload?.data?.documents 
-          || payload?.documents 
-          || payload?.data 
-          || [];
-        if (payload?.data?.pagination) {
-          state.pagination = payload.data.pagination;
-        } else if (payload?.pagination) {
-          state.pagination = { ...state.pagination, ...payload.pagination };
-        }
+        state.documents = Array.isArray(payload?.data?.documents) ? payload.data.documents : [];
+        state.pagination = payload?.data?.pagination || state.pagination;
       })
       .addCase(fetchDocuments.rejected, (state, action) => {
         state.isLoading = false;
@@ -158,10 +150,10 @@ const documentSlice = createSlice({
         state.error = action.payload;
       })
       .addCase(fetchFeaturedDocuments.fulfilled, (state, action) => {
-        state.featured = action.payload.data || [];
+        state.featured = Array.isArray(action.payload?.data) ? action.payload.data : [];
       })
       .addCase(fetchPopularDocuments.fulfilled, (state, action) => {
-        state.popular = action.payload.data || [];
+        state.popular = Array.isArray(action.payload?.data) ? action.payload.data : [];
       })
       .addCase(addToFavorites.fulfilled, (state, action) => {
         const index = state.favorites.findIndex(id => id === action.payload.documentId);

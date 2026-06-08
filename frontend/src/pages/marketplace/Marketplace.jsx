@@ -83,7 +83,7 @@ const Marketplace = () => {
   const loadCatalog = async () => {
     try {
       const response = await documentService.getAll({ limit: 500 });
-      const docList = response.data?.data?.documents || response.data?.documents || [];
+      const docList = response.data?.data?.documents || [];
       setAllDocuments(Array.isArray(docList) ? docList : []);
     } catch (error) {
       console.error('Failed to load marketplace catalog:', error);
@@ -106,8 +106,8 @@ const Marketplace = () => {
 
       const response = await documentService.getAll(params);
       const data = response.data;
-      const docList = data?.documents || data?.data?.documents || data?.data || data || [];
-      const pageInfo = data?.pagination || data?.data?.pagination || { page: 1, total: 0, pages: 0 };
+      const docList = data?.data?.documents || [];
+      const pageInfo = data?.data?.pagination || { page: 1, total: 0, pages: 0 };
 
       setDocuments(Array.isArray(docList) ? docList : []);
       setPagination(pageInfo);
