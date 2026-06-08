@@ -18,6 +18,13 @@ const geminiModel = normalizeEnvValue(process.env.GEMINI_MODEL || 'gemini-2.5-fl
 const openAiModel = normalizeEnvValue(process.env.OPENAI_MODEL || 'gpt-4o-mini');
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
+const maskKey = (key) => ({
+  present: hasValue(key),
+  length: key?.length || 0,
+  prefix: key ? key.slice(0, 4) : '',
+  suffix: key ? key.slice(-4) : '',
+});
+
 const toGeminiRequest = ({ messages, max_tokens, temperature }) => {
   const systemText = messages
     .filter((message) => message.role === 'system')
@@ -136,6 +143,73 @@ const createCompletion = async (params) => {
   throw new Error('No valid AI API key configured. Set GEMINI_API_KEY or OPENAI_API_KEY.');
 };
 
+const getAIProviderDiagnostics = async ({ live = false } = {}) => {
+  const diagnostics = {
+    model: {
+      gemini: geminiModel,
+      openai: openAiModel,
+    },
+    env: {
+      GEMINI_API_KEY: maskKey(normalizeEnvValue(process.env.GEMINI_API_KEY)),
+      GOOGLE_API_KEY: maskKey(normalizeEnvValue(process.env.GOOGLE_API_KEY)),
+      OPENAI_API_KEY: maskKey(openAiApiKey),
+    },
+    configuredProviders: {
+      geminiKeyCount: geminiApiKeys.length,
+      openai: isOpenAiKey(openAiApiKey),
+    },
+  };
+
+  if (!live) {
+    return diagnostics;
+  }
+
+  diagnostics.live = [];
+
+  for (const { name, key } of geminiApiKeys) {
+    try {
+      const response = await callGemini({
+        messages: [{ role: 'user', content: 'Reply with exactly: ok' }],
+        max_tokens: 64,
+        temperature: 0,
+      }, key);
+      diagnostics.live.push({
+        provider: 'gemini',
+        env: name,
+        ok: true,
+        sample: response.choices[0].message.content.slice(0, 80),
+      });
+    } catch (error) {
+      diagnostics.live.push({
+        provider: 'gemini',
+        env: name,
+        ok: false,
+        error: error.message.slice(0, 700),
+      });
+    }
+  }
+
+  if (isOpenAiKey(openAiApiKey)) {
+    try {
+      await callOpenAI({
+        messages: [{ role: 'user', content: 'Reply with exactly: ok' }],
+        max_tokens: 16,
+        temperature: 0,
+      });
+      diagnostics.live.push({ provider: 'openai', env: 'OPENAI_API_KEY', ok: true });
+    } catch (error) {
+      diagnostics.live.push({
+        provider: 'openai',
+        env: 'OPENAI_API_KEY',
+        ok: false,
+        error: error.message.slice(0, 700),
+      });
+    }
+  }
+
+  return diagnostics;
+};
+
 const openai = {
   chat: {
     completions: {
@@ -144,4 +218,4 @@ const openai = {
   },
 };
 
-export { openai };
+export { getAIProviderDiagnostics, openai };

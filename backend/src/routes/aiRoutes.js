@@ -6,6 +6,7 @@ const router = express.Router();
 
 router.get('/', protect, aiController.getChats);
 router.get('/prompts', aiController.getSuggestedPrompts);
+router.get('/provider-status', protect, aiController.getProviderStatus);
 router.get('/:id', protect, aiController.getChatById);
 
 router.post('/', protect, aiController.createChat);

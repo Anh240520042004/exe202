@@ -1,7 +1,7 @@
 import AIChat from '../models/AIChat.js';
 import User from '../models/User.js';
 import { apiSuccess, apiError } from '../utils/apiResponse.js';
-import { openai } from '../config/openai.js';
+import { getAIProviderDiagnostics, openai } from '../config/openai.js';
 
 export const createChat = async (req, res, next) => {
   try {
@@ -26,6 +26,18 @@ export const getChats = async (req, res, next) => {
       .sort({ lastMessageAt: -1 });
 
     res.json(apiSuccess(chats));
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getProviderStatus = async (req, res, next) => {
+  try {
+    const diagnostics = await getAIProviderDiagnostics({
+      live: req.query.live === '1' || req.query.live === 'true'
+    });
+
+    res.json(apiSuccess(diagnostics));
   } catch (error) {
     next(error);
   }
