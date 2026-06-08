@@ -10,6 +10,7 @@ const geminiApiKey = (process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY |
 const openAiApiKey = (process.env.OPENAI_API_KEY || '').trim();
 const geminiModel = (process.env.GEMINI_MODEL || 'gemini-2.5-flash').trim().replace(/^models\//, '');
 const openAiModel = (process.env.OPENAI_MODEL || 'gpt-4o-mini').trim();
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 const toGeminiRequest = ({ messages, max_tokens, temperature }) => {
   const systemText = messages
@@ -24,28 +25,46 @@ const toGeminiRequest = ({ messages, max_tokens, temperature }) => {
       parts: [{ text: message.content || '' }],
     }));
 
+  const generationConfig = {
+    temperature: temperature ?? 0.7,
+    maxOutputTokens: max_tokens ?? 1000,
+  };
+
+  if (/^gemini-2\.5/i.test(geminiModel)) {
+    generationConfig.thinkingConfig = { thinkingBudget: 0 };
+  }
+
   return {
     ...(systemText ? { systemInstruction: { parts: [{ text: systemText }] } } : {}),
     contents,
-    generationConfig: {
-      temperature: temperature ?? 0.7,
-      maxOutputTokens: max_tokens ?? 1000,
-    },
+    generationConfig,
   };
 };
 
 const callGemini = async (params) => {
-  const response = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/${geminiModel}:generateContent?key=${geminiApiKey}`,
-    {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(toGeminiRequest(params)),
+  let response;
+  let errorText = '';
+
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/${geminiModel}:generateContent?key=${geminiApiKey}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(toGeminiRequest(params)),
+      }
+    );
+
+    if (response.ok || response.status !== 503 || attempt === 2) {
+      break;
     }
-  );
+
+    errorText = await response.text();
+    await sleep(500 * (attempt + 1));
+  }
 
   if (!response.ok) {
-    const errorText = await response.text();
+    errorText ||= await response.text();
     throw new Error(`Gemini API error ${response.status}: ${errorText}`);
   }
 
@@ -56,7 +75,7 @@ const callGemini = async (params) => {
     .trim();
 
   if (!content) {
-    throw new Error('Gemini API returned an empty response');
+    throw new Error(`Gemini API returned an empty response. Finish reason: ${data.candidates?.[0]?.finishReason || 'unknown'}`);
   }
 
   const usage = data.usageMetadata || {};
