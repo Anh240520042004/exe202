@@ -1,30 +1,23 @@
-import React, { useState, useEffect, useRef } from 'react';
+﻿import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useDispatch, useSelector } from 'react-redux';
 import {
   CheckCircle,
   Loader2,
   ArrowLeft,
   FileText,
-  User,
   AlertCircle,
   Mail,
   QrCode,
-  Clock,
   Copy,
-  ArrowRight,
-  Coins,
-  Gift,
   Sparkles,
   Download
 } from 'lucide-react';
 import toast from 'react-hot-toast';
-import api, { orderService, documentService, mentorService, rewardService } from '../../services/api';
+import api, { orderService, documentService, mentorService } from '../../services/api';
 
 export default function Checkout() {
   const { type, id } = useParams();
   const navigate = useNavigate();
-  const { user } = useSelector((state) => state.auth);
 
   const [itemDetails, setItemDetails] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -32,13 +25,7 @@ export default function Checkout() {
   const [orderCreated, setOrderCreated] = useState(false);
   const [orderDetails, setOrderDetails] = useState(null);
   const [sepayPaymentData, setSepayPaymentData] = useState(null);
-  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('sepay');
-
-  // Reward points state
-  const [pointBalance, setPointBalance] = useState(0);
-  const [pointsRequired, setPointsRequired] = useState(null);
-  const [redeemingWithPoints, setRedeemingWithPoints] = useState(false);
-  const [showPointsSuccess, setShowPointsSuccess] = useState(false);
+  const selectedPaymentMethod = 'sepay';
 
   // Payment confirmation state
   const [paymentConfirmed, setPaymentConfirmed] = useState(false);
@@ -52,26 +39,16 @@ export default function Checkout() {
     fetchItemDetails();
   }, [type, id]);
 
-  useEffect(() => {
-    if (itemDetails && user) fetchPointBalance();
-  }, [itemDetails, user]);
-
-  useEffect(() => {
-    if (selectedPaymentMethod === 'points' && orderDetails) {
-      fetchPointsRequired(orderDetails._id);
-    }
-  }, [selectedPaymentMethod, orderDetails]);
-
   const handleSePaySuccess = () => {
     setPaymentConfirmed(true);
     if (pollingRef.current) {
       clearInterval(pollingRef.current);
       pollingRef.current = null;
     }
-    toast.success('🎉 Thanh toán thành công! Tài liệu đã được thêm vào thư viện.');
+    toast.success('ðŸŽ‰ Thanh toÃ¡n thÃ nh cÃ´ng! TÃ i liá»‡u Ä‘Ã£ Ä‘Æ°á»£c thÃªm vÃ o thÆ° viá»‡n.');
   };
 
-  // ─── Polling kiểm tra thanh toán ────────────────────────────────────────────
+  // â”€â”€â”€ Polling kiá»ƒm tra thanh toÃ¡n â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   useEffect(() => {
     if (
       !orderCreated ||
@@ -79,7 +56,6 @@ export default function Checkout() {
       paymentConfirmed ||
       pollTimeout ||
       selectedPaymentMethod !== 'sepay' ||
-      showPointsSuccess ||
       !sepayPaymentData?.transactionId
     ) {
       if (pollingRef.current) {
@@ -155,28 +131,7 @@ export default function Checkout() {
     return () => {
       stopPolling();
     };
-  }, [orderCreated, orderDetails, paymentConfirmed, pollTimeout, selectedPaymentMethod, showPointsSuccess, sepayPaymentData]);
-
-  const fetchPointBalance = async () => {
-    try {
-      const response = await rewardService.getBalance();
-      const data = response.data?.data || response.data;
-      setPointBalance(data?.currentBalance || 0);
-    } catch {
-      setPointBalance(0);
-    }
-  };
-
-  const fetchPointsRequired = async (orderId) => {
-    if (!orderId) return;
-    try {
-      const response = await rewardService.getPointsRequired(orderId);
-      const data = response.data?.data || response.data;
-      setPointsRequired(data);
-    } catch {
-      setPointsRequired(null);
-    }
-  };
+  }, [orderCreated, orderDetails, paymentConfirmed, pollTimeout, selectedPaymentMethod, sepayPaymentData]);
 
   const fetchItemDetails = async () => {
     setLoading(true);
@@ -207,7 +162,7 @@ export default function Checkout() {
         });
       }
     } catch {
-      toast.error('Không thể tải thông tin sản phẩm');
+      toast.error('KhÃ´ng thá»ƒ táº£i thÃ´ng tin sáº£n pháº©m');
     } finally {
       setLoading(false);
     }
@@ -217,7 +172,7 @@ export default function Checkout() {
     if (!itemDetails) return;
     setPaymentLoading(true);
     try {
-      // Tạo order
+      // Táº¡o order
       const response = await orderService.create({
         documents: [{ documentId: itemDetails.id }],
         paymentMethod: selectedPaymentMethod,
@@ -225,25 +180,6 @@ export default function Checkout() {
       const order = response.data?.data || response.data;
       setOrderDetails(order);
 
-      // Đổi điểm
-      if (selectedPaymentMethod === 'points') {
-        setRedeemingWithPoints(true);
-        const pointsToUse = pointsRequired?.canFullyRedeem
-          ? pointsRequired.pointsNeeded
-          : Math.min(pointBalance, pointsRequired?.maxPointsAllowed || 0);
-
-        const redeemResponse = await rewardService.redeem({ orderId: order._id, pointsToUse });
-        if (redeemResponse.data?.success) {
-          setShowPointsSuccess(true);
-          setOrderCreated(true);
-          toast.success('Đổi điểm thành công! Tài liệu đã được thêm vào thư viện.');
-        } else {
-          toast.error('Không thể đổi điểm. Vui lòng thử lại.');
-          setRedeemingWithPoints(false);
-        }
-        setPaymentLoading(false);
-        return;
-      }
 
       setOrderCreated(true);
       setPollTimeout(false);
@@ -259,16 +195,12 @@ export default function Checkout() {
 
       if (payData.success) {
         setSepayPaymentData(payData.data);
-        if (selectedPaymentMethod === 'vnpay') {
-          window.location.href = payData.data.paymentUrl;
-        } else {
-          toast.success('Đã tạo mã QR. Vui lòng quét để chuyển khoản.');
-        }
+        toast.success('ÄÃ£ táº¡o mÃ£ QR. Vui lÃ²ng quÃ©t Ä‘á»ƒ chuyá»ƒn khoáº£n.');
       } else {
-        toast.error(payData.message || 'Có lỗi xảy ra');
+        toast.error(payData.message || 'CÃ³ lá»—i xáº£y ra');
       }
     } catch (error) {
-      toast.error(error.response?.data?.message || 'Không thể tạo yêu cầu thanh toán');
+      toast.error(error.response?.data?.message || 'KhÃ´ng thá»ƒ táº¡o yÃªu cáº§u thanh toÃ¡n');
     } finally {
       setPaymentLoading(false);
     }
@@ -276,24 +208,24 @@ export default function Checkout() {
 
   const copyToClipboard = (text) => {
     navigator.clipboard.writeText(text);
-    toast.success('Đã sao chép!');
+    toast.success('ÄÃ£ sao chÃ©p!');
   };
 
   const formatPrice = (price) =>
-    new Intl.NumberFormat('vi-VN').format(price) + ' VNĐ';
+    new Intl.NumberFormat('vi-VN').format(price) + ' VNÄ';
 
   const formatPoints = (points) =>
     new Intl.NumberFormat('vi-VN').format(points);
 
   const estimatedPointsEarned = Math.floor((itemDetails?.price || 0) * 0.01);
 
-  // ─── Loading ─────────────────────────────────────────────────────────────────
+  // â”€â”€â”€ Loading â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <Loader2 className="w-12 h-12 animate-spin text-primary-600 mx-auto mb-4" />
-          <p className="text-gray-500">Đang tải thông tin...</p>
+          <p className="text-gray-500">Äang táº£i thÃ´ng tin...</p>
         </div>
       </div>
     );
@@ -304,16 +236,16 @@ export default function Checkout() {
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
-          <p className="text-gray-500">Không tìm thấy sản phẩm</p>
+          <p className="text-gray-500">KhÃ´ng tÃ¬m tháº¥y sáº£n pháº©m</p>
           <button onClick={() => navigate(-1)} className="mt-4 px-4 py-2 bg-primary-400/70 text-white rounded-xl">
-            Quay lại
+            Quay láº¡i
           </button>
         </div>
       </div>
     );
   }
 
-  // ─── Payment confirmed screen ─────────────────────────────────────────────────
+  // â”€â”€â”€ Payment confirmed screen â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   if (paymentConfirmed) {
     return (
       <div className="min-h-screen flex items-center justify-center p-4">
@@ -324,27 +256,27 @@ export default function Checkout() {
           </div>
 
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-            Thanh toán thành công!
+            Thanh toÃ¡n thÃ nh cÃ´ng!
           </h1>
           <p className="text-gray-500 dark:text-gray-400 mb-1">
-            Tài liệu đã được thêm vào thư viện của bạn.
+            TÃ i liá»‡u Ä‘Ã£ Ä‘Æ°á»£c thÃªm vÃ o thÆ° viá»‡n cá»§a báº¡n.
           </p>
           <p className="text-gray-500 dark:text-gray-400 mb-6">
-            Email xác nhận đã được gửi đến hộp thư của bạn.
+            Email xÃ¡c nháº­n Ä‘Ã£ Ä‘Æ°á»£c gá»­i Ä‘áº¿n há»™p thÆ° cá»§a báº¡n.
           </p>
 
           {/* Order info */}
           <div className="glass-subtle rounded-2xl p-4 mb-6 text-left">
             <div className="flex justify-between items-center mb-2">
-              <span className="text-sm text-gray-500">Tài liệu</span>
+              <span className="text-sm text-gray-500">TÃ i liá»‡u</span>
               <span className="text-sm font-medium text-gray-900 dark:text-white">{itemDetails.title}</span>
             </div>
             <div className="flex justify-between items-center mb-2">
-              <span className="text-sm text-gray-500">Số tiền</span>
+              <span className="text-sm text-gray-500">Sá»‘ tiá»n</span>
               <span className="text-sm font-bold text-green-600">{formatPrice(orderDetails?.totalAmount || itemDetails.price)}</span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-500">Mã đơn</span>
+              <span className="text-sm text-gray-500">MÃ£ Ä‘Æ¡n</span>
               <code className="text-xs bg-gray-200 dark:bg-gray-600 px-2 py-0.5 rounded">
                 {orderDetails?._id?.slice(-8).toUpperCase()}
               </code>
@@ -356,24 +288,24 @@ export default function Checkout() {
             <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-2xl p-3 mb-6 flex items-center gap-3">
               <Sparkles className="w-5 h-5 text-amber-500 flex-shrink-0" />
               <p className="text-sm text-amber-700 dark:text-amber-300">
-                Bạn vừa nhận được <strong>{formatPoints(estimatedPointsEarned)} điểm</strong> thưởng!
+                Báº¡n vá»«a nháº­n Ä‘Æ°á»£c <strong>{formatPoints(estimatedPointsEarned)} Ä‘iá»ƒm</strong> thÆ°á»Ÿng!
               </p>
             </div>
           )}
 
           <div className="flex flex-col gap-3">
             <button
-              onClick={() => navigate('/library')}
+              onClick={() => navigate('/my-documents')}
               className="w-full py-3 bg-primary-400/70 text-white rounded-2xl font-medium hover:bg-primary-500/75 flex items-center justify-center gap-2 transition-colors"
             >
               <Download className="w-5 h-5" />
-              Tải tài liệu ngay
+              Táº£i tÃ i liá»‡u ngay
             </button>
             <button
               onClick={() => navigate('/dashboard')}
               className="w-full py-3 glass-subtle text-gray-700 dark:text-gray-300 rounded-2xl font-medium hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
             >
-              Về trang chủ
+              Vá» trang chá»§
             </button>
           </div>
         </div>
@@ -381,41 +313,7 @@ export default function Checkout() {
     );
   }
 
-  // ─── Points success screen ────────────────────────────────────────────────────
-  if (showPointsSuccess) {
-    return (
-      <div className="min-h-screen flex items-center justify-center p-4">
-        <div className="glass-card rounded-3xl shadow-lg p-8 max-w-md w-full text-center">
-          <div className="w-24 h-24 mx-auto mb-6 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center">
-            <Gift className="w-14 h-14 text-amber-500" />
-          </div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-            Đổi điểm thành công!
-          </h1>
-          <p className="text-gray-500 dark:text-gray-400 mb-6">
-            Bạn đã dùng <strong className="text-amber-600">{formatPoints(pointsRequired?.pointsNeeded || 0)} điểm</strong> để nhận tài liệu miễn phí.
-          </p>
-          <div className="flex flex-col gap-3">
-            <button
-              onClick={() => navigate('/library')}
-              className="w-full py-3 bg-amber-500 text-white rounded-2xl font-medium hover:bg-amber-600 flex items-center justify-center gap-2"
-            >
-              <Download className="w-5 h-5" />
-              Tải tài liệu ngay
-            </button>
-            <button
-              onClick={() => navigate('/dashboard')}
-              className="w-full py-3 glass-subtle text-gray-700 dark:text-gray-300 rounded-2xl font-medium hover:bg-gray-200"
-            >
-              Về trang chủ
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // ─── Main checkout UI ─────────────────────────────────────────────────────────
+  // â”€â”€â”€ Main checkout UI â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   return (
     <div className="min-h-screen py-8">
       <div className="container mx-auto px-4 max-w-4xl">
@@ -424,17 +322,17 @@ export default function Checkout() {
           className="flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-primary-600 mb-6"
         >
           <ArrowLeft className="w-5 h-5" />
-          Quay lại
+          Quay láº¡i
         </button>
 
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-8">Thanh toán</h1>
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-8">Thanh toÃ¡n</h1>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Left column */}
           <div className="lg:col-span-2 space-y-6">
             {/* Product info */}
             <div className="glass-card rounded-2xl shadow-sm p-6">
-              <h2 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Thông tin sản phẩm</h2>
+              <h2 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">ThÃ´ng tin sáº£n pháº©m</h2>
               <div className="flex gap-4">
                 <div className="w-24 h-24 glass-subtle rounded-xl overflow-hidden flex-shrink-0 flex items-center justify-center">
                   {itemDetails.previewImage ? (
@@ -449,7 +347,7 @@ export default function Checkout() {
                     {itemDetails.documentType && (
                       <p className="text-sm text-gray-500 mt-1">
                         {itemDetails.documentType === 'pdf' ? 'PDF' : itemDetails.documentType}
-                        {itemDetails.pageCount > 0 && ` · ${itemDetails.pageCount} trang`}
+                        {itemDetails.pageCount > 0 && ` Â· ${itemDetails.pageCount} trang`}
                       </p>
                     )}
                   </div>
@@ -463,10 +361,10 @@ export default function Checkout() {
               <Sparkles className="w-5 h-5 text-amber-600 flex-shrink-0" />
               <div>
                 <p className="font-medium text-amber-800 dark:text-amber-200 text-sm">
-                  Mua tài liệu này nhận ngay <strong>{formatPoints(estimatedPointsEarned)} điểm</strong> thưởng
+                  Mua tÃ i liá»‡u nÃ y nháº­n ngay <strong>{formatPoints(estimatedPointsEarned)} Ä‘iá»ƒm</strong> thÆ°á»Ÿng
                 </p>
                 <p className="text-xs text-amber-600 dark:text-amber-400 mt-0.5">
-                  1 VNĐ = 0.01 điểm · Dùng điểm đổi tài liệu miễn phí
+                  1 VNÄ = 0.01 Ä‘iá»ƒm Â· DÃ¹ng Ä‘iá»ƒm Ä‘á»•i tÃ i liá»‡u miá»…n phÃ­
                 </p>
               </div>
             </div>
@@ -474,46 +372,19 @@ export default function Checkout() {
             {/* Payment method selection */}
             {!orderCreated && (
               <div className="glass-card rounded-2xl shadow-sm p-6">
-                <h2 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Phương thức thanh toán</h2>
+                <h2 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">PhÆ°Æ¡ng thá»©c thanh toÃ¡n</h2>
                 <div className="space-y-3">
-                  {/* Points */}
-                  <label className={`flex items-center gap-4 p-4 border-2 rounded-2xl cursor-pointer transition-all ${selectedPaymentMethod === 'points' ? 'border-amber-500 bg-amber-50 dark:bg-amber-900/20' : 'glass-divider border'}`}>
-                    <input type="radio" name="paymentMethod" value="points" checked={selectedPaymentMethod === 'points'} onChange={(e) => setSelectedPaymentMethod(e.target.value)} className="sr-only" />
-                    <div className="w-12 h-12 bg-gradient-to-br from-amber-400 to-orange-500 rounded-xl flex items-center justify-center flex-shrink-0">
-                      <Coins className="w-6 h-6 text-white" />
-                    </div>
-                    <div className="flex-1">
-                      <p className="font-medium text-gray-900 dark:text-white">Đổi điểm thưởng</p>
-                      <p className="text-sm text-gray-500">Bạn có {formatPoints(pointBalance)} điểm</p>
-                    </div>
-                    {selectedPaymentMethod === 'points' && <CheckCircle className="w-6 h-6 text-amber-600" />}
-                  </label>
-
                   {/* SePay */}
-                  <label className={`flex items-center gap-4 p-4 border-2 rounded-2xl cursor-pointer transition-all ${selectedPaymentMethod === 'sepay' ? 'border-primary-500 bg-primary-200/25 dark:bg-primary-400/10' : 'glass-divider border'}`}>
-                    <input type="radio" name="paymentMethod" value="sepay" checked={selectedPaymentMethod === 'sepay'} onChange={(e) => setSelectedPaymentMethod(e.target.value)} className="sr-only" />
+                  <div className="flex items-center gap-4 p-4 border-2 rounded-2xl border-primary-500 bg-primary-200/25 dark:bg-primary-400/10">
                     <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-xl flex items-center justify-center flex-shrink-0">
                       <span className="text-lg font-bold text-white">S</span>
                     </div>
                     <div className="flex-1">
-                      <p className="font-medium text-gray-900 dark:text-white">Chuyển khoản (SePay/VietQR)</p>
-                      <p className="text-sm text-gray-500">Quét mã QR · Tự động xác nhận</p>
+                      <p className="font-medium text-gray-900 dark:text-white">Chuyá»ƒn khoáº£n (SePay/VietQR)</p>
+                      <p className="text-sm text-gray-500">QuÃ©t mÃ£ QR Â· Tá»± Ä‘á»™ng xÃ¡c nháº­n</p>
                     </div>
-                    {selectedPaymentMethod === 'sepay' && <CheckCircle className="w-6 h-6 text-primary-600" />}
-                  </label>
-
-                  {/* VNPay */}
-                  <label className={`flex items-center gap-4 p-4 border-2 rounded-2xl cursor-pointer transition-all ${selectedPaymentMethod === 'vnpay' ? 'border-primary-500 bg-primary-200/25 dark:bg-primary-400/10' : 'glass-divider border'}`}>
-                    <input type="radio" name="paymentMethod" value="vnpay" checked={selectedPaymentMethod === 'vnpay'} onChange={(e) => setSelectedPaymentMethod(e.target.value)} className="sr-only" />
-                    <div className="w-12 h-12 bg-gradient-to-br from-red-500 to-orange-500 rounded-xl flex items-center justify-center flex-shrink-0">
-                      <span className="text-lg font-bold text-white">V</span>
-                    </div>
-                    <div className="flex-1">
-                      <p className="font-medium text-gray-900 dark:text-white">Thanh toán VNPay</p>
-                      <p className="text-sm text-gray-500">Cổng thanh toán VNPay</p>
-                    </div>
-                    {selectedPaymentMethod === 'vnpay' && <CheckCircle className="w-6 h-6 text-primary-600" />}
-                  </label>
+                    <CheckCircle className="w-6 h-6 text-primary-600" />
+                  </div>
                 </div>
               </div>
             )}
@@ -521,21 +392,21 @@ export default function Checkout() {
             {/* QR Payment UI */}
             {orderCreated && sepayPaymentData && selectedPaymentMethod === 'sepay' && (
               <div className="glass-card rounded-2xl shadow-sm p-6">
-                <h2 className="text-lg font-semibold mb-2 text-gray-900 dark:text-white">Quét mã QR để thanh toán</h2>
+                <h2 className="text-lg font-semibold mb-2 text-gray-900 dark:text-white">QuÃ©t mÃ£ QR Ä‘á»ƒ thanh toÃ¡n</h2>
 
                 {pollTimeout ? (
                   <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-3 mb-5 text-sm text-red-700 dark:text-red-300">
-                    Hệ thống chưa nhận được xác nhận tự động sau nhiều lần kiểm tra. Nếu bạn đã chuyển khoản thành công, hãy kiểm tra lại webhook SePay rồi tải lại trang.
+                    Há»‡ thá»‘ng chÆ°a nháº­n Ä‘Æ°á»£c xÃ¡c nháº­n tá»± Ä‘á»™ng sau nhiá»u láº§n kiá»ƒm tra. Náº¿u báº¡n Ä‘Ã£ chuyá»ƒn khoáº£n thÃ nh cÃ´ng, hÃ£y kiá»ƒm tra láº¡i webhook SePay rá»“i táº£i láº¡i trang.
                   </div>
                 ) : (
                   <>
                     <div className="flex items-center gap-2 mb-4 text-sm text-blue-600 dark:text-blue-400">
                       <Loader2 className="w-4 h-4 animate-spin" />
-                      <span>Đang chờ xác nhận thanh toán... ({pollingCount > 0 ? `đã kiểm tra ${pollingCount} lần` : 'đang kiểm tra'})</span>
+                      <span>Äang chá» xÃ¡c nháº­n thanh toÃ¡n... ({pollingCount > 0 ? `Ä‘Ã£ kiá»ƒm tra ${pollingCount} láº§n` : 'Ä‘ang kiá»ƒm tra'})</span>
                     </div>
 
                     <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-xl p-3 mb-5 text-sm text-yellow-700 dark:text-yellow-300">
-                      Sau khi chuyển khoản thành công, trang sẽ tự động chuyển sang màn hình xác nhận. Không cần làm gì thêm.
+                      Sau khi chuyá»ƒn khoáº£n thÃ nh cÃ´ng, trang sáº½ tá»± Ä‘á»™ng chuyá»ƒn sang mÃ n hÃ¬nh xÃ¡c nháº­n. KhÃ´ng cáº§n lÃ m gÃ¬ thÃªm.
                     </div>
                   </>
                 )}
@@ -545,25 +416,25 @@ export default function Checkout() {
                   <div className="flex flex-col items-center">
                     <div className="bg-white p-3 rounded-2xl border-2 border-dashed border-gray-300">
                       {sepayPaymentData.qrUrl ? (
-                        <img src={sepayPaymentData.qrUrl} alt="Mã QR thanh toán" className="w-52 h-52 object-contain" />
+                        <img src={sepayPaymentData.qrUrl} alt="MÃ£ QR thanh toÃ¡n" className="w-52 h-52 object-contain" />
                       ) : (
                         <div className="w-52 h-52 flex items-center justify-center glass-subtle rounded-ios">
                           <QrCode className="w-16 h-16 text-gray-400" />
                         </div>
                       )}
                     </div>
-                    <p className="text-xs text-gray-500 mt-2">Quét bằng app ngân hàng bất kỳ</p>
+                    <p className="text-xs text-gray-500 mt-2">QuÃ©t báº±ng app ngÃ¢n hÃ ng báº¥t ká»³</p>
                   </div>
 
                   {/* Bank info */}
                   <div className="glass-subtle rounded-2xl p-4 space-y-3">
-                    <h3 className="font-semibold text-gray-900 dark:text-white text-sm">Thông tin chuyển khoản</h3>
+                    <h3 className="font-semibold text-gray-900 dark:text-white text-sm">ThÃ´ng tin chuyá»ƒn khoáº£n</h3>
                     {[
-                      { label: 'Ngân hàng', value: sepayPaymentData.bankInfo?.bankName || 'BIDV' },
-                      { label: 'Số tài khoản', value: sepayPaymentData.bankInfo?.accountNumber, copy: true },
-                      { label: 'Chủ tài khoản', value: sepayPaymentData.bankInfo?.accountName },
-                      { label: 'Số tiền', value: formatPrice(orderDetails?.totalAmount), highlight: true },
-                      { label: 'Nội dung CK', value: sepayPaymentData.transactionId, copy: true, mono: true },
+                      { label: 'NgÃ¢n hÃ ng', value: sepayPaymentData.bankInfo?.bankName || 'BIDV' },
+                      { label: 'Sá»‘ tÃ i khoáº£n', value: sepayPaymentData.bankInfo?.accountNumber, copy: true },
+                      { label: 'Chá»§ tÃ i khoáº£n', value: sepayPaymentData.bankInfo?.accountName },
+                      { label: 'Sá»‘ tiá»n', value: formatPrice(orderDetails?.totalAmount), highlight: true },
+                      { label: 'Ná»™i dung CK', value: sepayPaymentData.transactionId, copy: true, mono: true },
                     ].map(({ label, value, copy, highlight, mono }) => (
                       <div key={label} className="flex justify-between items-center">
                         <span className="text-xs text-gray-500">{label}</span>
@@ -584,94 +455,55 @@ export default function Checkout() {
               </div>
             )}
 
-            {/* VNPay redirect */}
-            {orderCreated && selectedPaymentMethod === 'vnpay' && (
-              <div className="glass-card rounded-2xl shadow-sm p-6 text-center">
-                <Loader2 className="w-10 h-10 animate-spin text-red-500 mx-auto mb-3" />
-                <p className="text-gray-600 dark:text-gray-400">Đang chuyển hướng đến VNPay...</p>
-              </div>
-            )}
           </div>
 
           {/* Right column - Order summary */}
           <div className="lg:col-span-1">
             <div className="glass-card rounded-2xl shadow-sm p-6 sticky top-4">
-              <h2 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Tóm tắt đơn hàng</h2>
+              <h2 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">TÃ³m táº¯t Ä‘Æ¡n hÃ ng</h2>
 
               <div className="space-y-2 mb-4 text-sm">
                 <div className="flex justify-between text-gray-500">
-                  <span>Tài liệu</span><span>1</span>
+                  <span>TÃ i liá»‡u</span><span>1</span>
                 </div>
                 <div className="flex justify-between text-gray-500">
-                  <span>Phí dịch vụ</span><span>0đ</span>
+                  <span>PhÃ­ dá»‹ch vá»¥</span><span>0Ä‘</span>
                 </div>
               </div>
 
               <div className="border-t glass-divider border pt-4 mb-6">
                 <div className="flex justify-between items-center">
-                  <span className="font-medium text-gray-900 dark:text-white">Tổng cộng</span>
+                  <span className="font-medium text-gray-900 dark:text-white">Tá»•ng cá»™ng</span>
                   <span className="text-2xl font-bold text-primary-600">{formatPrice(itemDetails.price)}</span>
                 </div>
-                {selectedPaymentMethod === 'points' && pointsRequired?.canFullyRedeem && (
-                  <div className="flex justify-between items-center mt-1">
-                    <span className="text-sm text-gray-500">Thanh toán</span>
-                    <span className="text-lg font-bold text-amber-600">MIỄN PHÍ</span>
-                  </div>
-                )}
               </div>
 
               {!orderCreated ? (
                 <button
                   onClick={handleCreateOrder}
-                  disabled={paymentLoading || redeemingWithPoints || (selectedPaymentMethod === 'points' && !pointsRequired?.canFullyRedeem)}
-                  className={`w-full py-3 rounded-2xl font-medium flex items-center justify-center gap-2 transition-colors disabled:opacity-50 ${
-                    selectedPaymentMethod === 'points'
-                      ? 'bg-amber-500 text-white hover:bg-amber-600'
-                      : 'bg-primary-400/70 text-white hover:bg-primary-500/75'
-                  }`}
+                  disabled={paymentLoading}
+                  className="w-full py-3 rounded-2xl font-medium flex items-center justify-center gap-2 transition-colors disabled:opacity-50 bg-primary-400/70 text-white hover:bg-primary-500/75"
                 >
-                  {paymentLoading || redeemingWithPoints ? (
-                    <><Loader2 className="w-5 h-5 animate-spin" />{selectedPaymentMethod === 'points' ? 'Đang đổi điểm...' : 'Đang xử lý...'}</>
-                  ) : selectedPaymentMethod === 'points' ? (
-                    <><Coins className="w-5 h-5" />Đổi điểm ngay</>
+                  {paymentLoading ? (
+                    <><Loader2 className="w-5 h-5 animate-spin" />Äang xá»­ lÃ½...</>
                   ) : (
-                    <><QrCode className="w-5 h-5" />Tạo mã QR thanh toán</>
+                    <><QrCode className="w-5 h-5" />Táº¡o mÃ£ QR thanh toÃ¡n</>
                   )}
                 </button>
               ) : (
                 <div className="text-center">
                   <div className="flex items-center justify-center gap-2 text-blue-600 text-sm mb-1">
                     <Loader2 className="w-4 h-4 animate-spin" />
-                    Đang chờ thanh toán...
+                    Äang chá» thanh toÃ¡n...
                   </div>
-                  <p className="text-xs text-gray-400">Mã đơn: {orderDetails?._id?.slice(-8).toUpperCase()}</p>
-                </div>
-              )}
-
-              {/* Points info */}
-              {selectedPaymentMethod === 'points' && !orderCreated && pointsRequired && (
-                <div className="mt-4 p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl">
-                  <div className="flex items-center gap-2 mb-1">
-                    <Coins className="w-4 h-4 text-amber-600" />
-                    <span className="text-sm font-medium text-amber-800 dark:text-amber-200">Điểm của bạn: {formatPoints(pointBalance)}</span>
-                  </div>
-                  {pointsRequired.canFullyRedeem ? (
-                    <p className="text-xs text-green-600 flex items-center gap-1">
-                      <CheckCircle className="w-3 h-3" />
-                      Đủ điểm! Cần {formatPoints(pointsRequired.pointsNeeded)} điểm
-                    </p>
-                  ) : (
-                    <p className="text-xs text-red-500">
-                      Thiếu {formatPoints(Math.max(0, pointsRequired.maxPointsAllowed - pointBalance))} điểm
-                    </p>
-                  )}
+                  <p className="text-xs text-gray-400">MÃ£ Ä‘Æ¡n: {orderDetails?._id?.slice(-8).toUpperCase()}</p>
                 </div>
               )}
 
               {/* Email notice */}
               <div className="mt-6 pt-4 border-t glass-divider border flex items-start gap-3">
                 <Mail className="w-4 h-4 text-gray-400 mt-0.5" />
-                <p className="text-xs text-gray-500">Email xác nhận sẽ được gửi sau khi thanh toán thành công.</p>
+                <p className="text-xs text-gray-500">Email xÃ¡c nháº­n sáº½ Ä‘Æ°á»£c gá»­i sau khi thanh toÃ¡n thÃ nh cÃ´ng.</p>
               </div>
             </div>
           </div>

@@ -122,12 +122,13 @@ export async function createSePayPayment(paymentData) {
 
   // Bank info from environment
   const bankBin = process.env.SEPAY_BANK_BIN || '970438';
+  const bankCode = process.env.SEPAY_BANK_CODE || process.env.SEPAY_BANK_NAME || 'BIDV';
   const accountNumber = process.env.SEPAY_ACCOUNT_NUMBER || '96247ANH2004';
   const accountName = process.env.SEPAY_ACCOUNT_NAME || 'LE DUC ANH';
   const transferContent = transactionId || `FPTAIEZ${orderId?.slice(-8) || sepayOrderId.slice(-8)}`;
 
   // SePay QR URL
-  const qrUrl = `https://qr.sepay.vn/img?acc=${accountNumber}&bank=BIDV&amount=${Math.round(amount)}&des=${encodeURIComponent(transferContent)}`;
+  const qrUrl = `https://qr.sepay.vn/img?acc=${accountNumber}&bank=${encodeURIComponent(bankCode)}&amount=${Math.round(amount)}&des=${encodeURIComponent(transferContent)}`;
 
   // VietQR raw data string (EMVco format for local QR generation)
   const qrRaw = `${bankBin}${accountNumber}${Math.round(amount)}${transferContent}`;
@@ -142,9 +143,10 @@ export async function createSePayPayment(paymentData) {
     provider: 'sepay',
     bankInfo: {
       bankBin,
+      bankCode,
       accountNumber,
       accountName,
-      bankName: 'BIDV - VietinBank',
+      bankName: process.env.SEPAY_BANK_DISPLAY_NAME || bankCode,
     },
     instructions: [
       '1. Mo ung dung ngan hang hoac vi dien tu cua ban',

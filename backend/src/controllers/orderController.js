@@ -45,7 +45,7 @@ const createNotification = async (userId, title, message, type = 'info') => {
 
 export const createOrder = async (req, res, next) => {
   try {
-    const { documents, paymentMethod = 'vnpay' } = req.body;
+    const { documents, paymentMethod = 'sepay' } = req.body;
 
     if (!documents || documents.length === 0) {
       return next(apiError('No documents provided', 400));

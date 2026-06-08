@@ -67,6 +67,32 @@ const paymentSchema = new mongoose.Schema({
     transId: String,
     responseTime: String
   },
+  sepayData: {
+    sepayOrderId: String,
+    qrUrl: String,
+    qrRaw: String,
+    amount: Number,
+    orderInfo: String,
+    transactionId: String,
+    provider: String,
+    bankInfo: {
+      bankBin: String,
+      bankCode: String,
+      accountNumber: String,
+      accountName: String,
+      bankName: String,
+    },
+    instructions: [String],
+    sepayId: String,
+    gateway: String,
+    transferType: String,
+    transferAmount: Number,
+    transferContent: String,
+    accountNumber: String,
+    subAccount: String,
+    referenceCode: String,
+    transferredAt: Date,
+  },
   // Admin approval fields
   adminNotes: {
     type: String

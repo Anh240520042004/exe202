@@ -96,8 +96,9 @@ router.post('/create-qr', protect, async (req, res, next) => {
 // ─── Create payment ──────────────────────────────────────────────────────────
 router.post('/create', protect, async (req, res, next) => {
   try {
-    const { orderId, paymentMethod = 'vnpay' } = req.body;
+    const { orderId, paymentMethod = 'sepay' } = req.body;
     if (!orderId) return next(apiError('Order ID is required', 400));
+    if (paymentMethod !== 'sepay') return next(apiError('Only SePay payments are supported', 400));
 
     const order = await Order.findById(orderId);
     if (!order) return next(apiError('Order not found', 404));
