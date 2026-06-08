@@ -8,9 +8,11 @@ const hasValue = (value) => Boolean(value && !value.startsWith('your_') && value
 const isOpenAiKey = (value) => hasValue(value) && /^sk-[A-Za-z0-9]/.test(value);
 
 const geminiApiKeys = [
-  normalizeEnvValue(process.env.GEMINI_API_KEY),
-  normalizeEnvValue(process.env.GOOGLE_API_KEY),
-].filter(hasValue).filter((key, index, keys) => keys.indexOf(key) === index);
+  { name: 'GEMINI_API_KEY', key: normalizeEnvValue(process.env.GEMINI_API_KEY) },
+  { name: 'GOOGLE_API_KEY', key: normalizeEnvValue(process.env.GOOGLE_API_KEY) },
+]
+  .filter(({ key }) => hasValue(key))
+  .filter(({ key }, index, keys) => keys.findIndex((item) => item.key === key) === index);
 const openAiApiKey = normalizeEnvValue(process.env.OPENAI_API_KEY);
 const geminiModel = normalizeEnvValue(process.env.GEMINI_MODEL || 'gemini-2.5-flash').replace(/^models\//, '');
 const openAiModel = normalizeEnvValue(process.env.OPENAI_MODEL || 'gpt-4o-mini');
@@ -111,11 +113,11 @@ const callOpenAI = async (params) => {
 const createCompletion = async (params) => {
   const providerErrors = [];
 
-  for (const apiKey of geminiApiKeys) {
+  for (const { name, key } of geminiApiKeys) {
     try {
-      return await callGemini(params, apiKey);
+      return await callGemini(params, key);
     } catch (error) {
-      providerErrors.push(`Gemini: ${error.message}`);
+      providerErrors.push(`Gemini(${name}): ${error.message}`);
     }
   }
 
