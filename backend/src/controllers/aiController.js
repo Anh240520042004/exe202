@@ -419,6 +419,10 @@ function getFallbackResponse(error) {
     return 'The AI provider quota has been exceeded temporarily. Please try again later or switch to another valid AI API key.';
   }
 
+  if (message.includes('401') || message.includes('UNAUTHENTICATED') || message.includes('ACCESS_TOKEN_TYPE_UNSUPPORTED')) {
+    return 'The deployed GEMINI_API_KEY is being rejected by the Gemini API with 401 authentication failure. Replace the Render GEMINI_API_KEY with a working Gemini API key, then restart the backend server.';
+  }
+
   if (message.includes('403') || message.includes('PERMISSION_DENIED') || message.includes('API key not valid')) {
     return 'The configured AI API key is invalid, restricted, or does not have permission to use the selected Gemini model. Check GEMINI_API_KEY, API restrictions, and GEMINI_MODEL in the backend environment, then restart the server.';
   }
