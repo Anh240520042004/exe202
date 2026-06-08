@@ -3,13 +3,17 @@ import dotenv from 'dotenv';
 
 dotenv.config({ path: new URL('../../.env', import.meta.url) });
 
+const normalizeEnvValue = (value = '') => value.trim().replace(/^['"]|['"]$/g, '');
 const hasValue = (value) => Boolean(value && !value.startsWith('your_') && value !== 'your_openai_api_key_here');
 const isOpenAiKey = (value) => hasValue(value) && /^sk-[A-Za-z0-9]/.test(value);
 
-const geminiApiKey = (process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY || '').trim();
-const openAiApiKey = (process.env.OPENAI_API_KEY || '').trim();
-const geminiModel = (process.env.GEMINI_MODEL || 'gemini-2.5-flash').trim().replace(/^models\//, '');
-const openAiModel = (process.env.OPENAI_MODEL || 'gpt-4o-mini').trim();
+const geminiApiKeys = [
+  normalizeEnvValue(process.env.GEMINI_API_KEY),
+  normalizeEnvValue(process.env.GOOGLE_API_KEY),
+].filter(hasValue).filter((key, index, keys) => keys.indexOf(key) === index);
+const openAiApiKey = normalizeEnvValue(process.env.OPENAI_API_KEY);
+const geminiModel = normalizeEnvValue(process.env.GEMINI_MODEL || 'gemini-2.5-flash').replace(/^models\//, '');
+const openAiModel = normalizeEnvValue(process.env.OPENAI_MODEL || 'gpt-4o-mini');
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 const toGeminiRequest = ({ messages, max_tokens, temperature }) => {
@@ -41,13 +45,13 @@ const toGeminiRequest = ({ messages, max_tokens, temperature }) => {
   };
 };
 
-const callGemini = async (params) => {
+const callGemini = async (params, apiKey) => {
   let response;
   let errorText = '';
 
   for (let attempt = 0; attempt < 3; attempt += 1) {
     response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/${geminiModel}:generateContent?key=${geminiApiKey}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/${geminiModel}:generateContent?key=${apiKey}`,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -107,9 +111,9 @@ const callOpenAI = async (params) => {
 const createCompletion = async (params) => {
   const providerErrors = [];
 
-  if (hasValue(geminiApiKey)) {
+  for (const apiKey of geminiApiKeys) {
     try {
-      return await callGemini(params);
+      return await callGemini(params, apiKey);
     } catch (error) {
       providerErrors.push(`Gemini: ${error.message}`);
     }
