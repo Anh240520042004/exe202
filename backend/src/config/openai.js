@@ -3,12 +3,18 @@ import dotenv from 'dotenv';
 
 dotenv.config({ path: new URL('../../.env', import.meta.url) });
 
-const normalizeEnvValue = (value = '') => value
+const normalizeEnvValue = (value = '') => String(value)
   .trim()
   .replace(/^['"]|['"]$/g, '')
   .replace(/^(GEMINI_API_KEY|GOOGLE_API_KEY|OPENAI_API_KEY)\s*=\s*/i, '')
   .replace(/\s+/g, '');
-const hasValue = (value) => Boolean(value && !value.startsWith('your_') && value !== 'your_openai_api_key_here');
+
+const hasValue = (value) => Boolean(
+  value &&
+  !value.startsWith('your_') &&
+  value !== 'your_openai_api_key_here'
+);
+
 const isOpenAiKey = (value) => hasValue(value) && /^sk-[A-Za-z0-9]/.test(value);
 
 const geminiApiKeys = [
@@ -17,19 +23,21 @@ const geminiApiKeys = [
 ]
   .filter(({ key }) => hasValue(key))
   .filter(({ key }, index, keys) => keys.findIndex((item) => item.key === key) === index);
+
 const openAiApiKey = normalizeEnvValue(process.env.OPENAI_API_KEY);
 const geminiModel = normalizeEnvValue(process.env.GEMINI_MODEL || 'gemini-2.5-flash').replace(/^models\//, '');
 const openAiModel = normalizeEnvValue(process.env.OPENAI_MODEL || 'gpt-4o-mini');
+
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 const maskKey = (key) => ({
   present: hasValue(key),
   length: key?.length || 0,
-  prefix: key ? key.slice(0, 4) : '',
+  prefix: key ? key.slice(0, 6) : '',
   suffix: key ? key.slice(-4) : '',
 });
 
-const toGeminiRequest = ({ messages, max_tokens, temperature }) => {
+const toGeminiRequest = ({ messages = [], max_tokens, temperature }) => {
   const systemText = messages
     .filter((message) => message.role === 'system')
     .map((message) => message.content)
@@ -61,13 +69,21 @@ const toGeminiRequest = ({ messages, max_tokens, temperature }) => {
 const callGemini = async (params, apiKey) => {
   let response;
   let errorText = '';
+  const cleanKey = normalizeEnvValue(apiKey);
+
+  console.log('Gemini model:', geminiModel);
+  console.log('Gemini key prefix:', cleanKey?.slice(0, 6));
+  console.log('Gemini key length:', cleanKey?.length);
 
   for (let attempt = 0; attempt < 3; attempt += 1) {
     response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/${geminiModel}:generateContent?key=${apiKey}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/${geminiModel}:generateContent`,
       {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'x-goog-api-key': cleanKey,
+        },
         body: JSON.stringify(toGeminiRequest(params)),
       }
     );
@@ -82,20 +98,25 @@ const callGemini = async (params, apiKey) => {
 
   if (!response.ok) {
     errorText ||= await response.text();
+    console.error('Gemini Error:', errorText);
     throw new Error(`Gemini API error ${response.status}: ${errorText}`);
   }
 
   const data = await response.json();
+
   const content = data.candidates?.[0]?.content?.parts
     ?.map((part) => part.text || '')
     .join('')
     .trim();
 
   if (!content) {
-    throw new Error(`Gemini API returned an empty response. Finish reason: ${data.candidates?.[0]?.finishReason || 'unknown'}`);
+    throw new Error(
+      `Gemini API returned an empty response. Finish reason: ${data.candidates?.[0]?.finishReason || 'unknown'}`
+    );
   }
 
   const usage = data.usageMetadata || {};
+
   return {
     choices: [{ message: { content } }],
     usage: {
@@ -177,6 +198,7 @@ const getAIProviderDiagnostics = async ({ live = false } = {}) => {
         max_tokens: 64,
         temperature: 0,
       }, key);
+
       diagnostics.live.push({
         provider: 'gemini',
         env: name,
@@ -200,7 +222,12 @@ const getAIProviderDiagnostics = async ({ live = false } = {}) => {
         max_tokens: 16,
         temperature: 0,
       });
-      diagnostics.live.push({ provider: 'openai', env: 'OPENAI_API_KEY', ok: true });
+
+      diagnostics.live.push({
+        provider: 'openai',
+        env: 'OPENAI_API_KEY',
+        ok: true,
+      });
     } catch (error) {
       diagnostics.live.push({
         provider: 'openai',
