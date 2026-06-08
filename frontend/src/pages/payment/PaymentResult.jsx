@@ -17,7 +17,7 @@ export default function PaymentResult() {
 
   useEffect(() => {
     if (isVNPayReturnRoute) {
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+      const apiUrl = `${(import.meta.env.VITE_API_URL || 'http://localhost:5000').replace(/\/api\/?$/, '')}/api`;
       const query = searchParams.toString();
       window.location.replace(`${apiUrl}/payments/vnpay-return${query ? `?${query}` : ''}`);
       return;

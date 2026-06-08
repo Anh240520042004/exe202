@@ -6,7 +6,7 @@ import { useSelector } from 'react-redux';
 import toast from 'react-hot-toast';
 import ReviewSection from '../../components/document/ReviewSection';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+const API_URL = (import.meta.env.VITE_API_URL || 'http://localhost:5000').replace(/\/api\/?$/, '');
 
 const typeLabels = {
   pdf: 'PDF',

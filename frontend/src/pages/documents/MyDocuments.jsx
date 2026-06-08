@@ -5,7 +5,7 @@ import { Search, Download, BookOpen, Calendar, CheckCircle, FileText, Grid, List
 import { LoginRequired } from "../../components/ui";
 import axios from 'axios';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+const API_URL = `${(import.meta.env.VITE_API_URL || 'http://localhost:5000').replace(/\/api\/?$/, '')}/api`;
 
 const MyDocuments = () => {
   const [documents, setDocuments] = useState([]);
