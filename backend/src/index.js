@@ -48,7 +48,13 @@ app.use(helmet({
   crossOriginResourcePolicy: { policy: 'cross-origin' },
 }));
 app.use(cors({
-  origin: config.clientUrl,
+  origin: (origin, callback) => {
+    if (config.isAllowedOrigin(origin)) {
+      return callback(null, true);
+    }
+
+    return callback(new Error(`Origin not allowed by CORS: ${origin}`));
+  },
   credentials: true,
 }));
 app.use(express.json());

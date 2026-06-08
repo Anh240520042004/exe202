@@ -1,5 +1,6 @@
 import { Server } from 'socket.io';
 import jwt from 'jsonwebtoken';
+import config from '../config/index.js';
 import Conversation from '../models/Conversation.js';
 import Message from '../models/Message.js';
 import User from '../models/User.js';
@@ -10,7 +11,13 @@ let io;
 export const initSocket = (server) => {
   io = new Server(server, {
     cors: {
-      origin: process.env.CLIENT_URL || 'http://localhost:5173',
+      origin: (origin, callback) => {
+        if (config.isAllowedOrigin(origin)) {
+          return callback(null, true);
+        }
+
+        return callback(new Error(`Origin not allowed by CORS: ${origin}`));
+      },
       credentials: true,
     },
   });
