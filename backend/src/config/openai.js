@@ -6,10 +6,10 @@ dotenv.config({ path: new URL('../../.env', import.meta.url) });
 const hasValue = (value) => Boolean(value && !value.startsWith('your_') && value !== 'your_openai_api_key_here');
 const isOpenAiKey = (value) => hasValue(value) && /^sk-[A-Za-z0-9]/.test(value);
 
-const geminiApiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY || '';
-const openAiApiKey = process.env.OPENAI_API_KEY || '';
-const geminiModel = (process.env.GEMINI_MODEL || 'gemini-2.5-flash').replace(/^models\//, '');
-const openAiModel = process.env.OPENAI_MODEL || 'gpt-4o-mini';
+const geminiApiKey = (process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY || '').trim();
+const openAiApiKey = (process.env.OPENAI_API_KEY || '').trim();
+const geminiModel = (process.env.GEMINI_MODEL || 'gemini-2.5-flash').trim().replace(/^models\//, '');
+const openAiModel = (process.env.OPENAI_MODEL || 'gpt-4o-mini').trim();
 
 const toGeminiRequest = ({ messages, max_tokens, temperature }) => {
   const systemText = messages
