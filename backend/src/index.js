@@ -64,6 +64,13 @@ app.use('/uploads', express.static(path.join(__dirname, '../uploads'), {
 
 app.use('/api', apiLimiter);
 
+app.get('/', (req, res) => {
+  res.json({
+    success: true,
+    message: 'FPTAIEZ API is running',
+  });
+});
+
 app.get('/api/health', (req, res) => {
   res.json({
     success: true,
