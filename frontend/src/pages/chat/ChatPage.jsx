@@ -204,16 +204,23 @@ export default function ChatPage() {
         const mergedConvs = [...convs, ...pendingConvs];
         setConversations(mergedConvs);
 
-        // Auto-select conversation with the participant we navigated from
-        if (navigateState.participantId) {
+        // Auto-select the real conversation first. Pending conversations use a
+        // temporary id and must be created before sending messages.
+        if (navigateState.conversationId) {
+          const match = mergedConvs.find(c => c._id === navigateState.conversationId);
+          if (match) setActiveConv(match);
+        } else if (navigateState.participantId) {
+          const targetId = String(navigateState.participantId);
           const match = mergedConvs.find(c =>
             c.type === 'direct' &&
-            (getId(c.otherUser) === navigateState.participantId ||
-              c.participants?.some(p => getId(p) === navigateState.participantId))
+            !c.isPending &&
+            (String(getId(c.otherUser)) === targetId ||
+              c.participants?.some(p => String(getId(p)) === targetId))
+          ) || mergedConvs.find(c =>
+            c.type === 'direct' &&
+            (String(getId(c.otherUser)) === targetId ||
+              c.participants?.some(p => String(getId(p)) === targetId))
           );
-          if (match) setActiveConv(match);
-        } else if (navigateState.conversationId) {
-          const match = mergedConvs.find(c => c._id === navigateState.conversationId);
           if (match) setActiveConv(match);
         }
       } catch (err) { console.error('Failed to fetch conversations:', err); }
@@ -254,22 +261,79 @@ export default function ChatPage() {
     setInput(e.target.value);
     if (!isTyping) {
       setIsTyping(true);
-      if (socket && activeConv) socket.emit('typing:start', { conversationId: activeConv._id });
+      if (socket && activeConv && !activeConv.isPending) socket.emit('typing:start', { conversationId: activeConv._id });
     }
     clearTimeout(typingTimeoutRef.current);
     typingTimeoutRef.current = setTimeout(() => {
       setIsTyping(false);
-      if (socket && activeConv) socket.emit('typing:stop', { conversationId: activeConv._id });
+      if (socket && activeConv && !activeConv.isPending) socket.emit('typing:stop', { conversationId: activeConv._id });
     }, 2000);
   };
 
-  const handleSend = () => {
+  const createConversationFromPending = async (conv) => {
+    const participantId = getId(conv.otherUser);
+    const json = await fetch(`${API_URL}/api/conversations`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ participantId }),
+    }).then(r => r.json());
+
+    if (!json.success) throw new Error(json.message || 'Failed to create conversation');
+
+    const created = {
+      ...json.data,
+      displayName: conv.displayName,
+      displayAvatar: conv.displayAvatar,
+      otherUser: conv.otherUser,
+      unreadCount: 0,
+    };
+
+    setConversations(prev => prev.map(item => item._id === conv._id ? created : item));
+    setActiveConv(created);
+    setMessages([]);
+    socket?.emit('conversation:join', created._id);
+    return created;
+  };
+
+  const addDeliveredMessage = (conversationId, message) => {
+    setMessages(prev => (
+      prev.some(item => item._id === message._id) ? prev : [...prev, message]
+    ));
+    setConversations(prev => prev.map(c =>
+      c._id === conversationId
+        ? { ...c, lastMessage: { content: message.content, sender: message.sender, createdAt: message.createdAt } }
+        : c
+    ));
+  };
+
+  const sendSocketMessage = (payload) => new Promise((resolve, reject) => {
+    if (!socket) return reject(new Error('Socket not connected'));
+
+    socket.timeout(8000).emit('message:send', payload, (err, response) => {
+      if (err) return reject(new Error('Message send timed out'));
+      if (!response?.success) return reject(new Error(response?.message || 'Failed to send message'));
+      resolve(response.data);
+    });
+  });
+
+  const handleSend = async () => {
     if (!input.trim() || !activeConv) return;
     const content = input.trim();
     setInput('');
-    if (socket) {
-      socket.emit('message:send', { conversationId: activeConv._id, content, type: 'text' });
-      socket.emit('typing:stop', { conversationId: activeConv._id });
+    try {
+      const conversation = activeConv.isPending
+        ? await createConversationFromPending(activeConv)
+        : activeConv;
+
+      const delivered = await sendSocketMessage({ conversationId: conversation._id, content, type: 'text' });
+      addDeliveredMessage(conversation._id, delivered);
+      socket?.emit('typing:stop', { conversationId: conversation._id });
+    } catch (err) {
+      setInput(content);
+      console.error('Failed to send message:', err);
     }
   };
 

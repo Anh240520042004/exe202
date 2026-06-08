@@ -24,7 +24,7 @@ router.get('/', protect, async (req, res, next) => {
         displayName: conv.type === 'group' ? conv.name : other[0]?.name || 'Unknown',
         displayAvatar: conv.type === 'group' ? conv.avatar : other[0]?.avatar,
         otherUser: other[0] || null,
-        unreadCount: conv.unreadCount?.get?.(req.user.id) || 0,
+        unreadCount: conv.unreadCount?.[req.user.id] || 0,
       };
     });
 

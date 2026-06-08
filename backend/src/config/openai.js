@@ -4,12 +4,13 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 const hasValue = (value) => Boolean(value && !value.startsWith('your_') && value !== 'your_openai_api_key_here');
-const isGoogleAiKey = (value) => hasValue(value);
+const isGoogleAiKey = (value) => hasValue(value) && /^AIza[0-9A-Za-z_-]{20,}$/.test(value);
 const isOpenAiKey = (value) => hasValue(value) && /^sk-[A-Za-z0-9]/.test(value);
 
 const geminiApiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY || '';
 const openAiApiKey = process.env.OPENAI_API_KEY || '';
 const geminiModel = (process.env.GEMINI_MODEL || 'gemini-2.5-flash').replace(/^models\//, '');
+const openAiModel = process.env.OPENAI_MODEL || 'gpt-4o-mini';
 
 const toGeminiRequest = ({ messages, max_tokens, temperature }) => {
   const systemText = messages
@@ -75,11 +76,22 @@ const callOpenAI = async (params) => {
     apiKey: openAiApiKey,
   });
 
-  return openaiClient.chat.completions.create(params);
+  const model = !params.model || params.model === 'gpt-3.5-turbo'
+    ? openAiModel
+    : params.model;
+
+  return openaiClient.chat.completions.create({
+    ...params,
+    model,
+  });
 };
 
 const createCompletion = async (params) => {
   const providerErrors = [];
+
+  if (hasValue(geminiApiKey) && !isGoogleAiKey(geminiApiKey)) {
+    providerErrors.push('Gemini: GEMINI_API_KEY is not a valid Google AI Studio API key. Expected a key that starts with "AIza".');
+  }
 
   if (isGoogleAiKey(geminiApiKey)) {
     try {

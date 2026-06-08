@@ -64,31 +64,67 @@ export const initSocket = (server) => {
     });
 
     // ─── Send message ─────────────────────────────────────────────
-    socket.on('message:send', async (data) => {
+    socket.on('message:send', async (data, callback) => {
       try {
         const { conversationId, content, type = 'text', attachmentUrl, attachmentName } = data;
+        const trimmedContent = typeof content === 'string' ? content.trim() : '';
+
+        if (!trimmedContent && !attachmentUrl) {
+          callback?.({ success: false, message: 'Content or attachment required' });
+          return socket.emit('error', { message: 'Content or attachment required' });
+        }
+
+        const conversation = await Conversation.findById(conversationId);
+        if (!conversation) {
+          callback?.({ success: false, message: 'Conversation not found' });
+          return socket.emit('error', { message: 'Conversation not found' });
+        }
+
+        const participantIds = conversation.participants.map(p => p.toString());
+        if (!participantIds.includes(socket.userId)) {
+          callback?.({ success: false, message: 'Not authorized' });
+          return socket.emit('error', { message: 'Not authorized' });
+        }
 
         const message = await Message.create({
           conversation: conversationId,
           sender: socket.userId,
-          content: content || '',
+          content: trimmedContent,
           type,
           attachmentUrl,
           attachmentName,
           seenBy: [socket.userId],
         });
 
-        await Conversation.findByIdAndUpdate(conversationId, {
-          lastMessage: { content: type === 'text' ? content : `[${type}]`, sender: socket.userId, type, createdAt: new Date() },
+        const unreadUpdates = participantIds
+          .filter(id => id !== socket.userId)
+          .reduce((updates, id) => {
+            updates[`unreadCount.${id}`] = 1;
+            return updates;
+          }, {});
+
+        const conversationUpdate = {
+          lastMessage: { content: type === 'text' ? trimmedContent : `[${type}]`, sender: socket.userId, type, createdAt: new Date() },
           lastActivity: new Date(),
-        });
+        };
+        if (Object.keys(unreadUpdates).length > 0) {
+          conversationUpdate.$inc = unreadUpdates;
+        }
+
+        await Conversation.findByIdAndUpdate(conversationId, conversationUpdate);
 
         const populated = await Message.findById(message._id)
           .populate('sender', 'name avatar')
           .lean();
 
-        io.to(`conv:${conversationId}`).emit('message:new', populated);
+        let target = io.to(`conv:${conversationId}`);
+        participantIds.forEach(id => {
+          target = target.to(`user:${id}`);
+        });
+        target.emit('message:new', populated);
+        callback?.({ success: true, data: populated });
       } catch (error) {
+        callback?.({ success: false, message: 'Failed to send message' });
         socket.emit('error', { message: 'Failed to send message' });
       }
     });
