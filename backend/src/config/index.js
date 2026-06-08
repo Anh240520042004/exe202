@@ -1,4 +1,6 @@
-import 'dotenv/config';
+import dotenv from 'dotenv';
+
+dotenv.config({ path: new URL('../../.env', import.meta.url) });
 
 const normalizeOrigin = (origin) => {
   if (!origin) return null;

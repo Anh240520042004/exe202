@@ -1,7 +1,7 @@
 import OpenAI from 'openai';
 import dotenv from 'dotenv';
 
-dotenv.config();
+dotenv.config({ path: new URL('../../.env', import.meta.url) });
 
 const hasValue = (value) => Boolean(value && !value.startsWith('your_') && value !== 'your_openai_api_key_here');
 const isGoogleAiKey = (value) => hasValue(value) && /^AIza[0-9A-Za-z_-]{20,}$/.test(value);
