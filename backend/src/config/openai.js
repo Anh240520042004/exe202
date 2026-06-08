@@ -4,7 +4,6 @@ import dotenv from 'dotenv';
 dotenv.config({ path: new URL('../../.env', import.meta.url) });
 
 const hasValue = (value) => Boolean(value && !value.startsWith('your_') && value !== 'your_openai_api_key_here');
-const isGoogleAiKey = (value) => hasValue(value) && /^AIza[0-9A-Za-z_-]{20,}$/.test(value);
 const isOpenAiKey = (value) => hasValue(value) && /^sk-[A-Za-z0-9]/.test(value);
 
 const geminiApiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY || '';
@@ -89,11 +88,7 @@ const callOpenAI = async (params) => {
 const createCompletion = async (params) => {
   const providerErrors = [];
 
-  if (hasValue(geminiApiKey) && !isGoogleAiKey(geminiApiKey)) {
-    providerErrors.push('Gemini: GEMINI_API_KEY is not a valid Google AI Studio API key. Expected a key that starts with "AIza".');
-  }
-
-  if (isGoogleAiKey(geminiApiKey)) {
+  if (hasValue(geminiApiKey)) {
     try {
       return await callGemini(params);
     } catch (error) {

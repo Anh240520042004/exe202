@@ -411,10 +411,6 @@ function getFallbackResponse(error) {
     return 'The current Gemini API key has been disabled because it was reported as leaked. Please replace GEMINI_API_KEY with a new key and restart the backend server.';
   }
 
-  if (message.includes('Expected a key that starts with "AIza"')) {
-    return 'GEMINI_API_KEY on the backend is not a valid Google AI Studio key for the Gemini API. Replace it with a real Google AI key that starts with "AIza", then restart the backend server.';
-  }
-
   if (message.includes('No valid AI API key configured')) {
     return 'No valid AI provider key is configured on the backend. Set GEMINI_API_KEY or OPENAI_API_KEY in the deployed environment, then restart the backend server.';
   }
@@ -424,7 +420,7 @@ function getFallbackResponse(error) {
   }
 
   if (message.includes('403') || message.includes('PERMISSION_DENIED') || message.includes('API key not valid')) {
-    return 'The configured AI API key is invalid or does not have permission to use this model. Update the backend AI key and restart the server.';
+    return 'The configured AI API key is invalid, restricted, or does not have permission to use the selected Gemini model. Check GEMINI_API_KEY, API restrictions, and GEMINI_MODEL in the backend environment, then restart the server.';
   }
 
   return 'AI service is temporarily unavailable. Check GEMINI_API_KEY or OPENAI_API_KEY in the backend environment, then restart the backend server.';
