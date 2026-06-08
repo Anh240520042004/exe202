@@ -3,7 +3,11 @@ import dotenv from 'dotenv';
 
 dotenv.config({ path: new URL('../../.env', import.meta.url) });
 
-const normalizeEnvValue = (value = '') => value.trim().replace(/^['"]|['"]$/g, '');
+const normalizeEnvValue = (value = '') => value
+  .trim()
+  .replace(/^['"]|['"]$/g, '')
+  .replace(/^(GEMINI_API_KEY|GOOGLE_API_KEY|OPENAI_API_KEY)\s*=\s*/i, '')
+  .replace(/\s+/g, '');
 const hasValue = (value) => Boolean(value && !value.startsWith('your_') && value !== 'your_openai_api_key_here');
 const isOpenAiKey = (value) => hasValue(value) && /^sk-[A-Za-z0-9]/.test(value);
 
