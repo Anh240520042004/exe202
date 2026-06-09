@@ -69,34 +69,60 @@ const toGeminiRequest = ({ messages = [], max_tokens, temperature }) => {
 const callGemini = async (params, apiKey) => {
   let response;
   let errorText = '';
+  let lastStatus = 0;
   const cleanKey = normalizeEnvValue(apiKey);
+  const requestBody = JSON.stringify(toGeminiRequest(params));
+  const baseUrl = `https://generativelanguage.googleapis.com/v1beta/models/${geminiModel}:generateContent`;
+  const authStrategies = [
+    {
+      url: `${baseUrl}?key=${encodeURIComponent(cleanKey)}`,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    },
+    {
+      url: baseUrl,
+      headers: {
+        'Content-Type': 'application/json',
+        'x-goog-api-key': cleanKey,
+      },
+    },
+  ];
 
   console.log('Gemini model:', geminiModel);
   console.log('Gemini key prefix:', cleanKey?.slice(0, 6));
   console.log('Gemini key length:', cleanKey?.length);
 
-  for (let attempt = 0; attempt < 3; attempt += 1) {
-    response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/${geminiModel}:generateContent?key=${encodeURIComponent(cleanKey)}`,
-      {
+  for (const strategy of authStrategies) {
+    for (let attempt = 0; attempt < 3; attempt += 1) {
+      response = await fetch(strategy.url, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(toGeminiRequest(params)),
-      }
-    );
+        headers: strategy.headers,
+        body: requestBody,
+      });
 
-    if (response.ok || response.status !== 503 || attempt === 2) {
+      lastStatus = response.status;
+
+      if (response.ok || response.status !== 503 || attempt === 2) {
+        break;
+      }
+
+      errorText = await response.text();
+      await sleep(500 * (attempt + 1));
+    }
+
+    if (response.ok) {
       break;
     }
 
     errorText = await response.text();
-    await sleep(500 * (attempt + 1));
+
+    if (lastStatus !== 401) {
+      break;
+    }
   }
 
   if (!response.ok) {
-    errorText ||= await response.text();
     console.error('Gemini Error:', errorText);
     throw new Error(`Gemini API error ${response.status}: ${errorText}`);
   }
