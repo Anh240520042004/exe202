@@ -77,12 +77,11 @@ const callGemini = async (params, apiKey) => {
 
   for (let attempt = 0; attempt < 3; attempt += 1) {
     response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/${geminiModel}:generateContent`,
+      `https://generativelanguage.googleapis.com/v1beta/models/${geminiModel}:generateContent?key=${encodeURIComponent(cleanKey)}`,
       {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'x-goog-api-key': cleanKey,
         },
         body: JSON.stringify(toGeminiRequest(params)),
       }
