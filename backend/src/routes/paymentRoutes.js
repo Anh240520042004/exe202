@@ -46,6 +46,17 @@ const isConfiguredSePayApiKey = (apiKey) => Boolean(
   apiKey && apiKey !== 'your_sepay_api_key' && apiKey !== 'YOUR_SEPAY_API_KEY'
 );
 
+const getSePayWebhookKey = (req) => {
+  const authorization = `${req.headers.authorization || ''}`.trim();
+  const apiKeyHeader = `${req.headers['x-api-key'] || req.headers.apikey || req.headers['api-key'] || ''}`.trim();
+
+  if (apiKeyHeader) return apiKeyHeader;
+  if (!authorization) return '';
+
+  const match = authorization.match(/^(apikey|api-key|bearer)\s+(.+)$/i);
+  return (match?.[2] || authorization).trim();
+};
+
 const parseVndAmount = (value) => {
   if (value === undefined || value === null || value === '') return NaN;
   return Number(String(value).replace(/[^\d.-]/g, ''));
@@ -310,10 +321,10 @@ router.post('/sepay-webhook', async (req, res) => {
       return res.status(200).json({ success: false, message: 'SePay webhook is not configured' });
     }
 
-    const authHeader = req.headers.authorization;
-    if (authHeader !== `Apikey ${apiKey}`) {
-      console.warn('[SePay] Unauthorized webhook request');
-      return res.status(200).json({ success: false, message: 'Unauthorized' });
+    const receivedApiKey = getSePayWebhookKey(req);
+    if (receivedApiKey !== apiKey) {
+      console.warn('[SePay] Unauthorized webhook request. Auth header present:', Boolean(req.headers.authorization), '| x-api-key present:', Boolean(req.headers['x-api-key']));
+      return res.status(401).json({ success: false, message: 'Unauthorized' });
     }
 
     // FIX 2: DÃ¹ng Ä‘Ãºng tÃªn field theo SePay API docs
@@ -371,7 +382,7 @@ router.post('/sepay-webhook', async (req, res) => {
         console.log('[SePay] Found via fallback search');
         transaction = fallbackTx;
       } else {
-        return res.status(200).json({ success: false, message: 'Transaction not found' });
+        return res.status(404).json({ success: false, message: 'Transaction not found' });
       }
     }
 
@@ -389,14 +400,14 @@ router.post('/sepay-webhook', async (req, res) => {
 
     if (!Number.isFinite(receivedAmount) || Math.round(receivedAmount) !== Math.round(order.totalAmount)) {
       console.warn('[SePay] Amount mismatch:', receivedAmount, '| Expected:', order.totalAmount);
-      return res.status(200).json({ success: false, message: 'Amount mismatch' });
+      return res.status(400).json({ success: false, message: 'Amount mismatch' });
     }
 
     const expectedAccountNumber = `${process.env.SEPAY_ACCOUNT_NUMBER || ''}`.trim();
     const actualAccountNumber = `${accountNumber || ''}`.trim();
     if (expectedAccountNumber && actualAccountNumber && actualAccountNumber !== expectedAccountNumber) {
       console.warn('[SePay] Account mismatch:', actualAccountNumber, '| Expected:', expectedAccountNumber);
-      return res.status(200).json({ success: false, message: 'Account mismatch' });
+      return res.status(400).json({ success: false, message: 'Account mismatch' });
     }
 
     // Cáº­p nháº­t Payment
