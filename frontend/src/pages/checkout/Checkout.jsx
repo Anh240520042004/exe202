@@ -45,7 +45,16 @@ export default function Checkout() {
       clearInterval(pollingRef.current);
       pollingRef.current = null;
     }
-    toast.success('ðŸŽ‰ Thanh toÃ¡n thÃ nh cÃ´ng! TÃ i liá»‡u Ä‘Ã£ Ä‘Æ°á»£c thÃªm vÃ o thÆ° viá»‡n.');
+
+    const params = new URLSearchParams({
+      status: 'success',
+      method: 'sepay',
+      orderId: orderDetails?._id || '',
+      amount: `${orderDetails?.totalAmount || itemDetails?.price || 0}`,
+    });
+
+    toast.success('Thanh toán thành công! Tài liệu đã được thêm vào thư viện.');
+    navigate(`/payment/result?${params.toString()}`, { replace: true });
   };
 
   // â”€â”€â”€ Polling kiá»ƒm tra thanh toÃ¡n â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -240,74 +249,6 @@ export default function Checkout() {
           <button onClick={() => navigate(-1)} className="mt-4 px-4 py-2 bg-primary-400/70 text-white rounded-xl">
             Quay láº¡i
           </button>
-        </div>
-      </div>
-    );
-  }
-
-  // â”€â”€â”€ Payment confirmed screen â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-  if (paymentConfirmed) {
-    return (
-      <div className="min-h-screen flex items-center justify-center p-4">
-        <div className="glass-card rounded-3xl shadow-lg p-8 max-w-md w-full text-center">
-          {/* Animated checkmark */}
-          <div className="w-24 h-24 mx-auto mb-6 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
-            <CheckCircle className="w-14 h-14 text-green-500" />
-          </div>
-
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-            Thanh toÃ¡n thÃ nh cÃ´ng!
-          </h1>
-          <p className="text-gray-500 dark:text-gray-400 mb-1">
-            TÃ i liá»‡u Ä‘Ã£ Ä‘Æ°á»£c thÃªm vÃ o thÆ° viá»‡n cá»§a báº¡n.
-          </p>
-          <p className="text-gray-500 dark:text-gray-400 mb-6">
-            Email xÃ¡c nháº­n Ä‘Ã£ Ä‘Æ°á»£c gá»­i Ä‘áº¿n há»™p thÆ° cá»§a báº¡n.
-          </p>
-
-          {/* Order info */}
-          <div className="glass-subtle rounded-2xl p-4 mb-6 text-left">
-            <div className="flex justify-between items-center mb-2">
-              <span className="text-sm text-gray-500">TÃ i liá»‡u</span>
-              <span className="text-sm font-medium text-gray-900 dark:text-white">{itemDetails.title}</span>
-            </div>
-            <div className="flex justify-between items-center mb-2">
-              <span className="text-sm text-gray-500">Sá»‘ tiá»n</span>
-              <span className="text-sm font-bold text-green-600">{formatPrice(orderDetails?.totalAmount || itemDetails.price)}</span>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-500">MÃ£ Ä‘Æ¡n</span>
-              <code className="text-xs bg-gray-200 dark:bg-gray-600 px-2 py-0.5 rounded">
-                {orderDetails?._id?.slice(-8).toUpperCase()}
-              </code>
-            </div>
-          </div>
-
-          {/* Points earned */}
-          {estimatedPointsEarned > 0 && (
-            <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-2xl p-3 mb-6 flex items-center gap-3">
-              <Sparkles className="w-5 h-5 text-amber-500 flex-shrink-0" />
-              <p className="text-sm text-amber-700 dark:text-amber-300">
-                Báº¡n vá»«a nháº­n Ä‘Æ°á»£c <strong>{formatPoints(estimatedPointsEarned)} Ä‘iá»ƒm</strong> thÆ°á»Ÿng!
-              </p>
-            </div>
-          )}
-
-          <div className="flex flex-col gap-3">
-            <button
-              onClick={() => navigate('/my-documents')}
-              className="w-full py-3 bg-primary-400/70 text-white rounded-2xl font-medium hover:bg-primary-500/75 flex items-center justify-center gap-2 transition-colors"
-            >
-              <Download className="w-5 h-5" />
-              Táº£i tÃ i liá»‡u ngay
-            </button>
-            <button
-              onClick={() => navigate('/dashboard')}
-              className="w-full py-3 glass-subtle text-gray-700 dark:text-gray-300 rounded-2xl font-medium hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
-            >
-              Vá» trang chá»§
-            </button>
-          </div>
         </div>
       </div>
     );

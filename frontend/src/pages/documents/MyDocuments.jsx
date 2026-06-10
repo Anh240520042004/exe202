@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { orderService, documentService } from '../../services/api';
+import { orderService, documentService, downloadOrderDocument } from '../../services/api';
 import { Search, Download, BookOpen, Calendar, CheckCircle, FileText, Grid, List, FolderOpen, Loader2, Eye, X } from 'lucide-react';
 import { LoginRequired } from "../../components/ui";
 import axios from 'axios';
@@ -71,39 +71,14 @@ const MyDocuments = () => {
     try {
       const docId = doc.document?._id;
       const orderId = doc.orderId;
-      
+
       if (!docId || !orderId) {
         alert('Không tìm thấy thông tin tài liệu');
         return;
       }
-      
+
       setDownloadingId(docId);
-      
-      const response = await axios.get(
-        `${API_URL}/orders/${orderId}/documents/${docId}/download`,
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('accessToken')}`
-          }
-        }
-      );
-      
-      const downloadData = response.data?.data || {};
-      
-      if (downloadData.downloadUrl) {
-        const fullUrl = downloadData.downloadUrl.startsWith('http') 
-          ? downloadData.downloadUrl 
-          : `${API_URL.replace('/api', '')}${downloadData.downloadUrl}`;
-        
-        const link = document.createElement('a');
-        link.href = fullUrl;
-        link.download = downloadData.title || 'document';
-        link.target = '_blank';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-      }
-      
+      await downloadOrderDocument(orderId, docId);
       loadDocuments(pagination.page, searchQuery);
     } catch (error) {
       console.error('Download failed:', error);

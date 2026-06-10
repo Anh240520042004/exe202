@@ -457,11 +457,20 @@ router.post('/sepay-webhook', async (req, res) => {
 
     // Send email
     try {
-      const user = await User.findById(order.user);
+      const [user, orderWithDocuments] = await Promise.all([
+        User.findById(order.user),
+        Order.findById(order._id).populate('documents.document', 'title')
+      ]);
+
       await emailService.sendPaymentConfirmation(user, {
-        orderId: order._id, amount: receivedAmount, method: 'sepay',
-        documents: order.documents.map(doc => ({ title: doc.document?.title || 'Tai lieu' })),
-        transactionCode: `SEPAY_${transactionCode}`, paymentDate: new Date()
+        orderId: order._id,
+        amount: receivedAmount,
+        method: 'sepay',
+        documents: (orderWithDocuments?.documents || []).map((doc) => ({
+          title: doc.document?.title || 'Tài liệu'
+        })),
+        transactionCode: `SEPAY_${transactionCode}`,
+        paymentDate: new Date()
       });
     } catch (e) { console.error('Email error:', e); }
 

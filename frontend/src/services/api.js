@@ -142,6 +142,29 @@ export const orderService = {
   downloadDocument: (orderId, documentId) => api.get(`/orders/${orderId}/documents/${documentId}/download`),
 };
 
+export const downloadOrderDocument = async (orderId, documentId) => {
+  const response = await orderService.downloadDocument(orderId, documentId);
+  const downloadData = response.data?.data || {};
+
+  if (!downloadData.downloadUrl) {
+    return response;
+  }
+
+  const fullUrl = downloadData.downloadUrl.startsWith('http')
+    ? downloadData.downloadUrl
+    : `${API_URL.replace('/api', '')}${downloadData.downloadUrl}`;
+
+  const link = document.createElement('a');
+  link.href = fullUrl;
+  link.download = downloadData.fileName || 'document';
+  link.target = '_blank';
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+
+  return response;
+};
+
 export const mentorService = {
   getAll: (params) => api.get('/mentors', { params }),
   getById: (id) => api.get(`/mentors/${id}`),

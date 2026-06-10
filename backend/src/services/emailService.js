@@ -300,7 +300,7 @@ class EmailService {
               </p>
 
               <div style="text-align: center;">
-                <a href="${config.clientUrl}/profile" class="button">Xem lịch sử giao dịch</a>
+                <a href="${config.clientUrl}/my-documents" class="button">Vào thư viện tài liệu</a>
               </div>
             </div>
             <div class="footer">
