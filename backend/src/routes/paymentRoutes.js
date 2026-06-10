@@ -121,6 +121,36 @@ router.post('/create', protect, async (req, res, next) => {
     if (order.user.toString() !== req.user.id) return next(apiError('Not authorized', 403));
     if (order.paymentStatus === 'paid') return next(apiError('Order already paid', 400));
 
+    const existingPendingPayment = await Payment.findOne({
+      orderId: order._id,
+      method: paymentMethod,
+      status: 'pending',
+      paymentStatus: 'pending'
+    }).sort({ createdAt: -1 });
+
+    if (paymentMethod === 'sepay' && existingPendingPayment?.sepayData?.transactionId) {
+      const existingTransaction = await Transaction.findOne({
+        orderId: order._id,
+        paymentId: existingPendingPayment._id,
+        paymentMethod: 'sepay',
+        status: 'pending'
+      }).sort({ createdAt: -1 });
+
+      order.paymentId = existingPendingPayment._id;
+      if (existingTransaction) {
+        order.transactionId = existingTransaction._id;
+      }
+      order.paymentMethod = 'sepay';
+      await order.save();
+
+      return res.json(apiSuccess({
+        paymentId: existingPendingPayment._id,
+        ...existingPendingPayment.sepayData,
+        transactionId: existingPendingPayment.sepayData.transactionId,
+        method: 'sepay',
+      }, 'Existing SePay payment data returned'));
+    }
+
     const payment = await Payment.create({
       user: req.user.id,
       type: 'document',
@@ -369,15 +399,27 @@ router.post('/sepay-webhook', async (req, res) => {
       transactionCode,
       status: 'pending',
       paymentMethod: 'sepay'
-    }).populate('orderId');
+    }).sort({ createdAt: -1 }).populate('orderId');
 
     if (!transaction) {
+      const completedTransaction = await Transaction.findOne({
+        transactionCode,
+        status: 'completed',
+        paymentMethod: 'sepay'
+      }).sort({ createdAt: -1 });
+
+      if (completedTransaction) {
+        console.log('[SePay] Transaction already completed for code:', transactionCode);
+        return res.status(200).json({ success: true, message: 'Already processed' });
+      }
+
       console.warn('[SePay] No pending transaction for code:', transactionCode);
-      // Thá»­ tÃ¬m vá»›i mÃ£ khÃ¡c (khÃ´ng cÃ³ prefix SEPAY_)
+      // Thử tìm với mã khác (không có prefix SEPAY_)
       const fallbackTx = await Transaction.findOne({
         transactionCode: { $regex: transactionCode, $options: 'i' },
         status: 'pending',
-      }).populate('orderId');
+        paymentMethod: 'sepay'
+      }).sort({ createdAt: -1 }).populate('orderId');
       if (fallbackTx) {
         console.log('[SePay] Found via fallback search');
         transaction = fallbackTx;
@@ -532,13 +574,23 @@ router.get('/check/:transactionCode', async (req, res, next) => {
     const { transactionCode } = req.params;
     console.log('[Check] Looking for transaction:', transactionCode);
 
-    const transaction = await Transaction.findOne({
-      transactionCode,
-      paymentMethod: 'sepay'
-    }).populate({
+    const populateOrder = {
       path: 'orderId',
       populate: { path: 'documents.document', model: 'Document' }
-    });
+    };
+
+    const completedTransaction = await Transaction.findOne({
+      transactionCode,
+      paymentMethod: 'sepay',
+      status: 'completed'
+    }).sort({ createdAt: -1 }).populate(populateOrder);
+
+    const latestTransaction = completedTransaction || await Transaction.findOne({
+      transactionCode,
+      paymentMethod: 'sepay'
+    }).sort({ createdAt: -1 }).populate(populateOrder);
+
+    const transaction = latestTransaction;
 
     console.log('[Check] Transaction found:', transaction?._id, '| Status:', transaction?.status);
 
