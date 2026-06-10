@@ -1,4 +1,4 @@
-import express from 'express';
+﻿import express from 'express';
 import { protect, adminOnly } from '../middleware/auth.js';
 import {
   createVNPayUrl,
@@ -30,7 +30,7 @@ const earnPoints = async (userId, amountVnd, orderId) => {
     type: 'earn',
     points,
     reason: 'purchase',
-    description: `Nhận ${points} điểm khi mua tài liệu`,
+    description: `Nháº­n ${points} Ä‘iá»ƒm khi mua tÃ i liá»‡u`,
     orderId,
     balanceAfter: newBalance
   });
@@ -46,7 +46,12 @@ const isConfiguredSePayApiKey = (apiKey) => Boolean(
   apiKey && apiKey !== 'your_sepay_api_key' && apiKey !== 'YOUR_SEPAY_API_KEY'
 );
 
-// ─── Create QR payment (VNPay direct) ─────────────────────────────────────────
+const parseVndAmount = (value) => {
+  if (value === undefined || value === null || value === '') return NaN;
+  return Number(String(value).replace(/[^\d.-]/g, ''));
+};
+
+// â”€â”€â”€ Create QR payment (VNPay direct) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 router.post('/create-qr', protect, async (req, res, next) => {
   try {
     const { orderId } = req.body;
@@ -93,7 +98,7 @@ router.post('/create-qr', protect, async (req, res, next) => {
   }
 });
 
-// ─── Create payment ──────────────────────────────────────────────────────────
+// â”€â”€â”€ Create payment â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 router.post('/create', protect, async (req, res, next) => {
   try {
     const { orderId, paymentMethod = 'sepay' } = req.body;
@@ -201,7 +206,7 @@ router.post('/create', protect, async (req, res, next) => {
   }
 });
 
-// ─── VNPay return URL ────────────────────────────────────────────────────────
+// â”€â”€â”€ VNPay return URL â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 router.get('/vnpay-return', async (req, res, next) => {
   try {
     const result = verifyVNPayReturn(req.query);
@@ -253,7 +258,7 @@ router.get('/vnpay-return', async (req, res, next) => {
 
         try {
           const pts = await earnPoints(order.user.toString(), payment.amount, order._id);
-          if (pts) await createNotification(order.user.toString(), 'Nhận điểm thưởng!', `Bạn đã nhận được ${pts.points} điểm thưởng!`, 'success');
+          if (pts) await createNotification(order.user.toString(), 'Nháº­n Ä‘iá»ƒm thÆ°á»Ÿng!', `Báº¡n Ä‘Ã£ nháº­n Ä‘Æ°á»£c ${pts.points} Ä‘iá»ƒm thÆ°á»Ÿng!`, 'success');
         } catch (e) { console.error('Points error:', e); }
       }
 
@@ -280,7 +285,7 @@ router.get('/vnpay-return', async (req, res, next) => {
   }
 });
 
-// ─── VNPay IPN ───────────────────────────────────────────────────────────────
+// â”€â”€â”€ VNPay IPN â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 router.post('/vnpay-ipn', async (req, res) => {
   try {
     const result = verifyVNPayReturn(req.query);
@@ -290,7 +295,7 @@ router.post('/vnpay-ipn', async (req, res) => {
   }
 });
 
-// ─── SePay webhook ───────────────────────────────────────────────────────────
+// â”€â”€â”€ SePay webhook â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // Docs: https://sepay.vn/lap-trinh-webhook.html
 router.post('/sepay-webhook', async (req, res) => {
   console.log('\n========================================');
@@ -311,29 +316,31 @@ router.post('/sepay-webhook', async (req, res) => {
       return res.status(200).json({ success: false, message: 'Unauthorized' });
     }
 
-    // FIX 2: Dùng đúng tên field theo SePay API docs
+    // FIX 2: DÃ¹ng Ä‘Ãºng tÃªn field theo SePay API docs
     const {
       id: sepayId,
       gateway,
       transactionDate,
       accountNumber,
       subAccount,
-      code,         // mã nội dung rút gọn
-      content,      // nội dung chuyển khoản đầy đủ
-      transferType, // 'in' = tiền vào, 'out' = tiền ra
+      code,         // mÃ£ ná»™i dung rÃºt gá»n
+      content,      // ná»™i dung chuyá»ƒn khoáº£n Ä‘áº§y Ä‘á»§
+      transferType, // 'in' = tiá»n vÃ o, 'out' = tiá»n ra
       description,
-      amount,       // số tiền, đơn vị VNĐ
+      transferContent,
+      transferAmount,
+      amount,       // sá»‘ tiá»n, Ä‘Æ¡n vá»‹ VNÄ
       accumulated,
       referenceCode,
     } = req.body;
 
-    // Chỉ xử lý giao dịch tiền vào
-    if (transferType !== 'in') {
+    // Chá»‰ xá»­ lÃ½ giao dá»‹ch tiá»n vÃ o
+    if (transferType && String(transferType).toLowerCase() !== 'in') {
       return res.status(200).json({ success: true, message: 'Ignored outgoing transfer' });
     }
 
-    // FIX 3: Tìm mã đơn hàng trong tất cả field có thể chứa nội dung
-    const rawContent = content || code || description || '';
+    // FIX 3: TÃ¬m mÃ£ Ä‘Æ¡n hÃ ng trong táº¥t cáº£ field cÃ³ thá»ƒ chá»©a ná»™i dung
+    const rawContent = content || transferContent || code || description || '';
     const orderIdMatch = rawContent.match(/FPTAIEZ([a-zA-Z0-9]+)/i);
     if (!orderIdMatch) {
       console.warn('[SePay] No FPTAIEZ code found in:', rawContent);
@@ -345,7 +352,7 @@ router.post('/sepay-webhook', async (req, res) => {
     console.log('[SePay] ========== WEBHOOK RECEIVED ==========');
     console.log('[SePay] Raw content:', rawContent);
     console.log('[SePay] Transaction code:', transactionCode);
-    console.log('[SePay] Amount received:', amount);
+    console.log('[SePay] Amount received:', amount ?? transferAmount);
 
     let transaction = await Transaction.findOne({
       transactionCode,
@@ -355,7 +362,7 @@ router.post('/sepay-webhook', async (req, res) => {
 
     if (!transaction) {
       console.warn('[SePay] No pending transaction for code:', transactionCode);
-      // Thử tìm với mã khác (không có prefix SEPAY_)
+      // Thá»­ tÃ¬m vá»›i mÃ£ khÃ¡c (khÃ´ng cÃ³ prefix SEPAY_)
       const fallbackTx = await Transaction.findOne({
         transactionCode: { $regex: transactionCode, $options: 'i' },
         status: 'pending',
@@ -378,8 +385,7 @@ router.post('/sepay-webhook', async (req, res) => {
       return res.status(200).json({ success: true, message: 'Already processed' });
     }
 
-    const receivedAmount = Number(amount);
-    console.log('[SePay] Received amount:', receivedAmount, '| Order amount:', order.totalAmount);
+    const receivedAmount = parseVndAmount(amount ?? transferAmount);
 
     if (!Number.isFinite(receivedAmount) || Math.round(receivedAmount) !== Math.round(order.totalAmount)) {
       console.warn('[SePay] Amount mismatch:', receivedAmount, '| Expected:', order.totalAmount);
@@ -393,7 +399,7 @@ router.post('/sepay-webhook', async (req, res) => {
       return res.status(200).json({ success: false, message: 'Account mismatch' });
     }
 
-    // Cập nhật Payment
+    // Cáº­p nháº­t Payment
     const payment = await Payment.findById(transaction.paymentId);
     if (payment) {
       payment.status = 'completed';
@@ -413,20 +419,20 @@ router.post('/sepay-webhook', async (req, res) => {
       await payment.save();
     }
 
-    // Cập nhật Order
+    // Cáº­p nháº­t Order
     order.status = 'completed';
     order.paymentStatus = 'paid';
     await order.save();
     console.log('[SePay] Order updated:', order._id, '| Status:', order.paymentStatus);
 
-    // Cập nhật Transaction
+    // Cáº­p nháº­t Transaction
     transaction.status = 'completed';
-    // Lưu SePay transaction code riêng (không đổi transactionCode gốc để frontend polling tìm được)
+    // LÆ°u SePay transaction code riÃªng (khÃ´ng Ä‘á»•i transactionCode gá»‘c Ä‘á»ƒ frontend polling tÃ¬m Ä‘Æ°á»£c)
     transaction.providerTransactionCode = `SEPAY_${transactionCode}`;
     await transaction.save();
     console.log('[SePay] Transaction updated:', transaction._id, '| Status:', transaction.status);
 
-    // Tăng salesCount + download history
+    // TÄƒng salesCount + download history
     console.log('[SePay] Processing', order.documents.length, 'documents');
     for (const item of order.documents) {
       console.log('[SePay] - Document:', item.document, '| Type:', typeof item.document);
@@ -440,7 +446,7 @@ router.post('/sepay-webhook', async (req, res) => {
     }
 
     // Notify user
-    await createNotification(order.user, 'Thanh toán thành công!', 'Đơn hàng đã được xác nhận. Bạn có thể tải tài liệu ngay.', 'success');
+    await createNotification(order.user, 'Thanh toÃ¡n thÃ nh cÃ´ng!', 'ÄÆ¡n hÃ ng Ä‘Ã£ Ä‘Æ°á»£c xÃ¡c nháº­n. Báº¡n cÃ³ thá»ƒ táº£i tÃ i liá»‡u ngay.', 'success');
 
     // Notify admins
     try {
@@ -448,8 +454,8 @@ router.post('/sepay-webhook', async (req, res) => {
       await Promise.all(admins.map(admin =>
         createNotification(
           admin._id,
-          'Thanh toán SePay thành công!',
-          `Nhận ${Number(receivedAmount).toLocaleString('vi-VN')} VNĐ. Nội dung: ${rawContent}. Tài liệu đã kích hoạt tự động.`,
+          'Thanh toÃ¡n SePay thÃ nh cÃ´ng!',
+          `Nháº­n ${Number(receivedAmount).toLocaleString('vi-VN')} VNÄ. Ná»™i dung: ${rawContent}. TÃ i liá»‡u Ä‘Ã£ kÃ­ch hoáº¡t tá»± Ä‘á»™ng.`,
           'payment'
         )
       ));
@@ -467,7 +473,7 @@ router.post('/sepay-webhook', async (req, res) => {
         amount: receivedAmount,
         method: 'sepay',
         documents: (orderWithDocuments?.documents || []).map((doc) => ({
-          title: doc.document?.title || 'Tài liệu'
+          title: doc.document?.title || 'TÃ i liá»‡u'
         })),
         transactionCode: `SEPAY_${transactionCode}`,
         paymentDate: new Date()
@@ -477,7 +483,7 @@ router.post('/sepay-webhook', async (req, res) => {
     // Award points
     try {
       const pts = await earnPoints(order.user.toString(), receivedAmount, order._id);
-      if (pts) await createNotification(order.user.toString(), 'Nhận điểm thưởng!', `Bạn đã nhận được ${pts.points} điểm thưởng!`, 'success');
+      if (pts) await createNotification(order.user.toString(), 'Nháº­n Ä‘iá»ƒm thÆ°á»Ÿng!', `Báº¡n Ä‘Ã£ nháº­n Ä‘Æ°á»£c ${pts.points} Ä‘iá»ƒm thÆ°á»Ÿng!`, 'success');
     } catch (e) { console.error('Points error:', e); }
 
     return res.status(200).json({ success: true, message: 'Payment confirmed' });
@@ -488,7 +494,7 @@ router.post('/sepay-webhook', async (req, res) => {
   }
 });
 
-// ─── Get payment status ──────────────────────────────────────────────────────
+// â”€â”€â”€ Get payment status â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 router.get('/status/:paymentId', protect, async (req, res, next) => {
   try {
     const payment = await Payment.findById(req.params.paymentId).populate('orderId');
@@ -509,7 +515,7 @@ router.get('/status/:paymentId', protect, async (req, res, next) => {
   }
 });
 
-// ─── Check payment by transaction code (polling) ─────────────────────────────
+// â”€â”€â”€ Check payment by transaction code (polling) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 router.get('/check/:transactionCode', protect, async (req, res, next) => {
   try {
     const { transactionCode } = req.params;
@@ -542,7 +548,7 @@ router.get('/check/:transactionCode', protect, async (req, res, next) => {
   }
 });
 
-// ─── Debug: Get all pending transactions ──────────────────────────────────────
+// â”€â”€â”€ Debug: Get all pending transactions â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 router.get('/debug-transactions', protect, adminOnly, async (req, res) => {
   const transactions = await Transaction.find({
     user: req.user.id,
