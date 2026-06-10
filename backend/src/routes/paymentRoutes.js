@@ -516,14 +516,14 @@ router.get('/status/:paymentId', protect, async (req, res, next) => {
 });
 
 // â”€â”€â”€ Check payment by transaction code (polling) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-router.get('/check/:transactionCode', protect, async (req, res, next) => {
+router.get('/check/:transactionCode', async (req, res, next) => {
   try {
     const { transactionCode } = req.params;
-    console.log('[Check] Looking for transaction:', transactionCode, '| User:', req.user.id);
+    console.log('[Check] Looking for transaction:', transactionCode);
 
     const transaction = await Transaction.findOne({
       transactionCode,
-      user: req.user.id
+      paymentMethod: 'sepay'
     }).populate({
       path: 'orderId',
       populate: { path: 'documents.document', model: 'Document' }
@@ -541,7 +541,7 @@ router.get('/check/:transactionCode', protect, async (req, res, next) => {
       orderId: transaction.orderId?._id,
       amount: transaction.amount,
       method: transaction.paymentMethod,
-      paymentData: payment?.sepayData || payment?.vnpayData,
+      paymentStatusRaw: payment?.paymentStatus,
     }));
   } catch (error) {
     next(error);
