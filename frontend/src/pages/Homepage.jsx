@@ -311,14 +311,19 @@ export default function Homepage() {
   const fetchData = useCallback(async () => {
     try {
       const [docsRes, mentorsRes, postsRes] = await Promise.allSettled([
-        fetch(`${API_BASE}/documents/featured?limit=6`),
+        fetch(`${API_BASE}/documents?page=1&limit=6&sortBy=createdAt&order=desc`),
         fetch(`${API_BASE}/mentors/top?limit=6`),
         fetch(`${API_BASE}/posts?page=1&limit=6&sort=hot`),
       ]);
 
       if (docsRes.status === 'fulfilled' && docsRes.value.ok) {
         const data = await docsRes.value.json();
-        setDocuments(Array.isArray(data?.data) ? data.data.slice(0, 6) : []);
+        const homepageDocuments = Array.isArray(data?.data?.documents)
+          ? data.data.documents
+          : Array.isArray(data?.data)
+            ? data.data
+            : [];
+        setDocuments(homepageDocuments.slice(0, 6));
       }
       if (mentorsRes.status === 'fulfilled' && mentorsRes.value.ok) {
         const data = await mentorsRes.value.json();
