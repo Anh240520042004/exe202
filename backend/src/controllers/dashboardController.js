@@ -111,7 +111,7 @@ export const getAdminDashboard = async (req, res, next) => {
         .populate('documents.document', 'title')
         .sort({ createdAt: -1 })
         .limit(10),
-      Document.find({ isActive: true })
+      Document.find({ isActive: true, documentScope: { $in: ['marketplace', null] } })
         .populate('author', 'name')
         .sort({ salesCount: -1, downloads: -1 })
         .limit(10),
@@ -179,13 +179,13 @@ async function getUserStats() {
 
 async function getDocumentStats() {
   const [total, totalDownloads, totalSales] = await Promise.all([
-    Document.countDocuments({ isActive: true }),
+    Document.countDocuments({ isActive: true, documentScope: { $in: ['marketplace', null] } }),
     Document.aggregate([
-      { $match: { isActive: true } },
+      { $match: { isActive: true, documentScope: { $in: ['marketplace', null] } } },
       { $group: { _id: null, total: { $sum: '$downloads' } } }
     ]),
     Document.aggregate([
-      { $match: { isActive: true } },
+      { $match: { isActive: true, documentScope: { $in: ['marketplace', null] } } },
       { $group: { _id: null, total: { $sum: '$salesCount' } } }
     ])
   ]);
@@ -200,10 +200,10 @@ async function getDocumentStats() {
 async function getOrderStats() {
   const [total, completed, pending, revenue] = await Promise.all([
     Order.countDocuments(),
-    Order.countDocuments({ status: 'completed' }),
-    Order.countDocuments({ status: 'pending', paymentStatus: 'pending' }),
+    Order.countDocuments({ paymentStatus: 'paid' }),
+    Order.countDocuments({ paymentStatus: 'pending' }),
     Order.aggregate([
-      { $match: { status: 'completed', paymentStatus: 'paid' } },
+      { $match: { paymentStatus: 'paid' } },
       { $group: { _id: null, total: { $sum: '$totalAmount' } } }
     ])
   ]);
@@ -232,7 +232,6 @@ async function getMonthlyRevenue() {
   const revenue = await Order.aggregate([
     {
       $match: {
-        status: 'completed',
         paymentStatus: 'paid',
         createdAt: { $gte: start }
       }

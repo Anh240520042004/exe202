@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
-import { BookOpen, ExternalLink, FileText, Loader2, RefreshCw, Trash2, Upload } from 'lucide-react';
+import { BookOpen, Edit3, ExternalLink, FileText, Loader2, RefreshCw, Trash2, Upload, X } from 'lucide-react';
 import { documentService } from '../../services/api';
 
 const emptyForm = {
@@ -12,6 +12,7 @@ const emptyForm = {
   documentType: 'pdf',
   tags: '',
   externalUrl: '',
+  imageUrl: '',
 };
 
 const documentTypes = [
@@ -49,6 +50,7 @@ export default function AdminDocuments() {
   const [form, setForm] = useState(emptyForm);
   const [sourceType, setSourceType] = useState('upload');
   const [selectedFile, setSelectedFile] = useState(null);
+  const [editingDocument, setEditingDocument] = useState(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
 
@@ -74,6 +76,25 @@ export default function AdminDocuments() {
     setForm(emptyForm);
     setSelectedFile(null);
     setSourceType('upload');
+    setEditingDocument(null);
+  };
+
+  const startEdit = (doc) => {
+    setEditingDocument(doc);
+    setSelectedFile(null);
+    setSourceType(doc.externalUrl?.includes('drive.google.com') ? 'google_drive' : doc.externalUrl ? 'external_link' : 'upload');
+    setForm({
+      category: inferCategory(doc),
+      subjectCode: doc.subjectCode || '',
+      title: doc.title || '',
+      description: doc.description || '',
+      price: doc.price || 0,
+      documentType: doc.documentType || 'pdf',
+      tags: Array.isArray(doc.tags) ? doc.tags.join(', ') : '',
+      externalUrl: doc.externalUrl || '',
+      imageUrl: doc.previewImages?.[0] || '',
+    });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const submit = async (event) => {
@@ -89,7 +110,7 @@ export default function AdminDocuments() {
       return;
     }
 
-    if (sourceType === 'upload' && !selectedFile) {
+    if (!editingDocument && sourceType === 'upload' && !selectedFile) {
       toast.error('Vui lòng chọn file');
       return;
     }
@@ -100,12 +121,14 @@ export default function AdminDocuments() {
     }
 
     const formData = new FormData();
-    if (sourceType === 'upload') {
+    if (!editingDocument && sourceType === 'upload') {
       formData.append('file', selectedFile);
       formData.append('title', form.title || selectedFile.name);
     } else {
       formData.append('title', form.title || 'Tài liệu marketplace');
-      formData.append('externalUrl', form.externalUrl);
+      if (editingDocument || sourceType !== 'upload') {
+        formData.append('externalUrl', sourceType === 'upload' ? '' : form.externalUrl);
+      }
     }
     formData.append('category', form.category);
     formData.append('subjectCode', form.subjectCode.toUpperCase());
@@ -113,11 +136,17 @@ export default function AdminDocuments() {
     formData.append('price', form.price);
     formData.append('documentType', form.documentType);
     formData.append('tags', form.tags);
+    if (editingDocument || form.imageUrl) formData.append('imageUrl', form.imageUrl);
 
     try {
       setSubmitting(true);
-      await documentService.createMarketplace(formData);
-      toast.success('Đã đăng tài liệu lên marketplace');
+      if (editingDocument) {
+        await documentService.update(editingDocument._id, Object.fromEntries(formData.entries()));
+        toast.success('Da cap nhat tai lieu');
+      } else {
+        await documentService.createMarketplace(formData);
+        toast.success('Da dang tai lieu len marketplace');
+      }
       resetForm();
       await loadData();
     } catch (error) {
@@ -159,7 +188,7 @@ export default function AdminDocuments() {
         <section className="glass-card p-6 xl:col-span-1">
           <h2 className="text-xl font-bold flex items-center gap-2 mb-5 text-gray-900 dark:text-white">
             <Upload className="w-5 h-5 text-primary-500" />
-            Đăng tài liệu
+            {editingDocument ? 'Edit document' : 'Dang tai lieu'}
           </h2>
 
           <form onSubmit={submit} className="space-y-4">
@@ -206,6 +235,7 @@ export default function AdminDocuments() {
 
             <Input label="Tiêu đề" value={form.title} onChange={(value) => update('title', value)} />
             <Textarea label="Mô tả" value={form.description} onChange={(value) => update('description', value)} />
+            <Input label="Link ảnh" value={form.imageUrl} onChange={(value) => update('imageUrl', value)} type="url" />
 
             <div className="grid grid-cols-2 gap-3">
               <label className="block">
@@ -221,8 +251,14 @@ export default function AdminDocuments() {
 
             <button disabled={submitting} className="w-full bg-primary-500 text-white rounded-xl px-4 py-3 flex items-center justify-center gap-2 font-semibold disabled:opacity-50 hover:bg-primary-600 shadow-sm shadow-primary-500/25 transition-all">
               {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
-              Đăng lên marketplace
+              {editingDocument ? 'Cap nhat tai lieu' : 'Dang len marketplace'}
             </button>
+            {editingDocument && (
+              <button type="button" onClick={resetForm} className="w-full glass-nav-link rounded-xl px-4 py-3 flex items-center justify-center gap-2 font-semibold text-sm">
+                <X className="w-4 h-4" />
+                Huy chinh sua
+              </button>
+            )}
           </form>
         </section>
 
@@ -240,6 +276,13 @@ export default function AdminDocuments() {
             <div className="space-y-3">
               {documents.map((doc) => (
                 <div key={doc._id} className="glass-subtle rounded-xl p-4 flex items-start justify-between gap-3 border border-gray-150 dark:border-white/5 bg-white/40 dark:bg-white/5">
+                  {doc.previewImages?.[0] && (
+                    <img
+                      src={doc.previewImages[0]}
+                      alt={doc.title}
+                      className="w-14 h-14 rounded-lg object-cover border border-gray-150 dark:border-white/10 flex-shrink-0 bg-white/60"
+                    />
+                  )}
                   <div className="min-w-0 flex-1">
                     <p className="font-bold text-gray-900 dark:text-white truncate mb-2">{doc.title}</p>
                     <p className="text-xs font-semibold text-gray-500 dark:text-gray-400">
@@ -253,6 +296,9 @@ export default function AdminDocuments() {
                         {doc.externalUrl ? <ExternalLink className="w-4 h-4" /> : <FileText className="w-4 h-4" />}
                       </a>
                     )}
+                    <button onClick={() => startEdit(doc)} className="text-primary-600 hover:text-primary-700 p-2 hover:bg-primary-50 dark:hover:bg-primary-950/20 rounded-lg">
+                      <Edit3 className="w-4 h-4" />
+                    </button>
                     <button onClick={() => removeDocument(doc)} className="text-red-500 hover:text-red-650 p-2 hover:bg-red-50 dark:hover:bg-red-950/20 rounded-lg">
                       <Trash2 className="w-4 h-4" />
                     </button>

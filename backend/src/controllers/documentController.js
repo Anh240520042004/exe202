@@ -47,6 +47,20 @@ const validateExternalUrl = (externalUrl) => {
   }
 };
 
+const validateImageUrl = (imageUrl) => {
+  if (!imageUrl) return null;
+
+  try {
+    const url = new URL(imageUrl);
+    if (!['http:', 'https:'].includes(url.protocol)) {
+      return 'Image URL must start with http:// or https://';
+    }
+    return null;
+  } catch {
+    return 'Invalid image URL format';
+  }
+};
+
 const fileTypeMap = {
   pdf: 'pdf',
   doc: 'doc',
@@ -191,7 +205,7 @@ export const createMarketplaceDocument = async (req, res, next) => {
       return next(apiError('Only admin can create marketplace documents', 403));
     }
 
-    const { title, description, subjectCode, category, semester, price, documentType, tags, externalUrl } = req.body;
+    const { title, description, subjectCode, category, semester, price, documentType, tags, externalUrl, imageUrl } = req.body;
     const file = req.file;
 
     if (!subjectCode) {
@@ -208,6 +222,9 @@ export const createMarketplaceDocument = async (req, res, next) => {
 
     const urlError = validateExternalUrl(externalUrl);
     if (urlError) return next(apiError(urlError, 400));
+
+    const imageUrlError = validateImageUrl(imageUrl);
+    if (imageUrlError) return next(apiError(imageUrlError, 400));
 
     const normalizedSubject = subjectCode.toUpperCase();
     const ext = file ? file.originalname.split('.').pop().toLowerCase() : null;
@@ -229,6 +246,7 @@ export const createMarketplaceDocument = async (req, res, next) => {
       fileSize: file ? file.size : 0,
       documentType: documentType || 'pdf',
       tags: tags ? tags.split(',').map((tag) => tag.trim()).filter(Boolean) : [],
+      previewImages: imageUrl ? [imageUrl.trim()] : [],
       sourceType: externalUrl ? (externalUrl.includes('drive.google.com') ? 'google_drive' : 'external_link') : 'upload',
       externalUrl: externalUrl || '',
     });
@@ -368,9 +386,29 @@ export const updateDocument = async (req, res, next) => {
 
     allowedFields.forEach((field) => {
       if (req.body[field] !== undefined) {
-        document[field] = req.body[field];
+        if (field === 'tags' && typeof req.body.tags === 'string') {
+          document.tags = req.body.tags.split(',').map((tag) => tag.trim()).filter(Boolean);
+        } else if (field === 'subjectCode') {
+          document.subjectCode = req.body.subjectCode.toUpperCase();
+        } else {
+          document[field] = req.body[field];
+        }
       }
     });
+
+    if (req.body.imageUrl !== undefined) {
+      const imageUrlError = validateImageUrl(req.body.imageUrl);
+      if (imageUrlError) return next(apiError(imageUrlError, 400));
+      document.previewImages = req.body.imageUrl ? [req.body.imageUrl.trim()] : [];
+    }
+
+    if (req.body.externalUrl !== undefined) {
+      const urlError = validateExternalUrl(req.body.externalUrl);
+      if (urlError) return next(apiError(urlError, 400));
+      document.sourceType = req.body.externalUrl
+        ? (req.body.externalUrl.includes('drive.google.com') ? 'google_drive' : 'external_link')
+        : 'upload';
+    }
 
     await document.save();
 
