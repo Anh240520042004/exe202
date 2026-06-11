@@ -281,9 +281,9 @@ export default function MentorProfileEditor({ user, onSaved }) {
     } catch (error) {
       setPromotionPayment(fallbackPayment);
       if (error.response?.status === 404) {
-        toast.error('Backend hien tai chua deploy API goi uu tien moi. Da hien QR fallback de thanh toan thu cong.');
+        toast('Da hien QR fallback de thanh toan thu cong.');
       } else {
-        toast.error(error.response?.data?.message || 'Khong the tao thanh toan goi uu tien. Da chuyen sang QR fallback.');
+        toast(error.response?.data?.message || 'Khong the tao thanh toan tu dong. Da chuyen sang QR fallback.');
       }
     } finally {
       setPromoting(false);
