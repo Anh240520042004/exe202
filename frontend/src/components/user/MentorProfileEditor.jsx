@@ -259,21 +259,32 @@ export default function MentorProfileEditor({ user, onSaved }) {
     }
   };
   const startPromotionPayment = async (plan) => {
+    const fallbackPayment = createFallbackPromotionPayment(plan);
+
     setPromoting(true);
+    setSelectedPlan(plan);
+    setPaymentConfirmed(false);
+    setPollingCount(0);
+    setPromotionPayment(fallbackPayment);
+
     try {
-      setSelectedPlan(plan);
-      setPaymentConfirmed(false);
-      setPollingCount(0);
       const response = await api.post('/payments/mentor-promotion/create', { planId: plan.id });
-      setPromotionPayment(response.data?.data || response.data);
+      const paymentData = response.data?.data || response.data;
+      setPromotionPayment({
+        ...fallbackPayment,
+        ...paymentData,
+        plan: paymentData?.plan || fallbackPayment.plan,
+        bankInfo: paymentData?.bankInfo || fallbackPayment.bankInfo,
+        fallback: false,
+      });
       toast.success('Da tao ma QR thanh toan goi uu tien.');
     } catch (error) {
+      setPromotionPayment(fallbackPayment);
       if (error.response?.status === 404) {
-        setPromotionPayment(createFallbackPromotionPayment(plan));
-        toast.error('Backend chua co API goi uu tien moi. Tam thoi hien QR, can deploy backend de tu dong xac nhan.');
-        return;
+        toast.error('Backend hien tai chua deploy API goi uu tien moi. Da hien QR fallback de thanh toan thu cong.');
+      } else {
+        toast.error(error.response?.data?.message || 'Khong the tao thanh toan goi uu tien. Da chuyen sang QR fallback.');
       }
-      toast.error(error.response?.data?.message || 'Khong the tao thanh toan goi uu tien');
     } finally {
       setPromoting(false);
     }
