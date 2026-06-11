@@ -36,15 +36,25 @@ export default function DocumentDetail() {
         if (data.data?.documentScope === 'mentor_profile') {
           setOwned(true);
         } else if (isAuthenticated) {
-          const ordersRes = await axios.get(`${API_URL}/api/orders`, {
-            headers: { Authorization: `Bearer ${accessToken}` }
-          });
-          const orders = ordersRes.data?.data || [];
-          const isOwned = orders.some((order) =>
-            order.documents?.some((item) => item.document?._id === id || item.document === id) &&
-            order.paymentStatus === 'paid'
-          );
-          setOwned(isOwned);
+          try {
+            const ordersRes = await axios.get(`${API_URL}/api/orders`, {
+              headers: { Authorization: `Bearer ${accessToken}` }
+            });
+            const ordersPayload = ordersRes.data?.data;
+            const orders = Array.isArray(ordersPayload?.orders)
+              ? ordersPayload.orders
+              : Array.isArray(ordersPayload)
+                ? ordersPayload
+                : [];
+            const isOwned = orders.some((order) =>
+              order.paymentStatus === 'paid' &&
+              order.documents?.some((item) => item.document?._id === id || item.document === id)
+            );
+            setOwned(isOwned);
+          } catch (orderError) {
+            console.error('Failed to check document ownership:', orderError);
+            setOwned(false);
+          }
         }
       } catch (err) {
         toast.error('Không tìm thấy tài liệu');
@@ -54,7 +64,7 @@ export default function DocumentDetail() {
       }
     };
     fetchDoc();
-  }, [id, isAuthenticated]);
+  }, [accessToken, id, isAuthenticated, navigate]);
 
   const handleBuy = () => {
     if (!isAuthenticated) return navigate('/login');
