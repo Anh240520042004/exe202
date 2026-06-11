@@ -726,13 +726,13 @@ export const approvePayment = async (req, res, next) => {
       return next(apiError('Order not found', 404));
     }
 
-    if (order.paymentStatus === 'paid') {
-      return next(apiError('Order already paid', 400));
-    }
-
     // Check if user exists
     if (!order.user) {
       return next(apiError('Order user not found', 400));
+    }
+
+    if (order.paymentStatus === 'paid') {
+      return res.json(apiSuccess(order, 'Payment already approved'));
     }
 
     // Update order status
