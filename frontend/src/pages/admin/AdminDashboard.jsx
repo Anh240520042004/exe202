@@ -1,6 +1,7 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchAdminDashboard } from '../../store/dashboardSlice';
+import { documentService } from '../../services/api';
 import { Link } from 'react-router-dom';
 import {
   Users,
@@ -15,6 +16,7 @@ import {
 
 const AdminDashboard = () => {
   const dispatch = useDispatch();
+  const [marketplaceDocumentTotal, setMarketplaceDocumentTotal] = useState(null);
 
   const { admin, isLoading } = useSelector(
     (state) => state.dashboard
@@ -22,6 +24,23 @@ const AdminDashboard = () => {
 
   useEffect(() => {
     dispatch(fetchAdminDashboard());
+
+    let isMounted = true;
+    documentService.getAll({ limit: 1 })
+      .then((response) => {
+        if (!isMounted) return;
+        const total = response.data?.data?.pagination?.total;
+        if (Number.isFinite(total)) {
+          setMarketplaceDocumentTotal(total);
+        }
+      })
+      .catch(() => {
+        if (isMounted) setMarketplaceDocumentTotal(null);
+      });
+
+    return () => {
+      isMounted = false;
+    };
   }, [dispatch]);
 
   if (isLoading || !admin) {
@@ -76,7 +95,7 @@ const AdminDashboard = () => {
           <OverviewCard
             icon={<BookOpen />}
             label="Documents"
-            value={stats?.documentStats?.activeMarketplace ?? stats?.documentStats?.total ?? overview?.totalDocuments ?? 0}
+            value={marketplaceDocumentTotal ?? stats?.documentStats?.activeMarketplace ?? stats?.documentStats?.total ?? overview?.totalDocuments ?? 0}
             subtext={`${stats?.documentStats?.totalDownloads || overview?.documentStats?.totalDownloads || 0} downloads`}
             color="purple"
           />
