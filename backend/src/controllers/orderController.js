@@ -758,6 +758,10 @@ export const approvePayment = async (req, res, next) => {
       });
     }
 
+    res.json(apiSuccess(order, 'Payment approved successfully'));
+
+    (async () => {
+      try {
     // Update documents sales count
     for (const item of order.documents) {
       if (!item.document) continue;
@@ -787,8 +791,6 @@ export const approvePayment = async (req, res, next) => {
       `Đơn hàng của bạn đã được xác nhận. Bây giờ bạn có thể tải tài liệu.`,
       'success'
     );
-
-    res.json(apiSuccess(order, 'Payment approved successfully'));
 
     // Send confirmation email
     try {
@@ -824,6 +826,10 @@ export const approvePayment = async (req, res, next) => {
     } catch (pointError) {
       console.error('Failed to award points:', pointError);
     }
+      } catch (followUpError) {
+        console.error('Failed to run payment approval follow-up:', followUpError);
+      }
+    })();
 
   } catch (error) {
     next(error);

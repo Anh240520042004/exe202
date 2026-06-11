@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { CheckCircle, XCircle, Clock, Search, Eye, X } from 'lucide-react';
 import toast from 'react-hot-toast';
@@ -85,9 +85,20 @@ export default function AdminPayments() {
       });
 
       const text = await response.text();
-      const data = text ? JSON.parse(text) : {};
+      let data = {};
+      try {
+        data = text ? JSON.parse(text) : {};
+      } catch {
+        data = { message: text };
+      }
 
       if (!response.ok) {
+        if (response.status === 400 && data.message === 'Order already paid') {
+          toast.success('Đã xác nhận thanh toán!');
+          setShowModal(false);
+          await fetchPendingPayments();
+          return;
+        }
         throw new Error(data.message || 'Không thể xử lý thanh toán');
       }
 
@@ -97,12 +108,13 @@ export default function AdminPayments() {
           : 'Đã từ chối thanh toán!'
         );
         setShowModal(false);
-        fetchPendingPayments();
+        await fetchPendingPayments();
       } else {
         toast.error(data.message || 'Có lỗi xảy ra');
       }
     } catch (error) {
-      toast.error('Có lỗi xảy ra');
+      console.error('Payment action failed:', error);
+      toast.error(error.name === 'AbortError' ? 'Yêu cầu quá lâu, vui lòng thử lại' : (error.message || 'Có lỗi xảy ra'));
     } finally {
       window.clearTimeout(timeoutId);
       setProcessing(false);
