@@ -8,7 +8,6 @@ import {
   Award,
   BookOpen,
   Briefcase,
-  Calendar,
   ExternalLink,
   FileText,
   GraduationCap,
@@ -100,8 +99,6 @@ export default function MentorProfile() {
                 <p className="text-lg text-gray-600 dark:text-gray-300 mt-1">{profile.title || profile.major || 'Mentor'}</p>
                 <div className="flex flex-wrap gap-3 mt-3 text-sm text-gray-600 dark:text-gray-300 font-medium">
                   <Rating value={profile.rating || profile.documentRating || stats?.averageRating || 0} />
-                  <span>{stats?.totalSessions || profile.totalSessions || 0} buổi học</span>
-                  <span>{Number(profile.pricePerHour || 0).toLocaleString()}đ/giờ</span>
                 </div>
                 <div className="flex flex-wrap gap-3 mt-3">
                   <button
@@ -123,11 +120,6 @@ export default function MentorProfile() {
                 </div>
               </div>
             </div>
-
-            <button className="bg-primary-500 text-white rounded-xl px-5 py-3 flex items-center justify-center gap-2 hover:bg-primary-600 font-semibold shadow-md hover:shadow-primary-500/20 transition-all">
-              <Calendar className="w-5 h-5" />
-              Đặt lịch Mentor
-            </button>
           </div>
         </div>
       </section>
@@ -180,7 +172,7 @@ export default function MentorProfile() {
                 ))}
               </div>
             ) : docRestricted ? (
-              <p className="text-sm text-gray-550 dark:text-gray-400">Đặt lịch với mentor này để xem tài liệu họ tải lên hồ sơ.</p>
+              <p className="text-sm text-gray-550 dark:text-gray-400">Tai lieu ho so cua mentor nay dang duoc gioi han quyen xem.</p>
             ) : (
               <p className="text-sm text-gray-550 dark:text-gray-400">Mentor chưa tải tài liệu nào lên hồ sơ.</p>
             )}

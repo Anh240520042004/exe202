@@ -10,10 +10,10 @@ import {
   QrCode,
   Copy,
   Sparkles,
-  Download
+  Coins
 } from 'lucide-react';
 import toast from 'react-hot-toast';
-import api, { orderService, documentService, mentorService } from '../../services/api';
+import api, { orderService, documentService, mentorService, rewardService } from '../../services/api';
 
 export default function Checkout() {
   const { type, id } = useParams();
@@ -25,6 +25,9 @@ export default function Checkout() {
   const [orderCreated, setOrderCreated] = useState(false);
   const [orderDetails, setOrderDetails] = useState(null);
   const [sepayPaymentData, setSepayPaymentData] = useState(null);
+  const [rewardInfo, setRewardInfo] = useState(null);
+  const [pointsQuote, setPointsQuote] = useState(null);
+  const [redeemLoading, setRedeemLoading] = useState(false);
   const selectedPaymentMethod = 'sepay';
 
   const [paymentConfirmed, setPaymentConfirmed] = useState(false);
@@ -36,7 +39,17 @@ export default function Checkout() {
 
   useEffect(() => {
     fetchItemDetails();
+    fetchRewardBalance();
   }, [type, id]);
+
+  const fetchRewardBalance = async () => {
+    try {
+      const response = await rewardService.getBalance();
+      setRewardInfo(response.data?.data || response.data);
+    } catch {
+      setRewardInfo(null);
+    }
+  };
 
   const handleSePaySuccess = () => {
     setPaymentConfirmed(true);
@@ -174,16 +187,24 @@ export default function Checkout() {
     }
   };
 
+  const createOrder = async (paymentMethod = selectedPaymentMethod) => {
+    if (!itemDetails) return null;
+    if (orderDetails?._id) return orderDetails;
+
+    const response = await orderService.create({
+      documents: [{ documentId: itemDetails.id }],
+      paymentMethod,
+    });
+    const order = response.data?.data || response.data;
+    setOrderDetails(order);
+    return order;
+  };
+
   const handleCreateOrder = async () => {
     if (!itemDetails) return;
     setPaymentLoading(true);
     try {
-      const response = await orderService.create({
-        documents: [{ documentId: itemDetails.id }],
-        paymentMethod: selectedPaymentMethod,
-      });
-      const order = response.data?.data || response.data;
-      setOrderDetails(order);
+      const order = await createOrder(selectedPaymentMethod);
 
       setOrderCreated(true);
       setPollTimeout(false);
@@ -207,6 +228,40 @@ export default function Checkout() {
       toast.error(error.response?.data?.message || 'Không thể tạo yêu cầu thanh toán');
     } finally {
       setPaymentLoading(false);
+    }
+  };
+
+  const handleRedeemWithPoints = async () => {
+    if (!itemDetails) return;
+    setRedeemLoading(true);
+    try {
+      const order = await createOrder('points');
+      const quoteResponse = await rewardService.getPointsRequired(order._id);
+      const quote = quoteResponse.data?.data || quoteResponse.data;
+      setPointsQuote(quote);
+
+      if (!quote?.canFullyRedeem) {
+        toast.error(`Ban can ${formatPoints(quote?.maxPointsAllowed || 0)} diem de doi tai lieu nay.`);
+        return;
+      }
+
+      const redeemResponse = await rewardService.redeem({
+        orderId: order._id,
+        pointsToUse: quote.maxPointsAllowed,
+      });
+      const redeemed = redeemResponse.data?.data || redeemResponse.data;
+
+      toast.success(redeemed?.message || 'Doi diem thanh cong! Tai lieu da duoc them vao thu vien.');
+      navigate(`/payment/result?${new URLSearchParams({
+        status: 'success',
+        method: 'points',
+        orderId: order._id,
+        amount: '0',
+      }).toString()}`, { replace: true });
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Khong the doi diem cho tai lieu nay');
+    } finally {
+      setRedeemLoading(false);
     }
   };
 
@@ -304,6 +359,23 @@ export default function Checkout() {
               <div className="glass-card rounded-2xl shadow-sm p-6">
                 <h2 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Phương thức thanh toán</h2>
                 <div className="space-y-3">
+                  <button
+                    type="button"
+                    onClick={handleRedeemWithPoints}
+                    disabled={redeemLoading || paymentLoading}
+                    className="w-full flex items-center gap-4 p-4 border-2 rounded-2xl border-amber-300 bg-amber-50/70 dark:bg-amber-400/10 text-left disabled:opacity-50 hover:border-amber-400 transition-colors"
+                  >
+                    <div className="w-12 h-12 bg-gradient-to-br from-amber-400 to-orange-500 rounded-xl flex items-center justify-center flex-shrink-0">
+                      {redeemLoading ? <Loader2 className="w-5 h-5 animate-spin text-white" /> : <Coins className="w-6 h-6 text-white" />}
+                    </div>
+                    <div className="flex-1">
+                      <p className="font-medium text-gray-900 dark:text-white">Doi diem mua tai lieu</p>
+                      <p className="text-sm text-gray-500">
+                        Hien co {formatPoints(rewardInfo?.currentBalance || 0)} diem
+                        {pointsQuote?.maxPointsAllowed ? ` - Can ${formatPoints(pointsQuote.maxPointsAllowed)} diem` : ''}
+                      </p>
+                    </div>
+                  </button>
                   <div className="flex items-center gap-4 p-4 border-2 rounded-2xl border-primary-500 bg-primary-200/25 dark:bg-primary-400/10">
                     <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-xl flex items-center justify-center flex-shrink-0">
                       <span className="text-lg font-bold text-white">S</span>

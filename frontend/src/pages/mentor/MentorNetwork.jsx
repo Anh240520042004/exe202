@@ -5,7 +5,6 @@ import {
   Award,
   BookOpen,
   Briefcase,
-  Calendar,
   Crown,
   ExternalLink,
   FileText,
@@ -161,7 +160,6 @@ export default function MentorNetwork() {
   const [popularDocs, setPopularDocs] = useState([]);
   const [topRatedDocs, setTopRatedDocs] = useState([]);
   const [selectedMentor, setSelectedMentor] = useState(null);
-  const [bookingMentor, setBookingMentor] = useState(null);
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState({ search: '', subject: '', sortBy: 'rating' });
 
@@ -234,7 +232,7 @@ export default function MentorNetwork() {
             <SectionTitle icon={Sparkles} title={isMentorUser ? 'Gợi ý mentor cùng lĩnh vực' : 'Gợi ý mentor phù hợp'} />
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
               {suggestions.slice(0, 4).map(mentor => (
-                <MentorCard key={mentor._id} mentor={mentor} compact onOpen={() => navigate(`/mentors/${mentor._id}`)} onBook={() => setBookingMentor(mentor)} />
+                <MentorCard key={mentor._id} mentor={mentor} compact onOpen={() => navigate(`/mentors/${mentor._id}`)} />
               ))}
             </div>
           </section>
@@ -280,7 +278,7 @@ export default function MentorNetwork() {
           ) : mentors.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
               {mentors.map(mentor => (
-                <MentorCard key={mentor._id} mentor={mentor} onOpen={() => navigate(`/mentors/${mentor._id}`)} onBook={() => setBookingMentor(mentor)} />
+                <MentorCard key={mentor._id} mentor={mentor} onOpen={() => navigate(`/mentors/${mentor._id}`)} />
               ))}
             </div>
           ) : (
@@ -293,11 +291,9 @@ export default function MentorNetwork() {
         <MentorDetailModal
           mentor={selectedMentor}
           onClose={() => setSelectedMentor(null)}
-          onBook={() => setBookingMentor(selectedMentor)}
           navigate={navigate}
         />
       )}
-      {bookingMentor && <BookingModal mentor={bookingMentor} onClose={() => setBookingMentor(null)} />}
     </div>
   );
 }
@@ -358,7 +354,7 @@ const DocumentMini = ({ doc, metric }) => (
   </div>
 );
 
-const MentorCard = ({ mentor, onOpen, onBook, compact = false }) => {
+const MentorCard = ({ mentor, onOpen, compact = false }) => {
   const p = mentor.mentorProfile || {};
   const promoted = p.promotion?.isPromoted && (!p.promotion?.paidUntil || new Date(p.promotion.paidUntil) > new Date());
   return (
@@ -397,7 +393,6 @@ const MentorCard = ({ mentor, onOpen, onBook, compact = false }) => {
         </div>
         <div className="flex gap-2">
           <button onClick={onOpen} className="glass-nav-link px-3 py-2 rounded-xl">Hồ sơ</button>
-          <button onClick={onBook} className="bg-primary-500 text-white px-3 py-2 rounded-xl hover:bg-primary-600">Đặt lịch</button>
         </div>
       </div>
     </div>
@@ -418,7 +413,7 @@ const Rating = ({ value }) => (
   </span>
 );
 
-const MentorDetailModal = ({ mentor, onClose, onBook, navigate }) => {
+const MentorDetailModal = ({ mentor, onClose, navigate }) => {
   const p = mentor.mentorProfile || {};
   const [reviews, setReviews] = useState([]);
   const [mentorDocuments, setMentorDocuments] = useState([]);
@@ -534,7 +529,7 @@ const MentorDetailModal = ({ mentor, onClose, onBook, navigate }) => {
                   ))}
                 </div>
               ) : docRestricted ? (
-                <p className="text-sm text-gray-500">Đặt lịch với mentor này để xem tài liệu của họ.</p>
+                <p className="text-sm text-gray-500">Tai lieu cua mentor nay dang duoc gioi han quyen xem.</p>
               ) : (
                 <p className="text-sm text-gray-500">Chưa có tài liệu.</p>
               )}
@@ -543,10 +538,6 @@ const MentorDetailModal = ({ mentor, onClose, onBook, navigate }) => {
 
           <aside className="space-y-5">
             <div className="glass-card rounded-2xl p-5">
-              <button onClick={onBook} className="w-full bg-primary-500 text-white rounded-xl py-3 font-semibold hover:bg-primary-600 flex items-center justify-center gap-2">
-                <Calendar className="w-5 h-5" />
-                Đặt lịch mentor
-              </button>
               <div className="flex flex-wrap gap-2 mt-4">
                 {(p.expertise || []).map(item => <span key={item} className="glass-subtle rounded-lg px-2 py-1 text-xs">{item}</span>)}
               </div>
@@ -790,62 +781,5 @@ const Textarea = ({ label, value, onChange }) => (
     <textarea value={value} onChange={e => onChange(e.target.value)} rows={4} className="glass-input w-full px-3 py-2" />
   </label>
 );
-
-const BookingModal = ({ mentor, onClose }) => {
-  const [form, setForm] = useState({
-    subject: mentor.mentorProfile?.expertise?.[0] || '',
-    topic: '',
-    date: '',
-    startTime: '09:00',
-    endTime: '10:00',
-    notes: '',
-  });
-  const [submitting, setSubmitting] = useState(false);
-
-  const submit = async (event) => {
-    event.preventDefault();
-    setSubmitting(true);
-    try {
-      await mentorService.createBooking({ ...form, mentorId: mentor._id });
-      toast.success('Đã tạo lịch mentor thành công');
-      onClose();
-    } catch (error) {
-      toast.error(error.response?.data?.message || 'Không thể tạo lịch mentor');
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
-  return (
-    <div className="fixed inset-0 glass-overlay z-50 flex items-center justify-center p-4">
-      <form onSubmit={submit} className="glass-modal rounded-3xl max-w-lg w-full p-6 space-y-4">
-        <div className="flex items-start justify-between">
-          <div className="flex items-center gap-3">
-            <img src={mentor.avatar || avatarFor(mentor)} alt={mentor.name} className="w-12 h-12 rounded-full" />
-            <div>
-              <h3 className="font-bold text-lg">Đặt lịch với {mentor.name}</h3>
-              <p className="text-sm text-gray-500">{Number(mentor.mentorProfile?.pricePerHour || 0).toLocaleString()}đ/giờ</p>
-            </div>
-          </div>
-          <button type="button" onClick={onClose} className="glass-nav-link p-2 rounded-xl"><X className="w-5 h-5" /></button>
-        </div>
-        <select required value={form.subject} onChange={e => setForm(prev => ({ ...prev, subject: e.target.value }))} className="glass-input w-full px-3 py-2">
-          <option value="">Chọn môn</option>
-          {(mentor.mentorProfile?.expertise || subjects).map(subject => <option key={subject} value={subject}>{subject}</option>)}
-        </select>
-        <input required value={form.topic} onChange={e => setForm(prev => ({ ...prev, topic: e.target.value }))} placeholder="Chủ đề cần mentor" className="glass-input w-full px-3 py-2" />
-        <div className="grid grid-cols-3 gap-3">
-          <input required type="date" value={form.date} onChange={e => setForm(prev => ({ ...prev, date: e.target.value }))} className="glass-input px-3 py-2" />
-          <input required type="time" value={form.startTime} onChange={e => setForm(prev => ({ ...prev, startTime: e.target.value }))} className="glass-input px-3 py-2" />
-          <input required type="time" value={form.endTime} onChange={e => setForm(prev => ({ ...prev, endTime: e.target.value }))} className="glass-input px-3 py-2" />
-        </div>
-        <textarea value={form.notes} onChange={e => setForm(prev => ({ ...prev, notes: e.target.value }))} rows={3} placeholder="Ghi chú thêm" className="glass-input w-full px-3 py-2" />
-        <button disabled={submitting} className="w-full bg-primary-500 text-white rounded-xl py-3 disabled:opacity-50">
-          {submitting ? 'Đang tạo lịch...' : 'Xác nhận đặt lịch'}
-        </button>
-      </form>
-    </div>
-  );
-};
 
 const avatarFor = (mentor) => `https://api.dicebear.com/7.x/avataaars/svg?seed=${mentor._id || mentor.email || mentor.name}`;
