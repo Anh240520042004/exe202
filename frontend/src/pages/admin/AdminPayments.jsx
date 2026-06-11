@@ -68,25 +68,19 @@ export default function AdminPayments() {
 
   const confirmAction = async () => {
     if (!selectedOrder) return;
-    setProcessing(true);
-    const controller = new AbortController();
-    const timeoutId = window.setTimeout(() => controller.abort(), 60000);
+    const orderToProcess = selectedOrder;
+    const currentAction = actionType;
+    const previousOrders = orders;
 
-    const completeIfNoLongerPending = async () => {
-      const nextOrders = await fetchPendingPayments({ silent: true });
-      const stillPending = nextOrders.some((order) => order._id === selectedOrder._id);
-      if (!stillPending) {
-        toast.success(actionType === 'approve' ? 'Đã xác nhận thanh toán!' : 'Đã từ chối thanh toán!');
-        setShowModal(false);
-        return true;
-      }
-      return false;
-    };
+    setProcessing(true);
+    setOrders((current) => current.filter((order) => order._id !== orderToProcess._id));
+    setShowModal(false);
+    toast.success(currentAction === 'approve' ? 'Đã xác nhận thanh toán!' : 'Đã từ chối thanh toán!');
 
     try {
-      const endpoint = actionType === 'approve' 
-        ? `/api/orders/${selectedOrder._id}/approve`
-        : `/api/orders/${selectedOrder._id}/reject`;
+      const endpoint = currentAction === 'approve'
+        ? `/api/orders/${orderToProcess._id}/approve`
+        : `/api/orders/${orderToProcess._id}/reject`;
 
       const response = await fetch(`${API_ORIGIN}${endpoint}`, {
         method: 'POST',
@@ -94,8 +88,7 @@ export default function AdminPayments() {
           'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify(actionType === 'approve' ? { adminNotes } : { reason: adminNotes }),
-        signal: controller.signal
+        body: JSON.stringify(currentAction === 'approve' ? { adminNotes } : { reason: adminNotes })
       });
 
       const text = await response.text();
@@ -108,30 +101,20 @@ export default function AdminPayments() {
 
       if (!response.ok) {
         if (response.status === 400 && data.message === 'Order already paid') {
-          toast.success('Đã xác nhận thanh toán!');
-          setShowModal(false);
           return;
         }
-        if (response.status === 400 && await completeIfNoLongerPending()) return;
+        const nextOrders = await fetchPendingPayments({ silent: true });
+        const stillPending = nextOrders.some((order) => order._id === orderToProcess._id);
+        if (!stillPending) return;
         throw new Error(data.message || 'Không thể xử lý thanh toán');
       }
 
-      if (data.success) {
-        toast.success(actionType === 'approve' 
-          ? 'Đã xác nhận thanh toán!' 
-          : 'Đã từ chối thanh toán!'
-        );
-        setShowModal(false);
-        await fetchPendingPayments();
-      } else {
-        toast.error(data.message || 'Có lỗi xảy ra');
-      }
+      await fetchPendingPayments({ silent: true });
     } catch (error) {
       console.error('Payment action failed:', error);
-      if (actionType === 'approve' && await completeIfNoLongerPending()) return;
-      toast.error(error.name === 'AbortError' ? 'Yêu cầu quá lâu, vui lòng thử lại' : (error.message || 'Có lỗi xảy ra'));
+      setOrders(previousOrders);
+      toast.error(error.message || 'Có lỗi xảy ra');
     } finally {
-      window.clearTimeout(timeoutId);
       setProcessing(false);
     }
   };
