@@ -46,8 +46,14 @@ const DownloadHistory = () => {
 
   const handleViewDocument = async (item) => {
     const doc = item.document;
-    if (!doc || !doc.fileUrl) {
+    const documentUrl = doc?.externalUrl || doc?.fileUrl;
+    if (!doc || !documentUrl) {
       alert('Không tìm thấy tài liệu');
+      return;
+    }
+
+    if (doc.externalUrl || documentUrl.startsWith('http')) {
+      window.open(documentUrl, '_blank', 'noopener,noreferrer');
       return;
     }
 
@@ -56,9 +62,7 @@ const DownloadHistory = () => {
 
     try {
       // Get file URL
-      const fullUrl = doc.fileUrl.startsWith('http') 
-        ? doc.fileUrl 
-        : `${API_URL.replace('/api', '')}${doc.fileUrl}`;
+      const fullUrl = `${API_URL.replace('/api', '')}${documentUrl}`;
 
       // Fetch file content
       const response = await axios.get(fullUrl);
@@ -83,6 +87,12 @@ const DownloadHistory = () => {
           ? downloadData.downloadUrl 
           : `${API_URL}${downloadData.downloadUrl}`;
         
+        if (downloadData.sourceType === 'google_drive' || downloadData.sourceType === 'external_link') {
+          window.open(fullUrl, '_blank', 'noopener,noreferrer');
+          loadHistory(pagination.page, searchQuery);
+          return;
+        }
+
         const link = document.createElement('a');
         link.href = fullUrl;
         link.download = downloadData.fileName || fileName || 'document';

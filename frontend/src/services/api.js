@@ -155,6 +155,11 @@ export const downloadOrderDocument = async (orderId, documentId) => {
     ? downloadData.downloadUrl
     : `${API_URL.replace('/api', '')}${downloadData.downloadUrl}`;
 
+  if (downloadData.sourceType === 'google_drive' || downloadData.sourceType === 'external_link') {
+    window.open(fullUrl, '_blank', 'noopener,noreferrer');
+    return response;
+  }
+
   const link = document.createElement('a');
   link.href = fullUrl;
   link.download = downloadData.fileName || 'document';

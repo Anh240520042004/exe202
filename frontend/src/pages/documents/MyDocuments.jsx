@@ -45,8 +45,14 @@ const MyDocuments = () => {
 
   const handleViewDocument = async (doc) => {
     const document = doc.document;
-    if (!document || !document.fileUrl) {
+    const documentUrl = document?.externalUrl || document?.fileUrl;
+    if (!document || !documentUrl) {
       alert('Không tìm thấy tài liệu');
+      return;
+    }
+
+    if (document.externalUrl || documentUrl.startsWith('http')) {
+      window.open(documentUrl, '_blank', 'noopener,noreferrer');
       return;
     }
 
@@ -54,9 +60,7 @@ const MyDocuments = () => {
     setLoadingPreview(true);
 
     try {
-      const fullUrl = document.fileUrl.startsWith('http') 
-        ? document.fileUrl 
-        : `${API_URL.replace('/api', '')}${document.fileUrl}`;
+      const fullUrl = `${API_URL.replace('/api', '')}${documentUrl}`;
 
       const response = await axios.get(fullUrl);
       setPreviewContent(response.data);

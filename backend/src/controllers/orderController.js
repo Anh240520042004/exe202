@@ -139,7 +139,7 @@ export const getMyDocuments = async (req, res, next) => {
 
     // Get all paid orders with populated documents (no pagination at DB level first)
     const allOrders = await Order.find(query)
-      .populate('documents.document', 'title subjectCode price previewImages fileUrl downloads isActive fileType fileSize pageCount author')
+      .populate('documents.document', 'title subjectCode price previewImages fileUrl externalUrl sourceType downloads isActive fileType fileSize pageCount author')
       .sort({ createdAt: -1 });
 
     // Flatten documents from all orders
@@ -557,7 +557,8 @@ export const downloadDocument = async (req, res, next) => {
     }
 
     res.json(apiSuccess({
-      downloadUrl: document.fileUrl,
+      downloadUrl: document.externalUrl || document.fileUrl,
+      sourceType: document.sourceType,
       title: document.title,
       fileName: document.fileName || document.title
     }, 'Document ready for download'));
@@ -740,13 +741,15 @@ export const approvePayment = async (req, res, next) => {
     await order.save();
 
     // Update payment
-    await Payment.findByIdAndUpdate(order.paymentId, {
-      status: 'completed',
-      paymentStatus: 'paid',
-      adminNotes,
-      approvedBy: req.user.id,
-      approvedAt: new Date()
-    });
+    if (order.paymentId) {
+      await Payment.findByIdAndUpdate(order.paymentId, {
+        status: 'completed',
+        paymentStatus: 'paid',
+        adminNotes,
+        approvedBy: req.user.id,
+        approvedAt: new Date()
+      });
+    }
 
     // Update transaction to completed
     if (order.transactionId) {
@@ -785,6 +788,8 @@ export const approvePayment = async (req, res, next) => {
       'success'
     );
 
+    res.json(apiSuccess(order, 'Payment approved successfully'));
+
     // Send confirmation email
     try {
       await emailService.sendPaymentConfirmation(order.user, {
@@ -820,7 +825,6 @@ export const approvePayment = async (req, res, next) => {
       console.error('Failed to award points:', pointError);
     }
 
-    res.json(apiSuccess(order, 'Payment approved successfully'));
   } catch (error) {
     next(error);
   }

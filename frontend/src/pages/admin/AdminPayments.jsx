@@ -66,6 +66,8 @@ export default function AdminPayments() {
   const confirmAction = async () => {
     if (!selectedOrder) return;
     setProcessing(true);
+    const controller = new AbortController();
+    const timeoutId = window.setTimeout(() => controller.abort(), 20000);
 
     try {
       const endpoint = actionType === 'approve' 
@@ -78,10 +80,16 @@ export default function AdminPayments() {
           'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ adminNotes })
+        body: JSON.stringify(actionType === 'approve' ? { adminNotes } : { reason: adminNotes }),
+        signal: controller.signal
       });
 
-      const data = await response.json();
+      const text = await response.text();
+      const data = text ? JSON.parse(text) : {};
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Không thể xử lý thanh toán');
+      }
 
       if (data.success) {
         toast.success(actionType === 'approve' 
@@ -96,6 +104,7 @@ export default function AdminPayments() {
     } catch (error) {
       toast.error('Có lỗi xảy ra');
     } finally {
+      window.clearTimeout(timeoutId);
       setProcessing(false);
     }
   };

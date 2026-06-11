@@ -767,6 +767,16 @@ export const downloadDocument = async (req, res, next) => {
 
     await user.save();
 
+    // Return external link or file
+    if (document.externalUrl) {
+      return res.json(apiSuccess({
+        downloadUrl: document.externalUrl,
+        fileName: document.fileName,
+        fileSize: document.fileSize,
+        sourceType: document.sourceType
+      }));
+    }
+
     // Return download URL or file
     if (document.fileUrl) {
       // If fileUrl is a full URL, return it
@@ -774,14 +784,16 @@ export const downloadDocument = async (req, res, next) => {
         return res.json(apiSuccess({
           downloadUrl: document.fileUrl,
           fileName: document.fileName,
-          fileSize: document.fileSize
+          fileSize: document.fileSize,
+          sourceType: document.sourceType
         }));
       }
       // Otherwise return the internal path
       return res.json(apiSuccess({
         downloadUrl: document.fileUrl,
         fileName: document.fileName,
-        fileSize: document.fileSize
+        fileSize: document.fileSize,
+        sourceType: document.sourceType
       }));
     }
 
@@ -802,6 +814,7 @@ export const getDownloadHistory = async (req, res, next) => {
     const user = await mongoose.model('User').findById(req.user.id)
       .populate({
         path: 'studentProfile.downloadHistory.document',
+        select: 'title subjectCode price previewImages fileUrl externalUrl sourceType downloads isActive fileType fileSize pageCount author fileName',
         populate: { path: 'author', select: 'name avatar' }
       });
 
