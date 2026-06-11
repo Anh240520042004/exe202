@@ -1,8 +1,32 @@
 import React, { useEffect, useState } from 'react';
-import { BadgeCheck, Crown, Loader2 } from 'lucide-react';
+import { BadgeCheck, CheckCircle, Copy, Crown, Loader2, QrCode, Sparkles } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { mentorService } from '../../services/api';
+import api, { mentorService } from '../../services/api';
 import { Card, Button } from '../ui';
+
+const promotionPlans = [
+  {
+    id: '7_days',
+    title: '7 ngay',
+    days: 7,
+    price: 19000,
+    caption: 'Thu hut hoc vien trong tuan nay',
+  },
+  {
+    id: '30_days',
+    title: '30 ngay',
+    days: 30,
+    price: 49000,
+    caption: 'Lua chon phu hop de duy tri hien dien',
+  },
+  {
+    id: 'yearly',
+    title: '1 nam',
+    days: 365,
+    price: 299000,
+    caption: 'Tiet kiem nhat cho mentor hoat dong dai han',
+  },
+];
 
 const emptyProfile = {
   title: '',
@@ -141,10 +165,52 @@ export default function MentorProfileEditor({ user, onSaved }) {
   const [form, setForm] = useState({ ...emptyProfile });
   const [saving, setSaving] = useState(false);
   const [promoting, setPromoting] = useState(false);
+  const [showPromotionModal, setShowPromotionModal] = useState(false);
+  const [selectedPlan, setSelectedPlan] = useState(null);
+  const [promotionPayment, setPromotionPayment] = useState(null);
+  const [paymentConfirmed, setPaymentConfirmed] = useState(false);
+  const [pollingCount, setPollingCount] = useState(0);
 
   useEffect(() => {
     setForm({ ...emptyProfile, ...profileToForm(user) });
   }, [user]);
+
+  useEffect(() => {
+    if (!promotionPayment?.transactionId || paymentConfirmed) return undefined;
+
+    let attempts = 0;
+    let stopped = false;
+
+    const checkPayment = async () => {
+      if (stopped) return;
+      attempts += 1;
+      setPollingCount(attempts);
+
+      try {
+        const response = await api.get(`/payments/check/${promotionPayment.transactionId}`);
+        const payload = response.data?.data;
+        if (response.data?.success && (payload?.paymentStatus === 'paid' || payload?.status === 'completed')) {
+          stopped = true;
+          setPaymentConfirmed(true);
+          toast.success('Thanh toan thanh cong! Ho so da duoc gan nhan uu tien.');
+          onSaved?.();
+        }
+      } catch {
+        if (attempts >= 60) {
+          stopped = true;
+          toast.error('Chua nhan duoc xac nhan thanh toan. Vui long kiem tra lai sau.');
+        }
+      }
+    };
+
+    checkPayment();
+    const intervalId = window.setInterval(checkPayment, 3000);
+
+    return () => {
+      stopped = true;
+      window.clearInterval(intervalId);
+    };
+  }, [promotionPayment?.transactionId, paymentConfirmed, onSaved]);
 
   const update = (key, value) => setForm((prev) => ({ ...prev, [key]: value }));
 
@@ -170,28 +236,44 @@ export default function MentorProfileEditor({ user, onSaved }) {
       setSaving(false);
     }
   };
-
-  const activatePromotion = async () => {
+  const startPromotionPayment = async (plan) => {
     setPromoting(true);
     try {
-      const res = await mentorService.activatePromotion({
-        mentorId: user._id,
-        days: 7,
-        priorityScore: 100,
-        campaignName: 'Ưu tiên tìm kiếm 7 ngày',
-      });
-      const updated = res.data?.data?.mentor;
-      if (updated) {
-        syncStoredUser(updated);
-      }
-      toast.success('Đã bật ưu tiên đề xuất trong 7 ngày');
-      onSaved?.();
+      setSelectedPlan(plan);
+      setPaymentConfirmed(false);
+      setPollingCount(0);
+      const response = await api.post('/payments/mentor-promotion/create', { planId: plan.id });
+      setPromotionPayment(response.data?.data || response.data);
+      toast.success('Da tao ma QR thanh toan goi uu tien.');
     } catch (error) {
-      toast.error(error.response?.data?.message || 'Không thể bật ưu tiên đề xuất');
+      toast.error(error.response?.data?.message || 'Khong the tao thanh toan goi uu tien');
     } finally {
       setPromoting(false);
     }
   };
+
+  const openPromotionModal = () => {
+    setShowPromotionModal(true);
+    setSelectedPlan(null);
+    setPromotionPayment(null);
+    setPaymentConfirmed(false);
+    setPollingCount(0);
+  };
+
+  const closePromotionModal = () => {
+    setShowPromotionModal(false);
+    setSelectedPlan(null);
+    setPromotionPayment(null);
+    setPaymentConfirmed(false);
+    setPollingCount(0);
+  };
+
+  const copyToClipboard = (text) => {
+    navigator.clipboard.writeText(text);
+    toast.success('Da sao chep');
+  };
+
+  const formatPrice = (amount) => `${new Intl.NumberFormat('vi-VN').format(amount)}d`;
 
   const promotion = user?.mentorProfile?.promotion;
   const isPromoted = promotion?.isPromoted && (!promotion?.paidUntil || new Date(promotion.paidUntil) > new Date());
@@ -212,12 +294,12 @@ export default function MentorProfileEditor({ user, onSaved }) {
         </div>
         <Button
           type="button"
-          onClick={activatePromotion}
+          onClick={openPromotionModal}
           isLoading={promoting}
           className="gap-2"
         >
           {!promoting && <Crown className="w-4 h-4" />}
-          Ưu tiên 7 ngày
+          Uu tien
         </Button>
       </div>
 
@@ -245,7 +327,102 @@ export default function MentorProfileEditor({ user, onSaved }) {
           </Button>
         </div>
       </form>
-    </Card>
+      {showPromotionModal && (
+        <div className="fixed inset-0 z-50 overflow-y-auto">
+          <button type="button" aria-label="Dong" className="fixed inset-0 glass-overlay" onClick={closePromotionModal} />
+          <div className="relative min-h-full flex items-center justify-center p-4">
+            <div className="glass-modal w-full max-w-4xl rounded-3xl overflow-hidden">
+              <div className="px-6 py-5 border-b glass-divider flex items-center justify-between gap-4">
+                <div>
+                  <h3 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                    <Crown className="w-6 h-6 text-primary-500" />
+                    Goi uu tien mentor
+                  </h3>
+                  <p className="text-sm text-gray-500 mt-1">Chon thoi gian hien thi noi bat tren danh sach mentor.</p>
+                </div>
+                <button type="button" onClick={closePromotionModal} className="glass-nav-link rounded-xl px-3 py-2 text-sm font-semibold">Dong</button>
+              </div>
+
+              <div className="p-6">
+                {!promotionPayment ? (
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    {promotionPlans.map((plan) => (
+                      <button
+                        key={plan.id}
+                        type="button"
+                        onClick={() => startPromotionPayment(plan)}
+                        disabled={promoting}
+                        className="glass-subtle text-left rounded-2xl p-5 border border-primary-200/50 hover:border-primary-400 hover:bg-primary-100/30 dark:hover:bg-primary-400/10 transition-all disabled:opacity-60"
+                      >
+                        <div className="flex items-center justify-between gap-3 mb-4">
+                          <div className="w-11 h-11 rounded-2xl bg-primary-400/20 flex items-center justify-center">
+                            <Sparkles className="w-5 h-5 text-primary-500" />
+                          </div>
+                          {plan.id === '30_days' && <span className="text-xs font-bold rounded-full bg-amber-100 text-amber-700 px-2 py-1">Pho bien</span>}
+                        </div>
+                        <p className="text-xl font-bold text-gray-900 dark:text-white">Uu tien {plan.title}</p>
+                        <p className="text-3xl font-black text-primary-600 mt-3">{formatPrice(plan.price)}</p>
+                        <p className="text-sm text-gray-500 mt-3 min-h-[2.5rem]">{plan.caption}</p>
+                        <div className="mt-5 w-full rounded-xl bg-primary-500 text-white py-2 text-center font-semibold">Chon goi</div>
+                      </button>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 lg:grid-cols-[320px_1fr] gap-6">
+                    <div className="glass-subtle rounded-2xl p-5 text-center">
+                      <p className="font-bold text-gray-900 dark:text-white mb-3">{selectedPlan ? `Uu tien ${selectedPlan.title}` : promotionPayment.plan?.name}</p>
+                      <div className="bg-white p-3 rounded-2xl border-2 border-dashed border-gray-300 inline-flex">
+                        {promotionPayment.qrUrl ? (
+                          <img src={promotionPayment.qrUrl} alt="Ma QR thanh toan uu tien" className="w-56 h-56 object-contain" />
+                        ) : (
+                          <div className="w-56 h-56 flex items-center justify-center"><QrCode className="w-16 h-16 text-gray-400" /></div>
+                        )}
+                      </div>
+                      <div className={`mt-4 rounded-xl px-3 py-2 text-sm font-semibold ${paymentConfirmed ? 'bg-emerald-100 text-emerald-700' : 'bg-blue-100 text-blue-700'}`}>
+                        {paymentConfirmed ? (
+                          <span className="inline-flex items-center gap-2"><CheckCircle className="w-4 h-4" /> Thanh toan thanh cong</span>
+                        ) : (
+                          <span className="inline-flex items-center gap-2"><Loader2 className="w-4 h-4 animate-spin" /> Dang cho xac nhan {pollingCount ? `(${pollingCount})` : ''}</span>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="space-y-4">
+                      <div className="glass-subtle rounded-2xl p-5">
+                        <h4 className="font-bold text-gray-900 dark:text-white mb-4">Thong tin chuyen khoan</h4>
+                        {[
+                          { label: 'Ngan hang', value: promotionPayment.bankInfo?.bankName || 'BIDV' },
+                          { label: 'So tai khoan', value: promotionPayment.bankInfo?.accountNumber, copy: true },
+                          { label: 'Chu tai khoan', value: promotionPayment.bankInfo?.accountName },
+                          { label: 'So tien', value: formatPrice(promotionPayment.amount), highlight: true },
+                          { label: 'Noi dung CK', value: promotionPayment.transactionId, copy: true, mono: true },
+                        ].map(({ label, value, copy, highlight, mono }) => (
+                          <div key={label} className="flex items-center justify-between gap-3 py-2 border-b border-white/10 last:border-b-0">
+                            <span className="text-sm text-gray-500">{label}</span>
+                            <div className="flex items-center gap-2 text-right">
+                              <span className={`font-semibold ${highlight ? 'text-primary-600' : 'text-gray-900 dark:text-white'} ${mono ? 'font-mono text-sm' : ''}`}>{value}</span>
+                              {copy && <button type="button" onClick={() => copyToClipboard(value)} className="glass-nav-link rounded-lg p-1"><Copy className="w-4 h-4" /></button>}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+
+                      <div className="rounded-2xl border border-amber-200 bg-amber-50/80 dark:bg-amber-400/10 dark:border-amber-500/30 p-4 text-sm text-amber-800 dark:text-amber-200">
+                        Sau khi thanh toan thanh cong, he thong se tu dong gan chu Uu tien vao ho so mentor cua ban.
+                      </div>
+
+                      <div className="flex flex-wrap gap-3">
+                        <Button type="button" variant="secondary" onClick={() => { setPromotionPayment(null); setSelectedPlan(null); setPaymentConfirmed(false); }}>Chon goi khac</Button>
+                        {paymentConfirmed && <Button type="button" onClick={closePromotionModal}>Hoan tat</Button>}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}    </Card>
   );
 }
 

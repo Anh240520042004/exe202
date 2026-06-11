@@ -18,6 +18,34 @@ import mongoose from 'mongoose';
 const POINTS_PER_VND = 0.01;
 const calculatePointsFromPurchase = (amountVnd) => Math.floor(amountVnd * POINTS_PER_VND);
 
+const PROMOTION_PLANS = {
+  '7_days': { id: '7_days', name: 'Uu tien 7 ngay', days: 7, amount: 19000, priorityScore: 100 },
+  '30_days': { id: '30_days', name: 'Uu tien 30 ngay', days: 30, amount: 49000, priorityScore: 140 },
+  yearly: { id: 'yearly', name: 'Uu tien 1 nam', days: 365, amount: 299000, priorityScore: 200 },
+};
+
+const activatePaidMentorPromotion = async ({ mentorId, plan }) => {
+  const mentor = await User.findOne({ _id: mentorId, role: 'mentor' });
+  if (!mentor) return null;
+
+  const now = new Date();
+  const currentPaidUntil = mentor.mentorProfile?.promotion?.paidUntil
+    ? new Date(mentor.mentorProfile.promotion.paidUntil)
+    : null;
+  const paidUntil = currentPaidUntil && currentPaidUntil > now ? currentPaidUntil : now;
+  paidUntil.setDate(paidUntil.getDate() + plan.days);
+
+  mentor.set({
+    'mentorProfile.promotion.isPromoted': true,
+    'mentorProfile.promotion.priorityScore': plan.priorityScore,
+    'mentorProfile.promotion.paidUntil': paidUntil,
+    'mentorProfile.promotion.campaignName': plan.name,
+  });
+  await mentor.save();
+
+  return mentor;
+};
+
 const earnPoints = async (userId, amountVnd, orderId) => {
   const points = calculatePointsFromPurchase(amountVnd);
   if (points <= 0) return null;
@@ -247,6 +275,99 @@ router.post('/create', protect, async (req, res, next) => {
   }
 });
 
+router.post('/mentor-promotion/create', protect, async (req, res, next) => {
+  try {
+    if (req.user.role !== 'mentor' && req.user.role !== 'admin') {
+      return next(apiError('Only mentors can promote their profile', 403));
+    }
+
+    const { planId } = req.body;
+    const plan = PROMOTION_PLANS[planId];
+    if (!plan) return next(apiError('Invalid promotion plan', 400));
+
+    const mentor = await User.findOne({ _id: req.user.id, role: 'mentor' });
+    if (!mentor) return next(apiError('Mentor not found', 404));
+
+    const existingPendingPayment = await Payment.findOne({
+      user: req.user.id,
+      type: 'mentor',
+      method: 'sepay',
+      status: 'pending',
+      paymentStatus: 'pending',
+      'mentorPromotion.planId': plan.id,
+    }).sort({ createdAt: -1 });
+
+    if (existingPendingPayment?.sepayData?.transactionId) {
+      return res.json(apiSuccess({
+        paymentId: existingPendingPayment._id,
+        plan,
+        ...existingPendingPayment.sepayData,
+        transactionId: existingPendingPayment.sepayData.transactionId,
+        method: 'sepay',
+      }, 'Existing mentor promotion payment data returned'));
+    }
+
+    const payment = await Payment.create({
+      user: req.user.id,
+      type: 'mentor',
+      orderId: req.user.id,
+      amount: plan.amount,
+      method: 'sepay',
+      status: 'pending',
+      paymentStatus: 'pending',
+      mentorPromotion: {
+        mentorId: req.user.id,
+        planId: plan.id,
+        planName: plan.name,
+        days: plan.days,
+        priorityScore: plan.priorityScore,
+        campaignName: plan.name,
+      },
+    });
+
+    const transactionId = `FPTBOOST${payment._id.toString().slice(-8).toUpperCase()}`;
+    const orderInfo = `${plan.name} FPTAIEZ - ${transactionId}`;
+    const paymentData = await createSePayPayment({
+      amount: plan.amount,
+      orderId: payment._id,
+      orderInfo,
+      transactionId,
+    });
+
+    payment.sepayData = paymentData;
+    payment.transactionId = transactionId;
+    await payment.save();
+
+    await Transaction.create({
+      user: req.user.id,
+      amount: plan.amount,
+      type: 'expense',
+      category: 'subscription',
+      description: `Thanh toan goi uu tien mentor - ${plan.name}`,
+      status: 'pending',
+      paymentId: payment._id,
+      transactionCode: transactionId,
+      paymentMethod: 'sepay',
+      items: [{
+        itemId: req.user.id,
+        itemType: 'mentor',
+        name: plan.name,
+        price: plan.amount,
+      }],
+    });
+
+    return res.json(apiSuccess({
+      paymentId: payment._id,
+      plan,
+      ...paymentData,
+      transactionId,
+      method: 'sepay',
+    }, 'Mentor promotion SePay payment data created'));
+  } catch (error) {
+    next(error);
+  }
+});
+
 // â”€â”€â”€ VNPay return URL â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 router.get('/vnpay-return', async (req, res, next) => {
   try {
@@ -382,7 +503,7 @@ router.post('/sepay-webhook', async (req, res) => {
 
     // FIX 3: TÃ¬m mÃ£ Ä‘Æ¡n hÃ ng trong táº¥t cáº£ field cÃ³ thá»ƒ chá»©a ná»™i dung
     const rawContent = content || transferContent || code || description || '';
-    const orderIdMatch = rawContent.match(/FPTAIEZ([a-zA-Z0-9]+)/i);
+    const orderIdMatch = rawContent.match(/FPT(?:AIEZ|BOOST)([a-zA-Z0-9]+)/i);
     if (!orderIdMatch) {
       console.warn('[SePay] No FPTAIEZ code found in:', rawContent);
       return res.status(200).json({ success: false, message: 'Order code not found in transfer content' });
@@ -428,6 +549,71 @@ router.post('/sepay-webhook', async (req, res) => {
       }
     }
 
+    const receivedAmount = parseVndAmount(amount ?? transferAmount);
+    const payment = await Payment.findById(transaction.paymentId);
+
+    if (payment?.type === 'mentor' && payment.mentorPromotion?.mentorId) {
+      if (!Number.isFinite(receivedAmount) || Math.round(receivedAmount) !== Math.round(payment.amount)) {
+        console.warn('[SePay] Mentor promotion amount mismatch:', receivedAmount, '| Expected:', payment.amount);
+        return res.status(400).json({ success: false, message: 'Amount mismatch' });
+      }
+
+      const expectedAccountNumber = `${process.env.SEPAY_ACCOUNT_NUMBER || ''}`.trim();
+      const actualAccountNumber = `${accountNumber || ''}`.trim();
+      if (expectedAccountNumber && actualAccountNumber && actualAccountNumber !== expectedAccountNumber) {
+        console.warn('[SePay] Account mismatch:', actualAccountNumber, '| Expected:', expectedAccountNumber);
+        return res.status(400).json({ success: false, message: 'Account mismatch' });
+      }
+
+      const plan = {
+        id: payment.mentorPromotion.planId,
+        name: payment.mentorPromotion.planName,
+        days: payment.mentorPromotion.days,
+        amount: payment.amount,
+        priorityScore: payment.mentorPromotion.priorityScore,
+      };
+      const mentor = await activatePaidMentorPromotion({
+        mentorId: payment.mentorPromotion.mentorId,
+        plan,
+      });
+
+      if (!mentor) {
+        return res.status(404).json({ success: false, message: 'Mentor not found' });
+      }
+
+      payment.status = 'completed';
+      payment.paymentStatus = 'paid';
+      payment.sepayData = {
+        ...payment.sepayData,
+        sepayId,
+        gateway,
+        transferType,
+        transferAmount: receivedAmount,
+        transferContent: rawContent,
+        accountNumber,
+        subAccount,
+        referenceCode,
+        transferredAt: transactionDate || new Date(),
+      };
+      await payment.save();
+
+      transaction.status = 'completed';
+      transaction.providerTransactionCode = `SEPAY_${transactionCode}`;
+      await transaction.save();
+
+      await createNotification(
+        mentor._id,
+        'Da kich hoat uu tien!',
+        `Goi ${plan.name} da duoc thanh toan thanh cong. Ho so cua ban se co nhan Uu tien den ${new Date(mentor.mentorProfile.promotion.paidUntil).toLocaleDateString('vi-VN')}.`,
+        'success'
+      );
+
+      return res.status(200).json({
+        success: true,
+        message: 'Mentor promotion payment confirmed',
+      });
+    }
+
     const order = transaction.orderId;
     console.log('[SePay] Order found:', order?._id);
     console.log('[SePay] Order totalAmount:', order?.totalAmount);
@@ -437,8 +623,6 @@ router.post('/sepay-webhook', async (req, res) => {
       console.log('[SePay] Order already processed or not found');
       return res.status(200).json({ success: true, message: 'Already processed' });
     }
-
-    const receivedAmount = parseVndAmount(amount ?? transferAmount);
 
     if (!Number.isFinite(receivedAmount) || Math.round(receivedAmount) !== Math.round(order.totalAmount)) {
       console.warn('[SePay] Amount mismatch:', receivedAmount, '| Expected:', order.totalAmount);
@@ -453,7 +637,6 @@ router.post('/sepay-webhook', async (req, res) => {
     }
 
     // Cáº­p nháº­t Payment
-    const payment = await Payment.findById(transaction.paymentId);
     if (payment) {
       payment.status = 'completed';
       payment.paymentStatus = 'paid';

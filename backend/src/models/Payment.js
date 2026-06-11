@@ -13,7 +13,6 @@ const paymentSchema = new mongoose.Schema({
   },
   orderId: {
     type: mongoose.Schema.Types.ObjectId,
-    required: true
   },
   amount: {
     type: Number,
@@ -92,6 +91,17 @@ const paymentSchema = new mongoose.Schema({
     subAccount: String,
     referenceCode: String,
     transferredAt: Date,
+  },
+  mentorPromotion: {
+    mentorId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+    },
+    planId: String,
+    planName: String,
+    days: Number,
+    priorityScore: Number,
+    campaignName: String,
   },
   // Admin approval fields
   adminNotes: {
