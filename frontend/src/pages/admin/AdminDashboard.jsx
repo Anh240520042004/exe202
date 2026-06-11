@@ -76,7 +76,7 @@ const AdminDashboard = () => {
           <OverviewCard
             icon={<BookOpen />}
             label="Documents"
-            value={overview?.totalDocuments || 0}
+            value={stats?.documentStats?.activeMarketplace ?? stats?.documentStats?.total ?? overview?.totalDocuments ?? 0}
             subtext={`${stats?.documentStats?.totalDownloads || overview?.documentStats?.totalDownloads || 0} downloads`}
             color="purple"
           />

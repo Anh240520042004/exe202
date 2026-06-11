@@ -194,6 +194,7 @@ async function getDocumentStats() {
 
   return {
     total,
+    activeMarketplace: total,
     totalDownloads: totalDownloads[0]?.total || 0,
     totalSales: totalSales[0]?.total || 0
   };
