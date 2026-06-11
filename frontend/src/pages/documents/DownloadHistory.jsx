@@ -3,8 +3,9 @@ import { Link } from 'react-router-dom';
 import { documentService } from '../../services/api';
 import { Search, Download, Calendar, FileText, Grid, List, Clock, TrendingUp, Eye, X } from 'lucide-react';
 import axios from 'axios';
+import { API_ORIGIN } from '../../config/api';
 
-const API_URL = (import.meta.env.VITE_API_URL || 'http://localhost:5000').replace(/\/api\/?$/, '');
+const API_URL = API_ORIGIN;
 
 const DownloadHistory = () => {
   const [history, setHistory] = useState([]);

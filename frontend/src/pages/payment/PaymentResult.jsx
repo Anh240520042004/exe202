@@ -11,6 +11,7 @@ import {
   FileText,
 } from 'lucide-react';
 import { orderService, downloadOrderDocument } from '../../services/api';
+import { API_BASE } from '../../config/api';
 
 export default function PaymentResult() {
   const [searchParams] = useSearchParams();
@@ -33,9 +34,8 @@ export default function PaymentResult() {
 
   useEffect(() => {
     if (isVNPayReturnRoute) {
-      const apiUrl = `${(import.meta.env.VITE_API_URL || 'http://localhost:5000').replace(/\/api\/?$/, '')}/api`;
       const query = searchParams.toString();
-      window.location.replace(`${apiUrl}/payments/vnpay-return${query ? `?${query}` : ''}`);
+      window.location.replace(`${API_BASE}/payments/vnpay-return${query ? `?${query}` : ''}`);
       return;
     }
 

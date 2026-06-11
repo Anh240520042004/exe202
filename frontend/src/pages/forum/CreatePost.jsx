@@ -4,8 +4,9 @@ import { ArrowLeft, Image, X, Send, Hash } from 'lucide-react';
 import axios from 'axios';
 import { useSelector } from 'react-redux';
 import toast from 'react-hot-toast';
+import { API_ORIGIN } from '../../config/api';
 
-const API_URL = (import.meta.env.VITE_API_URL || 'http://localhost:5000').replace(/\/api\/?$/, '');
+const API_URL = API_ORIGIN;
 
 const makeMediaUrl = (url) => {
   if (!url) return url;

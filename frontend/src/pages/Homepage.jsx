@@ -10,10 +10,9 @@ import {
   ExternalLink, Menu, X, Shield, FileText, BadgeCheck,
   LogOut, User,
 } from 'lucide-react';
+import { API_BASE } from '../config/api';
 
 // ─── Constants ─────────────────────────────────────────────────────────────
-const API_BASE = `${(import.meta.env.VITE_API_URL || 'http://localhost:5000').replace(/\/api\/?$/, '')}/api`;
-
 const LINKS = {
   support: 'https://www.facebook.com/profile.php?id=61579562170910&rdid=pVXYqwqm2YDKUh4i&share_url=https%3A%2F%2Fwww.facebook.com%2Fshare%2F1HuhGV1yLX#',
   fptUniversity: 'https://www.facebook.com/DaihocFPTHaNoi',
@@ -28,9 +27,9 @@ const NAV_LINKS = [
 ];
 
 const SOCIAL_BUTTONS = [
-  { href: LINKS.support, icon: HeartHandshake, label: 'Hỗ Trợ', color: 'bg-blue-50 text-blue-600 hover:bg-blue-100 border-blue-200' },
-  { href: LINKS.fptUniversity, icon: Building2, label: 'ĐH FPT', color: 'bg-green-50 text-green-600 hover:bg-green-100 border-green-200' },
-  { href: LINKS.fanpage, icon: Facebook, label: 'Trang Của Chúng Tôi', color: 'bg-indigo-50 text-indigo-600 hover:bg-indigo-100 border-indigo-200' },
+  { id: 'support', href: LINKS.support, icon: HeartHandshake, label: 'Ho Tro', color: 'bg-blue-50 text-blue-600 hover:bg-blue-100 border-blue-200' },
+  { id: 'fpt-university', href: LINKS.fptUniversity, icon: Building2, label: 'DH FPT', color: 'bg-green-50 text-green-600 hover:bg-green-100 border-green-200' },
+  { id: 'fanpage', href: LINKS.fanpage, icon: Facebook, label: 'Trang Cua Chung Toi', color: 'bg-indigo-50 text-indigo-600 hover:bg-indigo-100 border-indigo-200' },
 ];
 
 const STATS = [
@@ -398,7 +397,7 @@ export default function Homepage() {
 
               {SOCIAL_BUTTONS.map((item) => (
                 <a
-                  key={item.href}
+                  key={item.id}
                   href={item.href}
                   target="_blank"
                   rel="noopener noreferrer"
@@ -548,7 +547,7 @@ export default function Homepage() {
             <div className="pt-2 border-t border-violet-100 grid grid-cols-3 gap-2">
               {SOCIAL_BUTTONS.map((item) => (
                 <a
-                  key={item.href}
+                  key={item.id}
                   href={item.href}
                   target="_blank"
                   rel="noopener noreferrer"
@@ -807,7 +806,7 @@ export default function Homepage() {
               <div className="flex items-center gap-2 mt-3">
                 {SOCIAL_BUTTONS.map((item) => (
                   <a
-                    key={item.href}
+                    key={item.id}
                     href={item.href}
                     target="_blank"
                     rel="noopener noreferrer"

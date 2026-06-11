@@ -3,8 +3,9 @@ import { useSelector } from 'react-redux';
 import { Star, ThumbsUp, Flag } from 'lucide-react';
 import axios from 'axios';
 import toast from 'react-hot-toast';
+import { API_ORIGIN } from '../../config/api';
 
-const API_URL = (import.meta.env.VITE_API_URL || 'http://localhost:5000').replace(/\/api\/?$/, '');
+const API_URL = API_ORIGIN;
 
 const StarRating = ({ rating, interactive = false, onChange }) => {
   const [hover, setHover] = useState(0);

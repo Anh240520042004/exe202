@@ -3,8 +3,9 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Search, TrendingUp, Plus, Clock, MessageCircle, Heart, Eye, X, Tag } from 'lucide-react';
 import axios from 'axios';
 import { useSelector } from 'react-redux';
+import { API_ORIGIN } from '../../config/api';
 
-const API_URL = (import.meta.env.VITE_API_URL || 'http://localhost:5000').replace(/\/api\/?$/, '');
+const API_URL = API_ORIGIN;
 
 const makeMediaUrl = (url) => {
   if (!url) return url;

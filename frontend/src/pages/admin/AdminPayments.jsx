@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { CheckCircle, XCircle, Clock, Search, Eye, X } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { Card, Button, Badge, Modal, Skeleton } from '../../components/ui';
+import { API_BASE, API_ORIGIN } from '../../config/api';
 
 export default function AdminPayments() {
   const navigate = useNavigate();
@@ -21,7 +22,7 @@ export default function AdminPayments() {
 
   const fetchPendingPayments = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/orders/admin/pending-payments', {
+      const response = await fetch(`${API_BASE}/orders/admin/pending-payments`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
         }
@@ -71,7 +72,7 @@ export default function AdminPayments() {
         ? `/api/orders/${selectedOrder._id}/approve`
         : `/api/orders/${selectedOrder._id}/reject`;
 
-      const response = await fetch(`http://localhost:5000${endpoint}`, {
+      const response = await fetch(`${API_ORIGIN}${endpoint}`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,

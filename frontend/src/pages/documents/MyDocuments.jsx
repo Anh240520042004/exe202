@@ -4,8 +4,9 @@ import { orderService, documentService, downloadOrderDocument } from '../../serv
 import { Search, Download, BookOpen, Calendar, CheckCircle, FileText, Grid, List, FolderOpen, Loader2, Eye, X } from 'lucide-react';
 import { LoginRequired } from "../../components/ui";
 import axios from 'axios';
+import { API_BASE } from '../../config/api';
 
-const API_URL = `${(import.meta.env.VITE_API_URL || 'http://localhost:5000').replace(/\/api\/?$/, '')}/api`;
+const API_URL = API_BASE;
 
 const MyDocuments = () => {
   const [documents, setDocuments] = useState([]);

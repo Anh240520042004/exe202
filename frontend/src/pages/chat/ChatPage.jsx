@@ -3,8 +3,9 @@ import { useSelector } from 'react-redux';
 import { io } from 'socket.io-client';
 import { Link, useLocation } from 'react-router-dom';
 import { Send, Paperclip, Image, X, Phone, MoreVertical, Search } from 'lucide-react';
+import { API_ORIGIN } from '../../config/api';
 
-const API_URL = (import.meta.env.VITE_API_URL || 'http://localhost:5000').replace(/\/api\/?$/, '');
+const API_URL = API_ORIGIN;
 let socket = null;
 
 const getId = (value) => value?._id || value?.id || value;

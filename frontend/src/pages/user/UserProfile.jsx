@@ -6,8 +6,9 @@ import axios from 'axios';
 import { useSelector } from 'react-redux';
 import toast from 'react-hot-toast';
 import FollowListModal from '../../components/user/FollowListModal';
+import { API_ORIGIN } from '../../config/api';
 
-const API_URL = (import.meta.env.VITE_API_URL || 'http://localhost:5000').replace(/\/api\/?$/, '');
+const API_URL = API_ORIGIN;
 
 export default function UserProfile() {
   const navigate = useNavigate();
