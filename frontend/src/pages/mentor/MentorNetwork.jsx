@@ -48,6 +48,59 @@ const parseLines = (value, mapper) => String(value || '')
   .filter(Boolean)
   .map(mapper);
 
+const validTemplateLevels = ['beginner', 'intermediate', 'advanced'];
+
+const normalizeTemplateLevel = (value) => {
+  const normalized = String(value || '').trim().toLowerCase();
+  return validTemplateLevels.includes(normalized) ? normalized : null;
+};
+
+const looksLikeUrl = (value) => /^(https?:\/\/|www\.)/i.test(String(value || '').trim());
+
+const normalizeGpa = (value) => {
+  const gpa = Number(value);
+  if (!Number.isFinite(gpa)) return 0;
+  return Math.min(4, Math.max(0, gpa));
+};
+
+const parseExerciseTemplate = (line) => {
+  const parts = line.split('|').map(part => part.trim());
+  const [title = '', subjectCode = '', third = '', fourth = '', ...rest] = parts;
+  const level = normalizeTemplateLevel(third);
+
+  if (level) {
+    return {
+      title,
+      subjectCode,
+      level,
+      url: fourth,
+      description: rest.join(' | '),
+    };
+  }
+
+  if (!fourth && !rest.length) {
+    return {
+      title,
+      subjectCode,
+      level: 'intermediate',
+      url: looksLikeUrl(third) ? third : '',
+      description: looksLikeUrl(third) ? '' : third,
+    };
+  }
+
+  return {
+    title,
+    subjectCode,
+    level: 'intermediate',
+    url: looksLikeUrl(third) ? third : (looksLikeUrl(fourth) ? fourth : ''),
+    description: [
+      looksLikeUrl(third) ? '' : third,
+      looksLikeUrl(fourth) ? '' : fourth,
+      ...rest,
+    ].filter(Boolean).join(' | '),
+  };
+};
+
 const profileToForm = (user) => {
   const p = user?.mentorProfile || {};
   return {
@@ -80,7 +133,7 @@ const formToPayload = (form) => ({
   'mentorProfile.bio': form.bio,
   'mentorProfile.expertise': form.expertise.split(',').map(s => s.trim().toUpperCase()).filter(Boolean),
   'mentorProfile.major': form.major,
-  'mentorProfile.gpa': Number(form.gpa) || 0,
+  'mentorProfile.gpa': normalizeGpa(form.gpa),
   'mentorProfile.passedSubjects': form.passedSubjects.split(',').map(s => s.trim().toUpperCase()).filter(Boolean),
   'mentorProfile.experience': form.experience,
   'mentorProfile.pricePerHour': Number(form.pricePerHour) || 0,
@@ -93,10 +146,7 @@ const formToPayload = (form) => ({
     const [title, url, description] = line.split('|').map(part => part.trim());
     return { title, url, description, type: 'link' };
   }),
-  'mentorProfile.exerciseTemplates': parseLines(form.exerciseTemplates, line => {
-    const [title, subjectCode, level, url, description] = line.split('|').map(part => part.trim());
-    return { title, subjectCode, level: level || 'intermediate', url, description };
-  }),
+  'mentorProfile.exerciseTemplates': parseLines(form.exerciseTemplates, parseExerciseTemplate),
   'mentorProfile.projects': parseLines(form.projects, line => {
     const [title, role, techStack, url, description] = line.split('|').map(part => part.trim());
     return { title, role, techStack: techStack ? techStack.split(',').map(t => t.trim()).filter(Boolean) : [], url, description };
@@ -809,7 +859,7 @@ const MentorProfileEditor = ({ user, onSaved }) => {
         <Textarea label="Kinh nghiệm" value={form.experience} onChange={v => update('experience', v)} />
         <Textarea label="Thành tựu: Tên | Đơn vị cấp | Năm | Mô tả" value={form.achievements} onChange={v => update('achievements', v)} />
         <Textarea label="Demo: Tiêu đề | URL | Mô tả" value={form.demoMaterials} onChange={v => update('demoMaterials', v)} />
-        <Textarea label="Bài tập mẫu: Tiêu đề | Môn học | Cấp độ | URL | Mô tả" value={form.exerciseTemplates} onChange={v => update('exerciseTemplates', v)} />
+        <Textarea label="Bài tập mẫu: Tiêu đề | Môn học | Cấp độ (beginner/intermediate/advanced) | URL | Mô tả" value={form.exerciseTemplates} onChange={v => update('exerciseTemplates', v)} />
         <Textarea label="Dự án / Project: Tên dự án | Vai trò | Công nghệ | URL | Mô tả" value={form.projects} onChange={v => update('projects', v)} />
         <label className="flex items-center gap-2 text-sm">
           <input type="checkbox" checked={form.isAvailable} onChange={e => update('isAvailable', e.target.checked)} />

@@ -13,6 +13,32 @@ const promotedSort = (sortBy, order) => ({
   'mentorProfile.documentReviewCount': -1,
 });
 
+const validTemplateLevels = ['beginner', 'intermediate', 'advanced'];
+
+const normalizeTemplateLevel = (value) => {
+  const normalized = String(value || '').trim().toLowerCase();
+  return validTemplateLevels.includes(normalized) ? normalized : 'intermediate';
+};
+
+const clampGpa = (value) => {
+  const gpa = Number(value);
+  if (!Number.isFinite(gpa)) return 0;
+  return Math.min(4, Math.max(0, gpa));
+};
+
+const sanitizeExerciseTemplates = (templates = []) => (
+  Array.isArray(templates)
+    ? templates.map((template) => ({
+        ...template,
+        title: String(template?.title || '').trim(),
+        subjectCode: String(template?.subjectCode || '').trim(),
+        level: normalizeTemplateLevel(template?.level),
+        url: String(template?.url || '').trim(),
+        description: String(template?.description || '').trim(),
+      }))
+    : []
+);
+
 export const getMentors = async (req, res, next) => {
   try {
     const {
@@ -151,7 +177,15 @@ export const updateMentorProfile = async (req, res, next) => {
     const updates = {};
     Object.keys(req.body).forEach(key => {
       if (allowedFields.includes(key)) {
-        updates[key] = req.body[key];
+        if (key === 'mentorProfile.gpa') {
+          updates[key] = clampGpa(req.body[key]);
+        } else if (key === 'mentorProfile.exerciseTemplates') {
+          updates[key] = sanitizeExerciseTemplates(req.body[key]);
+        } else if (key === 'mentorProfile.pricePerHour') {
+          updates[key] = Math.max(0, Number(req.body[key]) || 0);
+        } else {
+          updates[key] = req.body[key];
+        }
       }
     });
 
