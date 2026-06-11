@@ -45,6 +45,7 @@ const AdminDashboard = () => {
 
   const {
     overview,
+    stats,
     charts,
     recentOrders,
     popularDocuments,
@@ -76,14 +77,14 @@ const AdminDashboard = () => {
             icon={<BookOpen />}
             label="Documents"
             value={overview?.totalDocuments || 0}
-            subtext={`${overview?.documentStats?.totalDownloads || 0} downloads`}
+            subtext={`${stats?.documentStats?.totalDownloads || overview?.documentStats?.totalDownloads || 0} downloads`}
             color="purple"
           />
 
           <OverviewCard
             icon={<Clock />}
             label="Pending Orders"
-            value={overview?.orderStats?.pending || 0}
+            value={stats?.orderStats?.pending || overview?.orderStats?.pending || 0}
             subtext="Chờ xác nhận"
             color="yellow"
           />
@@ -92,7 +93,7 @@ const AdminDashboard = () => {
             icon={<ShoppingCart />}
             label="Total Orders"
             value={overview?.totalOrders || 0}
-            subtext={`${overview?.orderStats?.completed || 0} completed`}
+            subtext={`${stats?.orderStats?.completed || overview?.orderStats?.completed || 0} completed`}
             color="green"
           />
 

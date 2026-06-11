@@ -134,7 +134,9 @@ export const getAdminDashboard = async (req, res, next) => {
         totalMentors: mentorStats.total,
         totalRevenue: orderStats.revenue,
         usersToday: userStats.today,
-        usersThisMonth: userStats.thisMonth
+        usersThisMonth: userStats.thisMonth,
+        documentStats,
+        orderStats
       },
       stats: {
         userStats,
@@ -178,20 +180,20 @@ async function getUserStats() {
 }
 
 async function getDocumentStats() {
-  const [total, totalDownloads, totalSales] = await Promise.all([
+  const [total, activeMarketplace, totalDownloads, totalSales] = await Promise.all([
+    Document.countDocuments(),
     Document.countDocuments({ isActive: true, documentScope: { $in: ['marketplace', null] } }),
     Document.aggregate([
-      { $match: { isActive: true, documentScope: { $in: ['marketplace', null] } } },
       { $group: { _id: null, total: { $sum: '$downloads' } } }
     ]),
     Document.aggregate([
-      { $match: { isActive: true, documentScope: { $in: ['marketplace', null] } } },
       { $group: { _id: null, total: { $sum: '$salesCount' } } }
     ])
   ]);
 
   return {
     total,
+    activeMarketplace,
     totalDownloads: totalDownloads[0]?.total || 0,
     totalSales: totalSales[0]?.total || 0
   };
