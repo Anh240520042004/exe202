@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { documentService } from '../../services/api';
-import { Search, Download, Calendar, FileText, Grid, List, Clock, TrendingUp, Eye, X } from 'lucide-react';
-import axios from 'axios';
+import { Search, Download, Calendar, FileText, Grid, List, Clock, TrendingUp, ExternalLink } from 'lucide-react';
 import { API_ORIGIN } from '../../config/api';
 
 const API_URL = API_ORIGIN;
@@ -14,10 +13,9 @@ const DownloadHistory = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [viewMode, setViewMode] = useState('list');
   const [searchQuery, setSearchQuery] = useState('');
-  const [downloadingId, setDownloadingId] = useState(null);
   const [previewDoc, setPreviewDoc] = useState(null);
-  const [previewContent, setPreviewContent] = useState('');
-  const [loadingPreview, setLoadingPreview] = useState(false);
+  const previewContent = '';
+  const loadingPreview = false;
 
   useEffect(() => {
     loadHistory();
@@ -44,70 +42,10 @@ const DownloadHistory = () => {
     loadHistory(1, searchQuery);
   };
 
-  const handleViewDocument = async (item) => {
-    const doc = item.document;
+  const getDocumentLink = (doc) => {
     const documentUrl = doc?.externalUrl || doc?.fileUrl;
-    if (!doc || !documentUrl) {
-      alert('Không tìm thấy tài liệu');
-      return;
-    }
-
-    if (doc.externalUrl || documentUrl.startsWith('http')) {
-      window.open(documentUrl, '_blank', 'noopener,noreferrer');
-      return;
-    }
-
-    setPreviewDoc(item);
-    setLoadingPreview(true);
-
-    try {
-      // Get file URL
-      const fullUrl = `${API_URL.replace('/api', '')}${documentUrl}`;
-
-      // Fetch file content
-      const response = await axios.get(fullUrl);
-      setPreviewContent(response.data);
-    } catch (error) {
-      console.error('Failed to load document:', error);
-      setPreviewContent('Không thể tải nội dung tài liệu.');
-    } finally {
-      setLoadingPreview(false);
-    }
-  };
-
-  const handleDownload = async (docId, fileName) => {
-    try {
-      setDownloadingId(docId);
-      
-      const downloadResponse = await documentService.download(docId);
-      const downloadData = downloadResponse.data?.data || {};
-      
-      if (downloadData.downloadUrl) {
-        const fullUrl = downloadData.downloadUrl.startsWith('http') 
-          ? downloadData.downloadUrl 
-          : `${API_URL}${downloadData.downloadUrl}`;
-        
-        if (downloadData.sourceType === 'google_drive' || downloadData.sourceType === 'external_link') {
-          window.open(fullUrl, '_blank', 'noopener,noreferrer');
-          loadHistory(pagination.page, searchQuery);
-          return;
-        }
-
-        const link = document.createElement('a');
-        link.href = fullUrl;
-        link.download = downloadData.fileName || fileName || 'document';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-      }
-      
-      loadHistory(pagination.page, searchQuery);
-    } catch (error) {
-      console.error('Download failed:', error);
-      alert('Không thể tải tài liệu. Vui lòng thử lại.');
-    } finally {
-      setDownloadingId(null);
-    }
+    if (!documentUrl) return '';
+    return documentUrl.startsWith('http') ? documentUrl : `${API_URL}${documentUrl}`;
   };
 
   const formatDate = (date) => {
@@ -267,6 +205,7 @@ const DownloadHistory = () => {
           }`}>
             {history.map((item) => {
               const doc = item.document;
+              const documentLink = getDocumentLink(doc);
               return (
                 <div
                   key={item._id}
@@ -295,15 +234,18 @@ const DownloadHistory = () => {
                             )}
                           </div>
                         </div>
-                        <div className="flex items-center gap-2 flex-shrink-0 ml-4">
-                          <button
-                            onClick={() => handleViewDocument(item)}
-                            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-xl hover:bg-blue-700 transition-colors"
+                        {documentLink && (
+                          <a
+                            href={documentLink}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center gap-2 max-w-md ml-4 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-xl hover:bg-blue-700 transition-colors"
+                            title={documentLink}
                           >
-                            <Eye size={16} />
-                            Xem
-                          </button>
-                        </div>
+                            <ExternalLink size={16} className="flex-shrink-0" />
+                            <span className="truncate">{documentLink}</span>
+                          </a>
+                        )}
                       </div>
                     </>
                   ) : (
@@ -325,15 +267,18 @@ const DownloadHistory = () => {
                           <Calendar size={12} />
                           {formatDate(item.downloadedAt)}
                         </div>
-                        <div className="flex gap-2">
-                          <button
-                            onClick={() => handleViewDocument(item)}
-                            className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-blue-600 text-white text-sm font-medium rounded-xl hover:bg-blue-700 transition-colors"
+                        {documentLink && (
+                          <a
+                            href={documentLink}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center gap-2 px-3 py-2 bg-blue-600 text-white text-sm font-medium rounded-xl hover:bg-blue-700 transition-colors"
+                            title={documentLink}
                           >
-                            <Eye size={14} />
-                            Xem
-                          </button>
-                        </div>
+                            <ExternalLink size={14} className="flex-shrink-0" />
+                            <span className="truncate">{documentLink}</span>
+                          </a>
+                        )}
                       </div>
                     </>
                   )}
