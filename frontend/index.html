@@ -14,11 +14,19 @@
     <script type="module" src="/src/main.jsx"></script>
     <script src="https://app.tudongchat.com/js/chatbox.js"></script>
     <script>
-      const tudong_chatbox = new TuDongChat({
-        id: 'Sihhdk45anVZVCusG7rdb',
-        socials: [],
-      })
+      const tudong_chatbox = new TuDongChat('Sihhdk45anVZVCusG7rdb')
       tudong_chatbox.initial()
+
+      const hideSupportShortcuts = () => {
+        document.querySelectorAll('.tdc-group-icon-circle').forEach((element) => {
+          const shortcut = element.closest('.tdc-clicker') || element
+          shortcut.style.display = 'none'
+        })
+      }
+
+      hideSupportShortcuts()
+      setTimeout(hideSupportShortcuts, 500)
+      setTimeout(hideSupportShortcuts, 1500)
     </script>
   </body>
 </html>
