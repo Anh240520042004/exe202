@@ -180,20 +180,20 @@ async function getUserStats() {
 }
 
 async function getDocumentStats() {
-  const [total, activeMarketplace, totalDownloads, totalSales] = await Promise.all([
-    Document.countDocuments(),
+  const [total, totalDownloads, totalSales] = await Promise.all([
     Document.countDocuments({ isActive: true, documentScope: { $in: ['marketplace', null] } }),
     Document.aggregate([
+      { $match: { isActive: true, documentScope: { $in: ['marketplace', null] } } },
       { $group: { _id: null, total: { $sum: '$downloads' } } }
     ]),
     Document.aggregate([
+      { $match: { isActive: true, documentScope: { $in: ['marketplace', null] } } },
       { $group: { _id: null, total: { $sum: '$salesCount' } } }
     ])
   ]);
 
   return {
     total,
-    activeMarketplace,
     totalDownloads: totalDownloads[0]?.total || 0,
     totalSales: totalSales[0]?.total || 0
   };
