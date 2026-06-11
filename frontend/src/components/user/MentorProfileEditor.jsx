@@ -28,6 +28,28 @@ const promotionPlans = [
   },
 ];
 
+const fallbackBankInfo = {
+  bankName: 'BIDV',
+  bankCode: 'BIDV',
+  accountNumber: '96247ANH2004',
+  accountName: 'LE DUC ANH',
+};
+
+const createFallbackPromotionPayment = (plan) => {
+  const transactionId = `FPTBOOST${Date.now().toString().slice(-8)}`;
+  const qrUrl = `https://qr.sepay.vn/img?acc=${fallbackBankInfo.accountNumber}&bank=${encodeURIComponent(fallbackBankInfo.bankCode)}&amount=${plan.price}&des=${encodeURIComponent(transactionId)}`;
+
+  return {
+    plan,
+    amount: plan.price,
+    transactionId,
+    qrUrl,
+    bankInfo: fallbackBankInfo,
+    method: 'sepay',
+    fallback: true,
+  };
+};
+
 const emptyProfile = {
   title: '',
   bio: '',
@@ -176,7 +198,7 @@ export default function MentorProfileEditor({ user, onSaved }) {
   }, [user]);
 
   useEffect(() => {
-    if (!promotionPayment?.transactionId || paymentConfirmed) return undefined;
+    if (!promotionPayment?.transactionId || promotionPayment?.fallback || paymentConfirmed) return undefined;
 
     let attempts = 0;
     let stopped = false;
@@ -246,6 +268,11 @@ export default function MentorProfileEditor({ user, onSaved }) {
       setPromotionPayment(response.data?.data || response.data);
       toast.success('Da tao ma QR thanh toan goi uu tien.');
     } catch (error) {
+      if (error.response?.status === 404) {
+        setPromotionPayment(createFallbackPromotionPayment(plan));
+        toast.error('Backend chua co API goi uu tien moi. Tam thoi hien QR, can deploy backend de tu dong xac nhan.');
+        return;
+      }
       toast.error(error.response?.data?.message || 'Khong the tao thanh toan goi uu tien');
     } finally {
       setPromoting(false);
@@ -378,9 +405,11 @@ export default function MentorProfileEditor({ user, onSaved }) {
                           <div className="w-56 h-56 flex items-center justify-center"><QrCode className="w-16 h-16 text-gray-400" /></div>
                         )}
                       </div>
-                      <div className={`mt-4 rounded-xl px-3 py-2 text-sm font-semibold ${paymentConfirmed ? 'bg-emerald-100 text-emerald-700' : 'bg-blue-100 text-blue-700'}`}>
+                      <div className={`mt-4 rounded-xl px-3 py-2 text-sm font-semibold ${paymentConfirmed ? 'bg-emerald-100 text-emerald-700' : promotionPayment.fallback ? 'bg-amber-100 text-amber-700' : 'bg-blue-100 text-blue-700'}`}>
                         {paymentConfirmed ? (
                           <span className="inline-flex items-center gap-2"><CheckCircle className="w-4 h-4" /> Thanh toan thanh cong</span>
+                        ) : promotionPayment.fallback ? (
+                          <span>QR da tao. Can deploy backend moi de tu dong xac nhan.</span>
                         ) : (
                           <span className="inline-flex items-center gap-2"><Loader2 className="w-4 h-4 animate-spin" /> Dang cho xac nhan {pollingCount ? `(${pollingCount})` : ''}</span>
                         )}
@@ -408,7 +437,9 @@ export default function MentorProfileEditor({ user, onSaved }) {
                       </div>
 
                       <div className="rounded-2xl border border-amber-200 bg-amber-50/80 dark:bg-amber-400/10 dark:border-amber-500/30 p-4 text-sm text-amber-800 dark:text-amber-200">
-                        Sau khi thanh toan thanh cong, he thong se tu dong gan chu Uu tien vao ho so mentor cua ban.
+                        {promotionPayment.fallback
+                          ? 'Server hien tai dang tra 404 cho API goi uu tien. Sau khi deploy backend moi, QR nay se duoc tao va xac nhan tu dong.'
+                          : 'Sau khi thanh toan thanh cong, he thong se tu dong gan chu Uu tien vao ho so mentor cua ban.'}
                       </div>
 
                       <div className="flex flex-wrap gap-3">
