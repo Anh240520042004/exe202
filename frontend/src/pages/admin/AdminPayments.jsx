@@ -20,7 +20,7 @@ export default function AdminPayments() {
     fetchPendingPayments();
   }, []);
 
-  const fetchPendingPayments = async () => {
+  const fetchPendingPayments = async ({ silent = false } = {}) => {
     try {
       const response = await fetch(`${API_BASE}/orders/admin/pending-payments`, {
         headers: {
@@ -29,13 +29,16 @@ export default function AdminPayments() {
       });
       const data = await response.json();
       if (data.success) {
-        setOrders(data.data.orders);
+        const nextOrders = data.data.orders || [];
+        setOrders(nextOrders);
+        return nextOrders;
       }
     } catch (error) {
-      toast.error('Không thể tải danh sách thanh toán');
+      if (!silent) toast.error('Không thể tải danh sách thanh toán');
     } finally {
       setLoading(false);
     }
+    return [];
   };
 
   const formatCurrency = (amount) => {
@@ -67,7 +70,18 @@ export default function AdminPayments() {
     if (!selectedOrder) return;
     setProcessing(true);
     const controller = new AbortController();
-    const timeoutId = window.setTimeout(() => controller.abort(), 20000);
+    const timeoutId = window.setTimeout(() => controller.abort(), 60000);
+
+    const completeIfNoLongerPending = async () => {
+      const nextOrders = await fetchPendingPayments({ silent: true });
+      const stillPending = nextOrders.some((order) => order._id === selectedOrder._id);
+      if (!stillPending) {
+        toast.success(actionType === 'approve' ? 'Đã xác nhận thanh toán!' : 'Đã từ chối thanh toán!');
+        setShowModal(false);
+        return true;
+      }
+      return false;
+    };
 
     try {
       const endpoint = actionType === 'approve' 
@@ -96,9 +110,9 @@ export default function AdminPayments() {
         if (response.status === 400 && data.message === 'Order already paid') {
           toast.success('Đã xác nhận thanh toán!');
           setShowModal(false);
-          await fetchPendingPayments();
           return;
         }
+        if (response.status === 400 && await completeIfNoLongerPending()) return;
         throw new Error(data.message || 'Không thể xử lý thanh toán');
       }
 
@@ -114,6 +128,7 @@ export default function AdminPayments() {
       }
     } catch (error) {
       console.error('Payment action failed:', error);
+      if (actionType === 'approve' && await completeIfNoLongerPending()) return;
       toast.error(error.name === 'AbortError' ? 'Yêu cầu quá lâu, vui lòng thử lại' : (error.message || 'Có lỗi xảy ra'));
     } finally {
       window.clearTimeout(timeoutId);
