@@ -34,6 +34,7 @@ export default function MentorProfile() {
   const [mentor, setMentor] = useState(null);
   const [stats, setStats] = useState(null);
   const [documents, setDocuments] = useState([]);
+  const [docRestricted, setDocRestricted] = useState(false);
   const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(true);
   const [followModalType, setFollowModalType] = useState(null);
@@ -57,6 +58,7 @@ export default function MentorProfile() {
           followeeCount: userProfile?.stats?.followeeCount ?? 0,
         });
         setDocuments(docRes.data?.data?.documents || []);
+        setDocRestricted(Boolean(docRes.data?.data?.restricted));
         setReviews(reviewRes.data?.data?.reviews || payload.recentReviews || []);
       } catch (error) {
         toast.error(error.response?.data?.message || 'Không thể tải hồ sơ mentor');
@@ -177,6 +179,8 @@ export default function MentorProfile() {
                   </button>
                 ))}
               </div>
+            ) : docRestricted ? (
+              <p className="text-sm text-gray-550 dark:text-gray-400">Đặt lịch với mentor này để xem tài liệu họ tải lên hồ sơ.</p>
             ) : (
               <p className="text-sm text-gray-550 dark:text-gray-400">Mentor chưa tải tài liệu nào lên hồ sơ.</p>
             )}

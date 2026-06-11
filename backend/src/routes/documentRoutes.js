@@ -1,7 +1,7 @@
 import express from 'express';
 import multer from 'multer';
 import path from 'path';
-import { admin, protect } from '../middleware/auth.js';
+import { admin, optionalAuth, protect } from '../middleware/auth.js';
 import * as documentController from '../controllers/documentController.js';
 
 const router = express.Router();
@@ -48,7 +48,7 @@ router.get('/featured', documentController.getFeaturedDocuments);
 router.get('/popular', documentController.getPopularDocuments);
 router.get('/top-rated', documentController.getTopRatedDocuments);
 router.get('/subject/:subjectCode', documentController.getDocumentsBySubject);
-router.get('/mentor/:mentorId', documentController.getMentorDocuments);
+router.get('/mentor/:mentorId', optionalAuth, documentController.getMentorDocuments);
 router.get('/favorites', protect, documentController.getUserFavorites);
 router.get('/download-history', protect, documentController.getDownloadHistory);
 
@@ -57,7 +57,7 @@ router.post('/marketplace', protect, admin, upload.single('file'), documentContr
 router.post('/mentor-profile', protect, upload.single('file'), documentController.createMentorProfileDocument);
 router.post('/favorites', protect, documentController.addToFavorites);
 
-router.get('/:id', documentController.getDocumentById);
+router.get('/:id', optionalAuth, documentController.getDocumentById);
 router.get('/:id/download', protect, documentController.downloadDocument);
 router.post('/:id/reviews', protect, documentController.addReview);
 router.put('/:id', protect, documentController.updateDocument);

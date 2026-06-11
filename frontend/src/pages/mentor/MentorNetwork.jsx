@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import {
   Award,
-  BadgeCheck,
   BookOpen,
   Briefcase,
   Calendar,
@@ -228,8 +227,6 @@ export default function MentorNetwork() {
       </section>
 
       <main className="container mx-auto px-4 py-8 space-y-8">
-        {isMentorUser && <MentorProfileEditor user={user} onSaved={loadData} />}
-
         <FeatureStrip topMentors={topMentors} popularDocs={popularDocs} topRatedDocs={topRatedDocs} onOpenMentor={(mentor) => navigate(`/mentors/${mentor._id}`)} />
 
         {suggestions.length > 0 && (
@@ -425,6 +422,7 @@ const MentorDetailModal = ({ mentor, onClose, onBook, navigate }) => {
   const p = mentor.mentorProfile || {};
   const [reviews, setReviews] = useState([]);
   const [mentorDocuments, setMentorDocuments] = useState([]);
+  const [docRestricted, setDocRestricted] = useState(false);
   const [reviewForm, setReviewForm] = useState({ rating: 5, comment: '' });
   const [submitting, setSubmitting] = useState(false);
 
@@ -436,10 +434,12 @@ const MentorDetailModal = ({ mentor, onClose, onBook, navigate }) => {
       .then(([reviewRes, docRes]) => {
         setReviews(reviewRes.data?.data?.reviews || []);
         setMentorDocuments(docRes.data?.data?.documents || []);
+        setDocRestricted(Boolean(docRes.data?.data?.restricted));
       })
       .catch(() => {
         setReviews([]);
         setMentorDocuments([]);
+        setDocRestricted(false);
       });
   }, [mentor._id]);
 
@@ -533,6 +533,8 @@ const MentorDetailModal = ({ mentor, onClose, onBook, navigate }) => {
                     </button>
                   ))}
                 </div>
+              ) : docRestricted ? (
+                <p className="text-sm text-gray-500">Đặt lịch với mentor này để xem tài liệu của họ.</p>
               ) : (
                 <p className="text-sm text-gray-500">Chưa có tài liệu.</p>
               )}
@@ -771,107 +773,6 @@ const MentorDocumentManager = ({ user, onChanged }) => {
       ) : (
         <p className="text-sm text-gray-500">Chưa có tài liệu cá nhân nào.</p>
       )}
-    </section>
-  );
-};
-
-const MentorProfileEditor = ({ user, onSaved }) => {
-  const [form, setForm] = useState({ ...emptyProfile, name: user?.name || '', avatar: user?.avatar || '' });
-  const [saving, setSaving] = useState(false);
-  const [promoting, setPromoting] = useState(false);
-
-  useEffect(() => {
-    setForm({ ...emptyProfile, ...profileToForm(user), name: user?.name || '', avatar: user?.avatar || '' });
-  }, [user]);
-
-  const update = (key, value) => setForm(prev => ({ ...prev, [key]: value }));
-
-  const submit = async (event) => {
-    event.preventDefault();
-    setSaving(true);
-    try {
-      const res = await mentorService.updateProfile(user._id, formToPayload(form));
-      const updated = res.data?.data;
-      if (updated) localStorage.setItem('user', JSON.stringify(updated));
-      toast.success('Đã cập nhật profile mentor');
-      onSaved?.();
-    } catch (error) {
-      toast.error(error.response?.data?.message || 'Không thể cập nhật profile');
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const activatePromotion = async () => {
-    setPromoting(true);
-    try {
-      const res = await mentorService.activatePromotion({
-        mentorId: user._id,
-        days: 7,
-        priorityScore: 100,
-        campaignName: 'Ưu tiên tìm kiếm 7 ngày',
-      });
-      const updated = res.data?.data?.mentor;
-      if (updated) localStorage.setItem('user', JSON.stringify(updated));
-      toast.success('Đã bật ưu tiên đề xuất trong 7 ngày');
-      onSaved?.();
-    } catch (error) {
-      toast.error(error.response?.data?.message || 'Không thể bật ưu tiên đề xuất');
-    } finally {
-      setPromoting(false);
-    }
-  };
-
-  const promotion = user?.mentorProfile?.promotion;
-  const isPromoted = promotion?.isPromoted && (!promotion?.paidUntil || new Date(promotion.paidUntil) > new Date());
-
-  return (
-    <section className="glass-card rounded-2xl p-5">
-      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-4">
-        <div>
-          <h2 className="text-2xl font-bold flex items-center gap-2"><BadgeCheck className="w-6 h-6 text-primary-500" />Profile mentor của bạn</h2>
-          <p className="text-sm text-gray-500 mt-1">
-            {isPromoted
-              ? `Đang được ưu tiên đến ${new Date(promotion.paidUntil).toLocaleDateString('vi-VN')}`
-              : 'Bật gói ưu tiên để lên đầu kết quả tìm kiếm và gợi ý.'}
-          </p>
-        </div>
-        <button
-          type="button"
-          onClick={activatePromotion}
-          disabled={promoting}
-          className="bg-amber-500 text-white rounded-xl px-4 py-2.5 flex items-center justify-center gap-2 disabled:opacity-50"
-        >
-          {promoting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Crown className="w-4 h-4" />}
-          Ưu tiên 7 ngày
-        </button>
-      </div>
-      <form onSubmit={submit} className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <Input label="Họ tên" value={form.name} onChange={v => update('name', v)} />
-        <Input label="Avatar URL" value={form.avatar} onChange={v => update('avatar', v)} />
-        <Input label="Chức danh" value={form.title} onChange={v => update('title', v)} />
-        <Input label="Ngành" value={form.major} onChange={v => update('major', v)} />
-        <Input label="GPA" value={form.gpa} onChange={v => update('gpa', v)} />
-        <Input label="Giá mỗi giờ" value={form.pricePerHour} onChange={v => update('pricePerHour', v)} />
-        <Input label="Chuyên môn (cách nhau bằng dấu phẩy)" value={form.expertise} onChange={v => update('expertise', v)} className="lg:col-span-2" />
-        <Input label="Môn đã qua (cách nhau bằng dấu phẩy)" value={form.passedSubjects} onChange={v => update('passedSubjects', v)} className="lg:col-span-2" />
-        <Textarea label="Giới thiệu cá nhân" value={form.bio} onChange={v => update('bio', v)} />
-        <Textarea label="Kinh nghiệm" value={form.experience} onChange={v => update('experience', v)} />
-        <Textarea label="Thành tựu: Tên | Đơn vị cấp | Năm | Mô tả" value={form.achievements} onChange={v => update('achievements', v)} />
-        <Textarea label="Demo: Tiêu đề | URL | Mô tả" value={form.demoMaterials} onChange={v => update('demoMaterials', v)} />
-        <Textarea label="Bài tập mẫu: Tiêu đề | Môn học | Cấp độ (beginner/intermediate/advanced) | URL | Mô tả" value={form.exerciseTemplates} onChange={v => update('exerciseTemplates', v)} />
-        <Textarea label="Dự án / Project: Tên dự án | Vai trò | Công nghệ | URL | Mô tả" value={form.projects} onChange={v => update('projects', v)} />
-        <label className="flex items-center gap-2 text-sm">
-          <input type="checkbox" checked={form.isAvailable} onChange={e => update('isAvailable', e.target.checked)} />
-          Đang nhận lịch mentor
-        </label>
-        <div className="lg:col-span-2 flex justify-end">
-          <button disabled={saving} className="bg-primary-500 text-white rounded-xl px-5 py-2.5 flex items-center gap-2 disabled:opacity-50">
-            {saving && <Loader2 className="w-4 h-4 animate-spin" />}
-            Lưu profile
-          </button>
-        </div>
-      </form>
     </section>
   );
 };

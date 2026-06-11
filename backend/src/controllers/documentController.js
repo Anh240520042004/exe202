@@ -1,5 +1,6 @@
 import Document from '../models/Document.js';
 import Order from '../models/Order.js';
+import MentorBooking from '../models/MentorBooking.js';
 import { apiSuccess, apiError } from '../utils/apiResponse.js';
 import { escapeRegex } from '../utils/security.js';
 import mongoose from 'mongoose';
@@ -73,6 +74,21 @@ const fileTypeMap = {
   pptx: 'pptx',
   xlsx: 'xlsx',
   txt: 'txt',
+};
+
+const mentorDocumentAccessStatuses = ['confirmed', 'in_progress', 'completed'];
+
+const hasMentorDocumentAccess = async (user, mentorId) => {
+  if (!user || !mentorId) return false;
+  if (user.role === 'admin' || user._id?.toString() === String(mentorId)) return true;
+
+  const booking = await MentorBooking.exists({
+    student: user._id,
+    mentor: mentorId,
+    status: { $in: mentorDocumentAccessStatuses },
+  });
+
+  return Boolean(booking);
 };
 
 export const getDocuments = async (req, res, next) => {
@@ -166,6 +182,10 @@ export const getDocumentById = async (req, res, next) => {
 
     if (!document) {
       return next(apiError('Document not found', 404));
+    }
+
+    if (document.documentScope === 'mentor_profile' && !(await hasMentorDocumentAccess(req.user, document.ownerMentor))) {
+      return next(apiError('Bạn cần đặt lịch với mentor này để xem tài liệu', 403));
     }
 
     res.json(apiSuccess(document));
@@ -263,6 +283,19 @@ export const getMentorDocuments = async (req, res, next) => {
     const { page = 1, limit = 12 } = req.query;
     const skip = (Number(page) - 1) * Number(limit);
 
+    if (!(await hasMentorDocumentAccess(req.user, mentorId))) {
+      return res.json(apiSuccess({
+        documents: [],
+        restricted: true,
+        pagination: {
+          page: Number(page),
+          limit: Number(limit),
+          total: 0,
+          pages: 0,
+        },
+      }));
+    }
+
     const query = {
       ownerMentor: mentorId,
       documentScope: 'mentor_profile',
@@ -280,6 +313,7 @@ export const getMentorDocuments = async (req, res, next) => {
 
     res.json(apiSuccess({
       documents,
+      restricted: false,
       pagination: {
         page: Number(page),
         limit: Number(limit),
@@ -692,6 +726,10 @@ export const downloadDocument = async (req, res, next) => {
       if (!hasPurchased && !isOwnerOrAdmin) {
         return next(apiError('Bạn cần mua tài liệu này trước khi tải xuống', 403));
       }
+    }
+
+    if (document.documentScope === 'mentor_profile' && !(await hasMentorDocumentAccess(req.user, document.ownerMentor))) {
+      return next(apiError('Bạn cần đặt lịch với mentor này để tải tài liệu', 403));
     }
 
     // Update download count on document

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import FollowListModal from '../../components/user/FollowListModal';
+import MentorProfileEditor from '../../components/user/MentorProfileEditor';
 import { useDispatch, useSelector } from 'react-redux';
 import { Camera, User, Mail, Lock, Save, Download, BookOpen, Users, Receipt, CreditCard, ArrowUpRight, ArrowDownRight, TrendingUp, TrendingDown, Calendar } from 'lucide-react';
 import toast from 'react-hot-toast';
@@ -287,6 +288,10 @@ export default function Profile() {
                 </div>
               </form>
             </Card>
+
+            {profile?.role === 'mentor' && (
+              <MentorProfileEditor user={profile} onSaved={() => dispatch(fetchProfile())} />
+            )}
 
             {/* Transaction History Section */}
             <Card title="Lịch sử giao dịch">
