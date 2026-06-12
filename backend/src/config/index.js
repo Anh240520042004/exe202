@@ -17,6 +17,14 @@ const clientUrls = (process.env.CLIENT_URL || 'http://localhost:5173')
   .map(normalizeOrigin)
   .filter(Boolean);
 
+// Danh sách các domain production được phép truy cập (CORS whitelist)
+const ALLOWED_PRODUCTION_DOMAINS = [
+  'fdtech.online',
+  'www.fdtech.online',
+  'fedtech.online',
+  'www.fedtech.online',
+];
+
 const isAllowedOrigin = (origin) => {
   if (!origin) return true;
 
@@ -26,10 +34,15 @@ const isAllowedOrigin = (origin) => {
 
   try {
     const { protocol, hostname } = new URL(normalizedOrigin);
-    return protocol === 'https:' && hostname.endsWith('.vercel.app');
+    // Cho phép *.vercel.app
+    if (protocol === 'https:' && hostname.endsWith('.vercel.app')) return true;
+    // Cho phép các domain production đã cấu hình
+    if (protocol === 'https:' && ALLOWED_PRODUCTION_DOMAINS.includes(hostname)) return true;
   } catch {
     return false;
   }
+
+  return false;
 };
 
 export default {
