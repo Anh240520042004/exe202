@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { CheckCircle, XCircle, Clock, Search, Eye, X } from 'lucide-react';
 import toast from 'react-hot-toast';
@@ -233,10 +233,17 @@ export default function AdminPayments() {
                   <p className="text-2xl font-bold text-primary-600 mb-3">
                     {formatCurrency(order.totalAmount)}
                   </p>
-                  <Badge variant="warning">
-                    <Clock className="w-3 h-3 mr-1" />
-                    Chờ xác nhận
-                  </Badge>
+                  {order.paymentStatus === 'paid' ? (
+                    <Badge variant="success" className="mb-2 w-full justify-center">
+                      <CheckCircle className="w-3 h-3 mr-1" />
+                      Đã nhận tiền - Cần kích hoạt
+                    </Badge>
+                  ) : (
+                    <Badge variant="warning" className="mb-2 w-full justify-center">
+                      <Clock className="w-3 h-3 mr-1" />
+                      Chờ xác nhận tiền
+                    </Badge>
+                  )}
                   <Badge variant="info" className="mt-2">
                     {order.paymentMethod === 'sepay' ? 'SePay/VietQR' : 
                      order.paymentMethod === 'vnpay' ? 'VNPay' : 

@@ -684,7 +684,15 @@ export const getPendingPayments = async (req, res, next) => {
   try {
     const { page = 1, limit = 20 } = req.query;
 
-    const query = { status: 'pending', paymentStatus: 'pending' };
+    // Bao gồm cả 2 trường hợp:
+    // 1. SePay đã nhận tiền (paymentStatus=paid) nhưng chưa kích hoạt (status=processing)
+    // 2. Chuyển khoản thủ công cần admin duyệt (status=pending, paymentStatus=pending)
+    const query = {
+      $or: [
+        { paymentStatus: 'paid', status: 'processing' },
+        { paymentStatus: 'pending', status: 'pending' },
+      ]
+    };
 
     const skip = (Number(page) - 1) * Number(limit);
 
@@ -731,7 +739,8 @@ export const approvePayment = async (req, res, next) => {
       return next(apiError('Order user not found', 400));
     }
 
-    if (order.paymentStatus === 'paid') {
+    // Đã xử lý hoàn toàn (completed) thì bỏ qua
+    if (order.paymentStatus === 'paid' && order.status === 'completed') {
       return res.json(apiSuccess(order, 'Payment already approved'));
     }
 
@@ -762,14 +771,19 @@ export const approvePayment = async (req, res, next) => {
 
     (async () => {
       try {
-    // Update documents sales count
+    // Update documents sales count + kích hoạt download history
     for (const item of order.documents) {
       if (!item.document) continue;
+      const docId = item.document._id || item.document;
 
-      await Document.findByIdAndUpdate(item.document._id, {
+      await Document.findByIdAndUpdate(docId, {
         $inc: { salesCount: 1 }
       });
 
+      // Thêm vào downloadHistory của student
+      await User.findByIdAndUpdate(order.user._id, {
+        $push: { 'studentProfile.downloadHistory': { document: docId, downloadedAt: new Date() } }
+      });
       // Notify document owner (seller)
       if (item.document.owner) {
         const seller = await User.findById(item.document.owner);
@@ -784,13 +798,32 @@ export const approvePayment = async (req, res, next) => {
       }
     }
 
-    // Notify buyer
+      // Notify buyer — admin đã kích hoạt tài liệu
     await createNotification(
       order.user._id,
-      'Thanh toán được xác nhận!',
-      `Đơn hàng của bạn đã được xác nhận. Bây giờ bạn có thể tải tài liệu.`,
+      '✅ Tài liệu đã được kích hoạt!',
+      'Admin đã xác nhận và kích hoạt quyền truy cập tài liệu của bạn. Vào trang Tài liệu của tôi để tải xuống ngay!',
       'success'
     );
+
+    // Cộng điểm thưởng cho student
+    try {
+      const pointsEarned = await earnPoints(
+        order.user._id.toString(),
+        order.totalAmount,
+        order._id
+      );
+      if (pointsEarned) {
+        await createNotification(
+          order.user._id.toString(),
+          'Nhận điểm thưởng!',
+          `Bạn đã nhận được ${pointsEarned.points} điểm thưởng khi mua tài liệu!`,
+          'success'
+        );
+      }
+    } catch (pointError) {
+      console.error('Failed to award points:', pointError);
+    }
 
     // Send confirmation email
     try {
@@ -849,8 +882,8 @@ export const rejectPayment = async (req, res, next) => {
       return next(apiError('Order not found', 404));
     }
 
-    if (order.paymentStatus === 'paid') {
-      return next(apiError('Cannot reject paid order', 400));
+    if (order.paymentStatus === 'paid' && order.status === 'completed') {
+      return next(apiError('Cannot reject already completed order', 400));
     }
 
     // Check if user exists

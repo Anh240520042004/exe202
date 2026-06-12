@@ -65,7 +65,7 @@ export default function Checkout() {
       amount: `${orderDetails?.totalAmount || itemDetails?.price || 0}`,
     });
 
-    toast.success('Thanh toán thành công! Tài liệu đã được thêm vào thư viện.');
+    toast.success('Thanh toán thành công! Vui lòng chờ admin kích hoạt.');
     navigate(`/payment/result?${params.toString()}`, { replace: true });
   };
 

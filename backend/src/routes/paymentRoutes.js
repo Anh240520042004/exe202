@@ -655,74 +655,43 @@ router.post('/sepay-webhook', async (req, res) => {
       await payment.save();
     }
 
-    // Cáº­p nháº­t Order
-    order.status = 'completed';
+    // Cập nhật Order — chờ admin kích hoạt
+    order.status = 'processing';
     order.paymentStatus = 'paid';
     await order.save();
-    console.log('[SePay] Order updated:', order._id, '| Status:', order.paymentStatus);
+    console.log('[SePay] Order updated:', order._id, '| Status: processing (pending admin activation)');
 
-    // Cáº­p nháº­t Transaction
+    // Cập nhật Transaction
     transaction.status = 'completed';
-    // LÆ°u SePay transaction code riÃªng (khÃ´ng Ä‘á»•i transactionCode gá»‘c Ä‘á»ƒ frontend polling tÃ¬m Ä‘Æ°á»£c)
+    // Lưu SePay transaction code riêng (không đổi transactionCode gốc để frontend polling tìm được)
     transaction.providerTransactionCode = `SEPAY_${transactionCode}`;
     await transaction.save();
     console.log('[SePay] Transaction updated:', transaction._id, '| Status:', transaction.status);
 
-    // TÄƒng salesCount + download history
-    console.log('[SePay] Processing', order.documents.length, 'documents');
-    for (const item of order.documents) {
-      console.log('[SePay] - Document:', item.document, '| Type:', typeof item.document);
-      if (!item.document) continue;
-      const docId = typeof item.document === 'object' ? item.document._id : item.document;
-      await Document.findByIdAndUpdate(docId, { $inc: { salesCount: 1 } });
-      await User.findByIdAndUpdate(order.user, {
-        $push: { 'studentProfile.downloadHistory': { document: docId, downloadedAt: new Date() } }
-      });
-      console.log('[SePay] Added document to download history:', docId);
-    }
+    console.log('[SePay] Skipping downloadHistory — will be activated by admin');
 
-    // Notify user
-    await createNotification(order.user, 'Thanh toÃ¡n thÃ nh cÃ´ng!', 'ÄÆ¡n hÃ ng Ä‘Ã£ Ä‘Æ°á»£c xÃ¡c nháº­n. Báº¡n cÃ³ thá»ƒ táº£i tÃ i liá»‡u ngay.', 'success');
+    // Thông báo cho student — chờ admin kích hoạt
+    await createNotification(
+      order.user,
+      'Thanh toán thành công! Đang chờ kích hoạt',
+      'Chúng tôi đã nhận được thanh toán của bạn. Tài liệu sẽ được kích hoạt sau khi admin xét duyệt (thường trong vài giờ).',
+      'info'
+    );
 
-    // Notify admins
+    // Thông báo cho admin — cần kích hoạt tài liệu
     try {
       const admins = await User.find({ role: 'admin', isActive: true });
       await Promise.all(admins.map(admin =>
         createNotification(
           admin._id,
-          'Thanh toÃ¡n SePay thÃ nh cÃ´ng!',
-          `Nháº­n ${Number(receivedAmount).toLocaleString('vi-VN')} VNÄ. Ná»™i dung: ${rawContent}. TÃ i liá»‡u Ä‘Ã£ kÃ­ch hoáº¡t tá»± Ä‘á»™ng.`,
-          'payment'
+          '🔔 Có đơn hàng cần kích hoạt tài liệu',
+          `Nhận ${Number(receivedAmount).toLocaleString('vi-VN')} VNĐ từ SePay. Nội dung: ${rawContent}. Vào /admin/payments để kích hoạt tài liệu cho học viên.`,
+          'warning'
         )
       ));
     } catch (e) { console.error('Admin notify error:', e); }
 
-    // Send email
-    try {
-      const [user, orderWithDocuments] = await Promise.all([
-        User.findById(order.user),
-        Order.findById(order._id).populate('documents.document', 'title')
-      ]);
-
-      await emailService.sendPaymentConfirmation(user, {
-        orderId: order._id,
-        amount: receivedAmount,
-        method: 'sepay',
-        documents: (orderWithDocuments?.documents || []).map((doc) => ({
-          title: doc.document?.title || 'TÃ i liá»‡u'
-        })),
-        transactionCode: `SEPAY_${transactionCode}`,
-        paymentDate: new Date()
-      });
-    } catch (e) { console.error('Email error:', e); }
-
-    // Award points
-    try {
-      const pts = await earnPoints(order.user.toString(), receivedAmount, order._id);
-      if (pts) await createNotification(order.user.toString(), 'Nháº­n Ä‘iá»ƒm thÆ°á»Ÿng!', `Báº¡n Ä‘Ã£ nháº­n Ä‘Æ°á»£c ${pts.points} Ä‘iá»ƒm thÆ°á»Ÿng!`, 'success');
-    } catch (e) { console.error('Points error:', e); }
-
-    return res.status(200).json({ success: true, message: 'Payment confirmed' });
+    return res.status(200).json({ success: true, message: 'Payment confirmed, pending admin activation' });
 
   } catch (error) {
     console.error('[SePay webhook] Unhandled error:', error);

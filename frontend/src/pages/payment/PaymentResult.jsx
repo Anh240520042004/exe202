@@ -77,7 +77,12 @@ export default function PaymentResult() {
   };
 
   const getSuccessMessage = () => {
-    if (isSePay) return 'Thanh toán đã được xác nhận. Bạn có thể tải tài liệu ngay bên dưới.';
+    if (isSePay) {
+      if (orderDetails?.status === 'processing') {
+        return 'Thanh toán của bạn đã được ghi nhận thành công! Tài liệu đang chờ Admin kích hoạt (thường trong vòng 24h).';
+      }
+      return 'Thanh toán đã được xác nhận. Bạn có thể tải tài liệu ngay bên dưới.';
+    }
     if (isVNPay) return 'Thanh toán qua cổng VNPay đã được xác nhận thành công.';
     return 'Cảm ơn bạn đã thanh toán. Mã xác nhận đã được gửi đến email của bạn.';
   };
@@ -158,7 +163,7 @@ export default function PaymentResult() {
             </div>
           )}
 
-          {isSuccess && purchasedDocuments.length > 0 && (
+          {isSuccess && purchasedDocuments.length > 0 && orderDetails?.status === 'completed' && (
             <div className="bg-white/10 rounded-2xl p-5 mb-6">
               <div className="flex items-center gap-3 mb-4">
                 <FileText className="w-5 h-5 text-white" />
@@ -222,7 +227,7 @@ export default function PaymentResult() {
               Xem lịch sử giao dịch
             </button>
 
-            {isSuccess && (
+            {isSuccess && orderDetails?.status === 'completed' && (
               <button
                 onClick={() => navigate('/my-documents')}
                 className="block w-full py-3 px-6 rounded-2xl font-medium bg-blue-500 text-white hover:bg-blue-600 transition-all duration-300 flex items-center justify-center gap-2"
