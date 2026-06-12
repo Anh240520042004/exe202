@@ -590,8 +590,9 @@ router.post('/sepay-webhook', async (req, res) => {
 
       payment.status = 'completed';
       payment.paymentStatus = 'paid';
+      const currentSepayData = payment.sepayData && typeof payment.sepayData.toObject === 'function' ? payment.sepayData.toObject() : (payment.sepayData || {});
       payment.sepayData = {
-        ...payment.sepayData,
+        ...currentSepayData,
         sepayId,
         gateway,
         transferType,
@@ -648,12 +649,13 @@ router.post('/sepay-webhook', async (req, res) => {
       }
     }
 
-    // Cáº­p nháº­t Payment
+    // Cập nhật Payment
     if (payment) {
       payment.status = 'completed';
       payment.paymentStatus = 'paid';
+      const currentSepayData = payment.sepayData && typeof payment.sepayData.toObject === 'function' ? payment.sepayData.toObject() : (payment.sepayData || {});
       payment.sepayData = {
-        ...payment.sepayData,
+        ...currentSepayData,
         sepayId,
         gateway,
         transferType,
