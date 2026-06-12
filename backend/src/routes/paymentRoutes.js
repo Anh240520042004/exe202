@@ -1,4 +1,4 @@
-﻿import express from 'express';
+import express from 'express';
 import { protect, adminOnly } from '../middleware/auth.js';
 import {
   createVNPayUrl,
@@ -75,6 +75,9 @@ const isConfiguredSePayApiKey = (apiKey) => Boolean(
 );
 
 const getSePayWebhookKey = (req) => {
+  const queryKey = req.query.apikey || req.query['api-key'];
+  if (queryKey) return String(queryKey).trim();
+
   const authorization = `${req.headers.authorization || ''}`.trim();
   const apiKeyHeader = `${req.headers['x-api-key'] || req.headers.apikey || req.headers['api-key'] || ''}`.trim();
 
@@ -560,9 +563,13 @@ router.post('/sepay-webhook', async (req, res) => {
 
       const expectedAccountNumber = `${process.env.SEPAY_ACCOUNT_NUMBER || ''}`.trim();
       const actualAccountNumber = `${accountNumber || ''}`.trim();
-      if (expectedAccountNumber && actualAccountNumber && actualAccountNumber !== expectedAccountNumber) {
-        console.warn('[SePay] Account mismatch:', actualAccountNumber, '| Expected:', expectedAccountNumber);
-        return res.status(400).json({ success: false, message: 'Account mismatch' });
+      const actualSubAccount = `${subAccount || ''}`.trim();
+
+      if (expectedAccountNumber) {
+        if (actualAccountNumber !== expectedAccountNumber && actualSubAccount !== expectedAccountNumber) {
+          console.warn('[SePay] Account mismatch (Mentor):', actualAccountNumber, '| SubAccount:', actualSubAccount, '| Expected:', expectedAccountNumber);
+          return res.status(400).json({ success: false, message: 'Account mismatch' });
+        }
       }
 
       const plan = {
@@ -631,9 +638,14 @@ router.post('/sepay-webhook', async (req, res) => {
 
     const expectedAccountNumber = `${process.env.SEPAY_ACCOUNT_NUMBER || ''}`.trim();
     const actualAccountNumber = `${accountNumber || ''}`.trim();
-    if (expectedAccountNumber && actualAccountNumber && actualAccountNumber !== expectedAccountNumber) {
-      console.warn('[SePay] Account mismatch:', actualAccountNumber, '| Expected:', expectedAccountNumber);
-      return res.status(400).json({ success: false, message: 'Account mismatch' });
+    const actualSubAccount = `${subAccount || ''}`.trim();
+    
+    // Kiểm tra nếu cấu hình SEPAY_ACCOUNT_NUMBER khác với CẢ accountNumber (TK chính) VÀ subAccount (TK ảo)
+    if (expectedAccountNumber) {
+      if (actualAccountNumber !== expectedAccountNumber && actualSubAccount !== expectedAccountNumber) {
+        console.warn('[SePay] Account mismatch:', actualAccountNumber, '| SubAccount:', actualSubAccount, '| Expected:', expectedAccountNumber);
+        return res.status(400).json({ success: false, message: 'Account mismatch' });
+      }
     }
 
     // Cáº­p nháº­t Payment
