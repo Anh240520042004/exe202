@@ -210,8 +210,8 @@ export default function MentorNetwork() {
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6">
             <div>
-              <h1 className="text-4xl font-bold mb-3 text-gray-900 dark:text-white">Mentor Network</h1>
-              <p className="text-lg text-gray-600 dark:text-gray-300 max-w-3xl">
+              <h1 className="text-4xl font-bold mb-3 text-white drop-shadow-lg">Mentor Network</h1>
+              <p className="text-lg font-medium text-blue-50/90 drop-shadow max-w-3xl">
                 Tìm mentor theo môn học, năng lực thực chiến, dự án mẫu và phản hồi từ các buổi học đã hoàn thành.
               </p>
             </div>

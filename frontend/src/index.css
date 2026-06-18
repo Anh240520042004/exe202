@@ -225,6 +225,34 @@ body {
     background: linear-gradient(135deg, rgba(255, 255, 255, 0.84), color-mix(in srgb, #c4b5fd 20%, rgba(255, 255, 255, 0.74)));
   }
 
+  .dark .fedtech-app-bg :where(.glass-hero, .glass-card, .glass-panel, .glass-subtle, .glass-header, .glass-sidebar) :where(h1, h2, h3, h4, h5, h6, [class*="text-gray-900"], [class*="text-gray-800"]) {
+    color: rgba(255, 255, 255, 0.98) !important;
+    text-shadow: 0 2px 12px rgba(2, 6, 23, 0.35);
+  }
+
+  .dark .fedtech-app-bg :where(.glass-hero, .glass-card, .glass-panel, .glass-subtle, .glass-header, .glass-sidebar) :where([class*="text-gray-300"], [class*="text-gray-400"], [class*="text-gray-500"], [class*="text-gray-600"], [class*="text-gray-700"]) {
+    color: rgba(219, 234, 254, 0.86) !important;
+  }
+
+  .dark .fedtech-app-bg :where(.glass-hero, .glass-card, .glass-panel, .glass-subtle, .glass-header, .glass-sidebar) :where(p[class*="text-gray-"], span[class*="text-gray-"], label[class*="text-gray-"], td[class*="text-gray-"], th[class*="text-gray-"]) {
+    color: rgba(219, 234, 254, 0.86) !important;
+  }
+
+  .dark .fedtech-app-bg :where(.glass-hero, .glass-card, .glass-panel, .glass-subtle, .glass-header, .glass-sidebar) :where(svg[class*="text-gray-"]) {
+    color: rgba(191, 219, 254, 0.82) !important;
+  }
+
+  .dark .fedtech-app-bg :where(p, span, label, small, th, td, a, svg)[class*="text-gray-400"],
+  .dark .fedtech-app-bg :where(p, span, label, small, th, td, a, svg)[class*="text-gray-500"],
+  .dark .fedtech-app-bg :where(p, span, label, small, th, td, a, svg)[class*="text-gray-600"] {
+    color: rgba(219, 234, 254, 0.82) !important;
+  }
+
+  .dark .fedtech-app-bg :where(h1, h2, h3)[class*="text-gray-900"] {
+    color: rgba(255, 255, 255, 0.98) !important;
+    text-shadow: 0 2px 12px rgba(2, 6, 23, 0.35);
+  }
+
   .glass-nav-link {
     position: relative;
     overflow: hidden;

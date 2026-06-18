@@ -336,8 +336,8 @@ const Hero = ({ title, subtitle, backLabel, onBack, children }) => (
           ← {backLabel}
         </button>
       )}
-      <h1 className="text-4xl font-bold mb-3 text-gray-900 dark:text-white">{title}</h1>
-      <p className="text-lg text-gray-600 dark:text-gray-300">{subtitle}</p>
+      <h1 className="text-4xl font-bold mb-3 text-white drop-shadow-lg">{title}</h1>
+      <p className="text-lg font-medium text-blue-50/90 drop-shadow">{subtitle}</p>
       {children}
     </div>
   </div>
