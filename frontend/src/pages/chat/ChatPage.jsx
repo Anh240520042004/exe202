@@ -30,11 +30,13 @@ const MessageBubble = ({ message, currentUserId }) => {
   return (
     <div className={`flex gap-2 mb-3 ${isOwn ? 'flex-row-reverse' : ''}`}>
       {!isOwn && (
-        <img
-          src={message.sender?.avatar || `https://ui-avatars.com/api/?name=${message.sender?.name || 'U'}&background=6366f1&color=fff&size=40`}
-          alt={message.sender?.name}
-          className="w-8 h-8 rounded-full object-cover flex-shrink-0 mt-1"
-        />
+        <Link to={`/profile/${getId(message.sender)}`} className="flex-shrink-0 mt-1">
+          <img
+            src={message.sender?.avatar || `https://ui-avatars.com/api/?name=${message.sender?.name || 'U'}&background=6366f1&color=fff&size=40`}
+            alt={message.sender?.name}
+            className="w-8 h-8 rounded-full object-cover hover:ring-2 hover:ring-blue-200/70"
+          />
+        </Link>
       )}
       <div className={`max-w-[70%] ${isOwn ? 'items-end' : 'items-start'} flex flex-col gap-1`}>
         {isImage ? (
@@ -75,11 +77,17 @@ const ConversationItem = ({ conv, isActive, onClick, currentUserId }) => {
       className={`w-full flex items-center gap-3 px-4 py-3 glass-nav-hover rounded-xl transition-all text-left ${isActive ? 'glass-nav-active' : ''}`}
     >
       {other?.avatar || conv.displayAvatar ? (
-        <img
-          src={other?.avatar || conv.displayAvatar}
-          alt={conv.displayName}
-          className="w-12 h-12 rounded-full object-cover flex-shrink-0"
-        />
+        <Link
+          to={`/profile/${getId(other)}`}
+          onClick={(event) => event.stopPropagation()}
+          className="flex-shrink-0"
+        >
+          <img
+            src={other?.avatar || conv.displayAvatar}
+            alt={conv.displayName}
+            className="w-12 h-12 rounded-full object-cover hover:ring-2 hover:ring-blue-200/70"
+          />
+        </Link>
       ) : (
         <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary-500 to-accent-500 flex items-center justify-center text-white font-bold flex-shrink-0">
           {conv.displayName?.[0]?.toUpperCase() || 'G'}
@@ -442,11 +450,13 @@ export default function ChatPage() {
               <X className="w-5 h-5" />
             </button>
             {activeConv.otherUser?.avatar ? (
-              <img
-                src={activeConv.otherUser.avatar}
-                alt={activeConv.displayName}
-                className="w-10 h-10 rounded-full object-cover"
-              />
+              <Link to={`/profile/${getId(activeConv.otherUser)}`}>
+                <img
+                  src={activeConv.otherUser.avatar}
+                  alt={activeConv.displayName}
+                  className="w-10 h-10 rounded-full object-cover hover:ring-2 hover:ring-blue-200/70"
+                />
+              </Link>
             ) : (
               <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary-500 to-accent-500 flex items-center justify-center text-white font-bold">
                 {activeConv.displayName?.[0]?.toUpperCase()}

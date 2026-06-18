@@ -34,15 +34,25 @@ const SOCIAL_BUTTONS = [
 ];
 
 // ─── Helper Components ──────────────────────────────────────────────────────
-function Avatar({ src, name, size = 'sm' }) {
+function Avatar({ src, name, size = 'sm', userId }) {
   const [err, setErr] = useState(false);
   const dim = size === 'sm' ? 'w-8 h-8' : size === 'md' ? 'w-10 h-10' : 'w-12 h-12';
   const initials = (name || '?')[0].toUpperCase();
+  const goToProfile = (event) => {
+    if (!userId) return;
+    event.preventDefault();
+    event.stopPropagation();
+    window.location.assign(`/profile/${userId}`);
+  };
   if (!src || err) {
     return (
-      <div className={`${dim} rounded-full bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center text-white font-bold text-sm flex-shrink-0`}>
+      <button
+        type="button"
+        onClick={goToProfile}
+        className={`${dim} rounded-full bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center text-white font-bold text-sm flex-shrink-0 ${userId ? 'cursor-pointer hover:ring-2 hover:ring-blue-200/70' : ''}`}
+      >
         {initials}
-      </div>
+      </button>
     );
   }
   return (
@@ -50,7 +60,8 @@ function Avatar({ src, name, size = 'sm' }) {
       src={src}
       alt={name}
       onError={() => setErr(true)}
-      className={`${dim} rounded-full object-cover flex-shrink-0`}
+      onClick={goToProfile}
+      className={`${dim} rounded-full object-cover flex-shrink-0 ${userId ? 'cursor-pointer hover:ring-2 hover:ring-blue-200/70' : ''}`}
     />
   );
 }
@@ -172,7 +183,7 @@ function MentorCard({ mentor }) {
       to={`/mentors/${mentor._id}`}
       className="group flex items-start gap-3 p-3 rounded-xl hover:bg-white/10 border border-transparent hover:border-white/15 transition-all duration-200"
     >
-      <Avatar src={avatar} name={name} size="md" />
+      <Avatar src={avatar} name={name} size="md" userId={mentor?._id} />
       <div className="flex-1 min-w-0">
         <p className="text-sm font-bold text-white group-hover:text-blue-100 transition-colors truncate">
           {name}
@@ -236,7 +247,7 @@ function PostCard({ post }) {
       className="group flex flex-col gap-2 p-3 rounded-xl hover:bg-white/10 border border-transparent hover:border-white/15 transition-all duration-200"
     >
       <div className="flex items-start gap-2">
-        <Avatar src={authorAvatar} name={authorName} size="sm" />
+        <Avatar src={authorAvatar} name={authorName} size="sm" userId={post?.author?._id} />
         <div className="flex-1 min-w-0">
           <p className="text-sm font-bold text-white group-hover:text-blue-100 transition-colors line-clamp-2 leading-snug">
             {title}

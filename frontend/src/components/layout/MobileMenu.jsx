@@ -1,5 +1,5 @@
 import React from 'react';
-import { NavLink, useNavigate } from 'react-router-dom';
+import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { X, LayoutDashboard, Receipt, User, Bell, LogOut } from 'lucide-react';
 import { setMobileMenuOpen } from '../../store/slices/uiSlice';
@@ -58,7 +58,11 @@ export default function MobileMenu() {
         </div>
 
         <div className="p-4">
-          <div className="flex items-center gap-3 p-3 glass-subtle rounded-ios mb-4">
+          <Link
+            to={user?._id || user?.id ? `/profile/${user?._id || user?.id}` : '/profile'}
+            onClick={handleClose}
+            className="flex items-center gap-3 p-3 glass-subtle rounded-ios mb-4 hover:bg-white/10 transition-colors"
+          >
             <img
               src={user?.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.name}`}
               alt={user?.name}
@@ -68,7 +72,7 @@ export default function MobileMenu() {
               <p className="font-medium text-gray-900 dark:text-white">{user?.name}</p>
               <p className="text-sm text-gray-500">{user?.email}</p>
             </div>
-          </div>
+          </Link>
 
           <nav className="space-y-1">
             {menuItems.map((item) => (

@@ -99,7 +99,7 @@ export default function Header() {
               </Link>
 
               <div className="flex items-center gap-3 pl-2 border-l glass-divider">
-                <Link to="/profile" className="flex items-center gap-3">
+                <Link to={user?._id || user?.id ? `/profile/${user?._id || user?.id}` : '/profile'} className="flex items-center gap-3">
                   <img
                     src={user?.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.name}`}
                     alt={user?.name}
