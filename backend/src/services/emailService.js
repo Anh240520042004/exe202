@@ -101,7 +101,7 @@ class EmailService {
               <ul>
                 <li>Truy cập tài liệu học tập chất lượng cao</li>
                 <li>Kết nối với các mentor giàu kinh nghiệm</li>
-                <li>Sử dụng AI Assistant để hỗ trợ học tập</li>
+                <li>Sử dụng AI Chatbot GPT để hỗ trợ học tập</li>
                 <li>Theo dõi và quản lý tiến độ học tập</li>
               </ul>
               <a href="${config.clientUrl}/dashboard" class="button">Bắt đầu ngay</a>

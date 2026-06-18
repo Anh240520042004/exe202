@@ -190,14 +190,9 @@ export const aiService = {
   getChats: () => api.get('/ai'),
   getById: (id) => api.get(`/ai/${id}`),
   createChat: (data) => api.post('/ai', data),
+  chatbot: (data) => api.post('/ai/chatbot', data),
   sendMessage: (id, data) => api.post(`/ai/${id}/message`, data),
   deleteChat: (id) => api.delete(`/ai/${id}`),
-  summarizePdf: (data) => api.post('/ai/summarize', data),
-  generateFlashcards: (data) => api.post('/ai/flashcards', data),
-  generateQuiz: (data) => api.post('/ai/quiz', data),
-  explainCode: (data) => api.post('/ai/explain-code', data),
-  generateRoadmap: (data) => api.post('/ai/roadmap', data),
-  getPrompts: (subject) => api.get('/ai/prompts', { params: { subject } }),
 };
 
 export const gamificationService = {

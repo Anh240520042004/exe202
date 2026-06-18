@@ -24,7 +24,7 @@ const NAV_LINKS = [
   { to: '/marketplace', icon: ShoppingBag, label: 'Marketplace' },
   { to: '/mentors', icon: GraduationCap, label: 'Mentors' },
   { to: '/forum', icon: MessageSquare, label: 'Diễn đàn' },
-  { to: '/ai', icon: Bot, label: 'AI Assistant' },
+  { to: '/ai', icon: Bot, label: 'AI Chatbot GPT' },
 ];
 
 const SOCIAL_BUTTONS = [
@@ -761,8 +761,8 @@ export default function Homepage() {
                 <Bot className="w-6 h-6 text-white" />
               </div>
               <div>
-                <p className="font-bold text-base mb-0.5">AI Assistant (Gemini)</p>
-                <p className="text-blue-100/75 text-xs">Hỏi đáp thông minh, giải bài tập, tóm tắt tài liệu tức thì</p>
+                <p className="font-bold text-base mb-0.5">AI Chatbot GPT</p>
+                <p className="text-blue-100/75 text-xs">Trò chuyện GPT, hỏi đáp nhanh và hỗ trợ học tập tức thì</p>
               </div>
               <ChevronRight className="w-5 h-5 ml-auto opacity-60 group-hover:translate-x-1 transition-transform" />
             </Link>
