@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import {
@@ -313,19 +314,38 @@ const SectionTitle = ({ icon: Icon, title }) => (
   </h2>
 );
 
+const profilePath = (user) => `/profile/${user?._id || user?.id}`;
+
+const stopCardClick = (event) => {
+  event.stopPropagation();
+};
+
 const FeatureStrip = ({ topMentors, popularDocs, topRatedDocs, onOpenMentor }) => (
   <section className="grid grid-cols-1 xl:grid-cols-3 gap-5">
     <FeaturePanel title="Top mentor" icon={Crown}>
       {topMentors.slice(0, 4).map((mentor, index) => (
-        <button key={mentor._id} onClick={() => onOpenMentor(mentor)} className="w-full flex items-center gap-3 text-left glass-nav-hover rounded-xl p-2">
+        <div
+          key={mentor._id}
+          role="button"
+          tabIndex={0}
+          onClick={() => onOpenMentor(mentor)}
+          onKeyDown={(event) => {
+            if (event.key === 'Enter' || event.key === ' ') onOpenMentor(mentor);
+          }}
+          className="w-full flex items-center gap-3 text-left glass-nav-hover rounded-xl p-2 cursor-pointer"
+        >
           <span className="w-7 h-7 rounded-full bg-amber-500 text-white flex items-center justify-center text-sm font-bold">{index + 1}</span>
-          <img src={mentor.avatar || avatarFor(mentor)} alt={mentor.name} className="w-10 h-10 rounded-full object-cover" />
+          <Link to={profilePath(mentor)} onClick={stopCardClick} className="flex-shrink-0">
+            <img src={mentor.avatar || avatarFor(mentor)} alt={mentor.name} className="w-10 h-10 rounded-full object-cover hover:ring-2 hover:ring-blue-200/70" />
+          </Link>
           <div className="min-w-0 flex-1">
-            <p className="font-semibold truncate">{mentor.name}</p>
+            <Link to={profilePath(mentor)} onClick={stopCardClick} className="block font-semibold truncate hover:text-blue-200 transition-colors">
+              {mentor.name}
+            </Link>
             <p className="text-xs text-gray-500 truncate">{mentor.mentorProfile?.title || 'Mentor'}</p>
           </div>
           <Rating value={mentor.mentorProfile?.documentRating || 0} />
-        </button>
+        </div>
       ))}
     </FeaturePanel>
     <FeaturePanel title="Tài liệu xem nhiều" icon={BookOpen}>
@@ -360,10 +380,14 @@ const MentorCard = ({ mentor, onOpen, compact = false }) => {
   return (
     <div className="glass-card glass-hover-card rounded-2xl p-5 flex flex-col gap-4">
       <div className="flex items-start gap-3">
-        <img src={mentor.avatar || avatarFor(mentor)} alt={mentor.name} className="w-14 h-14 rounded-full object-cover" />
+        <Link to={profilePath(mentor)} className="flex-shrink-0">
+          <img src={mentor.avatar || avatarFor(mentor)} alt={mentor.name} className="w-14 h-14 rounded-full object-cover hover:ring-2 hover:ring-blue-200/70" />
+        </Link>
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
-            <h3 className="font-bold truncate">{mentor.name}</h3>
+            <Link to={profilePath(mentor)} className="font-bold truncate hover:text-blue-200 transition-colors">
+              {mentor.name}
+            </Link>
             {promoted && <span className="text-[10px] bg-amber-500 text-white px-2 py-0.5 rounded-full">Ưu tiên</span>}
           </div>
           <p className="text-sm text-gray-500 truncate">{p.title || p.major || 'Mentor'}</p>
@@ -459,9 +483,13 @@ const MentorDetailModal = ({ mentor, onClose, navigate }) => {
       <div className="glass-modal rounded-3xl max-w-5xl mx-auto my-6">
         <div className="p-6 border-b glass-divider flex items-start justify-between gap-4">
           <div className="flex items-center gap-4">
-            <img src={mentor.avatar || avatarFor(mentor)} alt={mentor.name} className="w-20 h-20 rounded-full object-cover" />
+            <Link to={profilePath(mentor)}>
+              <img src={mentor.avatar || avatarFor(mentor)} alt={mentor.name} className="w-20 h-20 rounded-full object-cover hover:ring-2 hover:ring-blue-200/70" />
+            </Link>
             <div>
-              <h2 className="text-2xl font-bold">{mentor.name}</h2>
+              <Link to={profilePath(mentor)} className="text-2xl font-bold hover:text-blue-200 transition-colors">
+                {mentor.name}
+              </Link>
               <p className="text-gray-500">{p.title || p.major}</p>
               <div className="flex flex-wrap gap-3 mt-2 text-sm">
                 <Rating value={p.documentRating || 0} />
