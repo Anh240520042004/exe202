@@ -602,28 +602,28 @@ const MentorDetailModal = ({ mentor, onClose, navigate }) => {
 };
 
 const DetailSection = ({ icon: Icon, title, children }) => (
-  <section className="glass-card rounded-2xl p-5">
-    <h3 className="font-bold mb-3 flex items-center gap-2"><Icon className="w-5 h-5 text-primary-500" />{title}</h3>
+  <section className="glass-card rounded-2xl p-5 bg-white/85 border border-slate-200 dark:bg-white/10 dark:border-white/10">
+    <h3 className="font-bold mb-3 flex items-center gap-2 text-slate-950 dark:text-white"><Icon className="w-5 h-5 text-primary-500" />{title}</h3>
     {children}
   </section>
 );
 
 const ItemList = ({ items = [], empty, render }) => (
   <div className="space-y-3">
-    {items.length ? items.map((item, index) => <div key={item._id || `${item.title}-${index}`}>{render(item)}</div>) : <p className="text-sm text-gray-500">{empty}</p>}
+    {items.length ? items.map((item, index) => <div key={item._id || `${item.title}-${index}`}>{render(item)}</div>) : <p className="text-sm text-slate-600 dark:text-gray-500">{empty}</p>}
   </div>
 );
 
 const RichItem = ({ title, meta, description, link }) => (
-  <div className="glass-subtle rounded-xl p-3">
+  <div className="glass-subtle rounded-xl p-3 bg-white/70 dark:bg-white/5">
     <div className="flex items-start justify-between gap-3">
       <div>
-        <p className="font-semibold">{title || 'Untitled'}</p>
-        {meta && <p className="text-xs text-gray-500">{meta}</p>}
+        <p className="font-semibold text-slate-950 dark:text-white">{title || 'Untitled'}</p>
+        {meta && <p className="text-xs text-slate-600 dark:text-gray-500">{meta}</p>}
       </div>
       {link && <a href={link} target="_blank" rel="noreferrer" className="glass-nav-link p-1 rounded-lg"><ExternalLink className="w-4 h-4" /></a>}
     </div>
-    {description && <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">{description}</p>}
+    {description && <p className="text-sm text-slate-600 dark:text-gray-400 mt-2">{description}</p>}
   </div>
 );
 

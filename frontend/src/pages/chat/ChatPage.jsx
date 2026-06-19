@@ -46,21 +46,21 @@ const MessageBubble = ({ message, currentUserId }) => {
             href={message.attachmentUrl}
             target="_blank"
             rel="noreferrer"
-            className="flex items-center gap-2 px-4 py-2.5 bg-white/10 border border-white/10 rounded-xl text-sm hover:bg-white/15 transition-colors"
+            className="flex items-center gap-2 px-4 py-2.5 bg-white/80 border border-slate-200 rounded-xl text-sm hover:bg-blue-50 transition-colors dark:bg-white/10 dark:border-white/10 dark:hover:bg-white/15"
           >
             <Paperclip className="w-4 h-4 text-primary-400" />
-            <span className="text-white/80 truncate max-w-[200px]">{message.attachmentName || 'File'}</span>
+            <span className="text-slate-800 dark:text-white/80 truncate max-w-[200px]">{message.attachmentName || 'File'}</span>
           </a>
         ) : (
           <div className={`px-4 py-2.5 rounded-2xl text-sm leading-relaxed ${
             isOwn
               ? 'chat-bubble-user text-white'
-              : 'chat-bubble-ai text-gray-200'
+              : 'chat-bubble-ai text-slate-900 dark:text-gray-200'
           }`}>
             {message.content}
           </div>
         )}
-        <span className="text-white/25 text-xs px-1">
+        <span className="text-slate-400 dark:text-white/25 text-xs px-1">
           {new Date(message.createdAt).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}
         </span>
       </div>
@@ -95,22 +95,22 @@ const ConversationItem = ({ conv, isActive, onClick, currentUserId }) => {
       )}
       <div className="flex-1 min-w-0">
         <div className="flex items-center justify-between gap-2">
-          <p className={`font-semibold text-sm truncate ${conv.unreadCount > 0 ? 'text-white' : 'text-white/80'}`}>
+          <p className={`font-semibold text-sm truncate ${conv.unreadCount > 0 ? 'text-slate-950 dark:text-white' : 'text-slate-800 dark:text-white/80'}`}>
             {conv.displayName || 'Unknown'}
           </p>
           {conv.lastMessage?.createdAt && (
-            <span className="text-white/30 text-xs flex-shrink-0">
+            <span className="text-slate-400 dark:text-white/30 text-xs flex-shrink-0">
               {new Date(conv.lastMessage.createdAt).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' })}
             </span>
           )}
         </div>
         {conv.lastMessage && (
-          <p className="text-white/40 text-xs truncate mt-0.5">
+          <p className="text-slate-500 dark:text-white/40 text-xs truncate mt-0.5">
             {conv.lastMessage.sender === currentUserId ? 'Ban: ' : ''}{conv.lastMessage.content || (conv.lastMessage.type === 'image' ? '[Hinh anh]' : '[File]')}
           </p>
         )}
         {!conv.lastMessage && conv.isPending && (
-          <p className="text-white/30 text-xs truncate mt-0.5">Bat dau nhan tin</p>
+          <p className="text-slate-400 dark:text-white/30 text-xs truncate mt-0.5">Bat dau nhan tin</p>
         )}
       </div>
       {conv.unreadCount > 0 && (
@@ -392,7 +392,7 @@ export default function ChatPage() {
     return (
       <div className="flex items-center justify-center h-full">
         <div className="text-center">
-          <p className="text-white/50 mb-4">Vui long dang nhap de su dung chat</p>
+          <p className="text-slate-600 dark:text-white/50 mb-4">Vui long dang nhap de su dung chat</p>
           <Link to="/login" className="text-primary-400 hover:text-primary-300 font-medium">Dang nhap ngay</Link>
         </div>
       </div>
@@ -401,12 +401,12 @@ export default function ChatPage() {
 
   return (
     <div className="p-4 lg:p-6">
-      <div className="chat-shell flex h-[calc(100vh-7rem)] max-w-[1400px] mx-auto text-white">
+      <div className="chat-shell flex h-[calc(100vh-7rem)] max-w-[1400px] mx-auto text-slate-950 dark:text-white">
       {/* Conversation List */}
       <div className={`chat-sidebar w-80 flex flex-col flex-shrink-0 rounded-l-[inherit] ${activeConv ? 'hidden md:flex' : 'flex'}`}>
         <div className="p-4 border-b glass-divider">
           <div className="flex items-center justify-between mb-3">
-            <h2 className="text-lg font-bold text-white">Tin nhắn</h2>
+            <h2 className="text-lg font-bold text-slate-950 dark:text-white">Tin nhắn</h2>
           </div>
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
@@ -415,7 +415,7 @@ export default function ChatPage() {
               placeholder="Tìm cuộc trò chuyện..."
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
-              className="glass-input w-full pl-9 pr-3 py-2 text-gray-200 placeholder-gray-500 text-sm"
+              className="glass-input w-full pl-9 pr-3 py-2 text-slate-900 placeholder-gray-500 text-sm dark:text-gray-200"
             />
           </div>
         </div>
@@ -433,7 +433,7 @@ export default function ChatPage() {
             />
           ))}
           {conversations.length === 0 && (
-            <p className="text-center text-white/30 text-sm py-8">Chua co cuoc tro chuyen nao</p>
+            <p className="text-center text-slate-500 dark:text-white/30 text-sm py-8">Chua co cuoc tro chuyen nao</p>
           )}
         </div>
       </div>
@@ -445,7 +445,7 @@ export default function ChatPage() {
           <div className="flex items-center gap-3 px-4 py-3 border-b glass-divider glass-subtle/30">
             <button
               onClick={() => setActiveConv(null)}
-              className="md:hidden w-8 h-8 flex items-center justify-center text-white/50"
+              className="md:hidden w-8 h-8 flex items-center justify-center text-slate-500 dark:text-white/50"
             >
               <X className="w-5 h-5" />
             </button>
@@ -463,7 +463,7 @@ export default function ChatPage() {
               </div>
             )}
             <div className="flex-1 min-w-0">
-              <p className="font-semibold text-white truncate">{activeConv.displayName}</p>
+              <p className="font-semibold text-slate-950 dark:text-white truncate">{activeConv.displayName}</p>
               {typingUser && (
                 <p className="text-primary-400 text-xs">Dang nhap...</p>
               )}
@@ -481,15 +481,15 @@ export default function ChatPage() {
             ))}
             {activeConv.isPending && (
               <div className="flex h-full items-center justify-center">
-                <p className="text-white/30 text-sm">Gui tin nhan dau tien de bat dau cuoc tro chuyen</p>
+                <p className="text-slate-500 dark:text-white/30 text-sm">Gui tin nhan dau tien de bat dau cuoc tro chuyen</p>
               </div>
             )}
             {typingUser && (
-              <div className="flex items-center gap-2 text-white/30 text-sm px-4 py-2">
+              <div className="flex items-center gap-2 text-slate-500 dark:text-white/30 text-sm px-4 py-2">
                 <div className="flex gap-1">
-                  <span className="w-2 h-2 bg-white/30 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-                  <span className="w-2 h-2 bg-white/30 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-                  <span className="w-2 h-2 bg-white/30 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                  <span className="w-2 h-2 bg-slate-400 dark:bg-white/30 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                  <span className="w-2 h-2 bg-slate-400 dark:bg-white/30 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                  <span className="w-2 h-2 bg-slate-400 dark:bg-white/30 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
                 </div>
                 <span>dang nhap</span>
               </div>
@@ -506,7 +506,7 @@ export default function ChatPage() {
                 onKeyDown={handleKeyDown}
                 placeholder="Nhan tin..."
                 rows={1}
-                className="flex-1 bg-transparent text-white placeholder-white/30 text-sm outline-none resize-none py-1.5 max-h-32"
+                className="flex-1 bg-transparent text-slate-950 placeholder-slate-400 text-sm outline-none resize-none py-1.5 max-h-32 dark:text-white dark:placeholder-white/30"
                 style={{ minHeight: '36px' }}
               />
               <button
@@ -525,8 +525,8 @@ export default function ChatPage() {
             <div className="w-20 h-20 mx-auto rounded-full glass-chip flex items-center justify-center mb-4">
               <Send className="w-8 h-8 text-gray-500" />
             </div>
-            <p className="text-gray-400 text-lg mb-2">Chọn cuộc trò chuyện</p>
-            <p className="text-gray-500 text-sm">Chọn một cuộc trò chuyện từ danh sách bên trái</p>
+            <p className="text-slate-700 dark:text-gray-400 text-lg mb-2">Chọn cuộc trò chuyện</p>
+            <p className="text-slate-500 dark:text-gray-500 text-sm">Chọn một cuộc trò chuyện từ danh sách bên trái</p>
           </div>
         </div>
       )}
