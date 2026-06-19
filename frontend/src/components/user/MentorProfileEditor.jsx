@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { BadgeCheck, CheckCircle, Copy, Crown, Loader2, QrCode, Sparkles } from 'lucide-react';
+import { BadgeCheck, CheckCircle, Copy, Crown, ImagePlus, Loader2, QrCode, Sparkles, Trash2 } from 'lucide-react';
 import toast from 'react-hot-toast';
-import api, { mentorService } from '../../services/api';
+import api, { mentorService, uploadService } from '../../services/api';
+import { API_ORIGIN } from '../../config/api';
 import { Card, Button } from '../ui';
 
 const promotionPlans = [
@@ -58,6 +59,7 @@ const emptyProfile = {
   gpa: '',
   passedSubjects: '',
   experience: '',
+  galleryImages: [],
   pricePerHour: '',
   isAvailable: true,
   achievements: '',
@@ -80,6 +82,12 @@ const normalizeTemplateLevel = (value) => {
 };
 
 const looksLikeUrl = (value) => /^(https?:\/\/|www\.)/i.test(String(value || '').trim());
+
+const imageSrc = (url) => {
+  if (!url) return '';
+  if (/^https?:\/\//i.test(url)) return url;
+  return `${API_ORIGIN}${url.startsWith('/') ? url : `/${url}`}`;
+};
 
 const normalizeGpa = (value) => {
   const gpa = Number(value);
@@ -135,6 +143,9 @@ const profileToForm = (user) => {
     gpa: p.gpa || '',
     passedSubjects: (p.passedSubjects || []).join(', '),
     experience: p.experience || '',
+    galleryImages: (p.galleryImages || []).map((item) => (
+      typeof item === 'string' ? { url: item, caption: '' } : { url: item.url || '', caption: item.caption || '' }
+    )).filter((item) => item.url),
     pricePerHour: p.pricePerHour || '',
     isAvailable: p.isAvailable !== false,
     achievements: (p.achievements || []).map((item) => [item.title, item.issuer, item.year, item.description].filter(Boolean).join(' | ')).join('\n'),
@@ -160,6 +171,10 @@ const formToPayload = (user, form) => ({
   'mentorProfile.gpa': normalizeGpa(form.gpa),
   'mentorProfile.passedSubjects': form.passedSubjects.split(',').map((item) => item.trim().toUpperCase()).filter(Boolean),
   'mentorProfile.experience': form.experience,
+  'mentorProfile.galleryImages': (form.galleryImages || []).map((item) => ({
+    url: item.url,
+    caption: item.caption || '',
+  })).filter((item) => item.url),
   'mentorProfile.pricePerHour': Number(form.pricePerHour) || 0,
   'mentorProfile.isAvailable': form.isAvailable,
   'mentorProfile.achievements': parseLines(form.achievements, (line) => {
@@ -186,6 +201,7 @@ const formToPayload = (user, form) => ({
 export default function MentorProfileEditor({ user, onSaved }) {
   const [form, setForm] = useState({ ...emptyProfile });
   const [saving, setSaving] = useState(false);
+  const [uploadingImages, setUploadingImages] = useState(false);
   const [promoting, setPromoting] = useState(false);
   const [showPromotionModal, setShowPromotionModal] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState(null);
@@ -235,6 +251,52 @@ export default function MentorProfileEditor({ user, onSaved }) {
   }, [promotionPayment?.transactionId, paymentConfirmed, onSaved]);
 
   const update = (key, value) => setForm((prev) => ({ ...prev, [key]: value }));
+
+  const uploadGalleryImages = async (event) => {
+    const files = Array.from(event.target.files || []);
+    event.target.value = '';
+    if (!files.length) return;
+
+    setUploadingImages(true);
+    try {
+      const formData = new FormData();
+      files.slice(0, 5).forEach((file) => formData.append('files', file));
+      const response = await uploadService.uploadImages(formData);
+      const urls = response.data?.data?.urls || [];
+      if (!urls.length) {
+        toast.error('Không nhận được ảnh đã upload');
+        return;
+      }
+      setForm((prev) => ({
+        ...prev,
+        galleryImages: [
+          ...(prev.galleryImages || []),
+          ...urls.map((url) => ({ url, caption: '' })),
+        ],
+      }));
+      toast.success(`Đã upload ${urls.length} ảnh`);
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Không thể upload ảnh');
+    } finally {
+      setUploadingImages(false);
+    }
+  };
+
+  const updateGalleryImage = (index, patch) => {
+    setForm((prev) => ({
+      ...prev,
+      galleryImages: (prev.galleryImages || []).map((item, itemIndex) => (
+        itemIndex === index ? { ...item, ...patch } : item
+      )),
+    }));
+  };
+
+  const removeGalleryImage = (index) => {
+    setForm((prev) => ({
+      ...prev,
+      galleryImages: (prev.galleryImages || []).filter((_, itemIndex) => itemIndex !== index),
+    }));
+  };
 
   const syncStoredUser = (updatedUser) => {
     const storedUser = JSON.parse(localStorage.getItem('user') || 'null');
@@ -350,6 +412,56 @@ export default function MentorProfileEditor({ user, onSaved }) {
         <Field label="Môn đã qua (cách nhau bằng dấu phẩy)" value={form.passedSubjects} onChange={(value) => update('passedSubjects', value)} className="lg:col-span-2" />
         <TextArea label="Giới thiệu cá nhân" value={form.bio} onChange={(value) => update('bio', value)} />
         <TextArea label="Kinh nghiệm" value={form.experience} onChange={(value) => update('experience', value)} />
+        <div className="lg:col-span-2 rounded-2xl border border-gray-150 dark:border-white/10 bg-white/45 dark:bg-white/5 p-4">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
+            <div>
+              <p className="font-semibold text-gray-900 dark:text-white">Ảnh hồ sơ mentor</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Upload nhiều ảnh để học viên xem thêm hoạt động, dự án hoặc thành tích của bạn.</p>
+            </div>
+            <label className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-primary-500/10 border border-primary-500/20 text-primary-700 dark:text-primary-300 font-semibold hover:bg-primary-500/20 transition-all cursor-pointer">
+              {uploadingImages ? <Loader2 className="w-4 h-4 animate-spin" /> : <ImagePlus className="w-4 h-4" />}
+              Thêm ảnh
+              <input
+                type="file"
+                accept="image/png,image/jpeg"
+                multiple
+                onChange={uploadGalleryImages}
+                disabled={uploadingImages}
+                className="hidden"
+              />
+            </label>
+          </div>
+
+          {(form.galleryImages || []).length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {form.galleryImages.map((image, index) => (
+                <div key={`${image.url}-${index}`} className="rounded-2xl overflow-hidden border border-gray-150 dark:border-white/10 bg-white/70 dark:bg-white/5">
+                  <div className="relative aspect-video bg-gray-100 dark:bg-white/5">
+                    <img src={imageSrc(image.url)} alt={image.caption || `Ảnh mentor ${index + 1}`} className="w-full h-full object-cover" />
+                    <button
+                      type="button"
+                      onClick={() => removeGalleryImage(index)}
+                      className="absolute top-2 right-2 w-8 h-8 rounded-xl bg-white/90 dark:bg-gray-900/80 text-red-600 dark:text-red-300 flex items-center justify-center shadow-sm hover:bg-red-50 dark:hover:bg-red-950/40 transition-colors"
+                      title="Xóa ảnh"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                  <input
+                    value={image.caption || ''}
+                    onChange={(event) => updateGalleryImage(index, { caption: event.target.value })}
+                    placeholder="Mô tả ảnh"
+                    className="w-full bg-transparent px-3 py-2 text-sm text-gray-900 dark:text-white placeholder-gray-400 outline-none"
+                  />
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="rounded-2xl border border-dashed border-gray-250 dark:border-white/15 p-6 text-center text-sm text-gray-500 dark:text-gray-400">
+              Chưa có ảnh nào. Bạn có thể thêm tối đa 5 ảnh mỗi lần upload.
+            </div>
+          )}
+        </div>
         <TextArea label="Thành tựu: Tên | Đơn vị cấp | Năm | Mô tả" value={form.achievements} onChange={(value) => update('achievements', value)} />
         <TextArea label="Demo: Tiêu đề | URL | Mô tả" value={form.demoMaterials} onChange={(value) => update('demoMaterials', value)} />
         <TextArea label="Bài tập mẫu: Tiêu đề | Môn học | Cấp độ (beginner/intermediate/advanced) | URL | Mô tả" value={form.exerciseTemplates} onChange={(value) => update('exerciseTemplates', value)} />

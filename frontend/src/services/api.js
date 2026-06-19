@@ -116,6 +116,15 @@ export const documentService = {
   download: (id) => api.get(`/documents/${id}/download`),
 };
 
+export const uploadService = {
+  uploadImage: (formData) => api.post('/upload', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  }),
+  uploadImages: (formData) => api.post('/upload/multiple', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  }),
+};
+
 export const courseService = {
   getAll: (params) => api.get('/courses', { params }),
   getByCode: (code) => api.get(`/courses/${code}`),

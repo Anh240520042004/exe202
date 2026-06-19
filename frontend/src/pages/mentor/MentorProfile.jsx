@@ -11,10 +11,12 @@ import {
   ExternalLink,
   FileText,
   GraduationCap,
+  Images,
   Loader2,
   Star,
 } from 'lucide-react';
 import { documentService, mentorService } from '../../services/api';
+import { API_ORIGIN } from '../../config/api';
 import { userService } from '../../services/userService';
 
 const typeLabels = {
@@ -24,6 +26,12 @@ const typeLabels = {
   exam: 'Đề thi',
   assignment: 'Bài tập',
   checklist: 'Checklist',
+};
+
+const imageSrc = (url) => {
+  if (!url) return '';
+  if (/^https?:\/\//i.test(url)) return url;
+  return `${API_ORIGIN}${url.startsWith('/') ? url : `/${url}`}`;
 };
 
 export default function MentorProfile() {
@@ -175,6 +183,28 @@ export default function MentorProfile() {
               <p className="text-sm text-gray-550 dark:text-gray-400">Tai lieu ho so cua mentor nay dang duoc gioi han quyen xem.</p>
             ) : (
               <p className="text-sm text-gray-550 dark:text-gray-400">Mentor chưa tải tài liệu nào lên hồ sơ.</p>
+            )}
+          </ProfileSection>
+
+          <ProfileSection icon={Images} title="Ảnh hồ sơ mentor">
+            {(profile.galleryImages || []).length ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {(profile.galleryImages || []).map((image, index) => {
+                  const item = typeof image === 'string' ? { url: image, caption: '' } : image;
+                  return (
+                    <figure key={`${item.url}-${index}`} className="glass-subtle rounded-2xl overflow-hidden">
+                      <img src={imageSrc(item.url)} alt={item.caption || `Ảnh hồ sơ mentor ${index + 1}`} className="w-full aspect-video object-cover" />
+                      {item.caption && (
+                        <figcaption className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">
+                          {item.caption}
+                        </figcaption>
+                      )}
+                    </figure>
+                  );
+                })}
+              </div>
+            ) : (
+              <p className="text-sm text-gray-550 dark:text-gray-400">Mentor chưa thêm ảnh hồ sơ.</p>
             )}
           </ProfileSection>
 

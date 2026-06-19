@@ -260,6 +260,13 @@ const userSchema = new mongoose.Schema(
         type: String,
       },
 
+      galleryImages: [
+        {
+          url: { type: String, trim: true },
+          caption: { type: String, trim: true },
+        },
+      ],
+
       achievements: [
         {
           title: { type: String, trim: true },
