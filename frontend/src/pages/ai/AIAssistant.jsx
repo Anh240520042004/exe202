@@ -103,14 +103,14 @@ const AIAssistant = () => {
           <div className="w-20 h-20 bg-primary-400/15 rounded-full flex items-center justify-center mx-auto mb-6">
             <Bot className="w-10 h-10 text-primary-300" />
           </div>
-          <h1 className="text-2xl font-bold text-white mb-2">AI Chatbot GPT</h1>
+          <h1 className="text-2xl font-bold text-slate-950 dark:text-white mb-2">AI Chatbot GPT</h1>
           <p className="text-blue-100/75 mb-6">Đăng nhập để trò chuyện với chatbot GPT của F.EdTech.</p>
           <div className="flex gap-3 justify-center">
             <Link to="/login" className="glass-nav-link px-6 py-3 bg-primary-400/60 text-white rounded-2xl font-medium hover:bg-primary-500/70 flex items-center gap-2">
               <LogIn className="w-4 h-4" />
               Đăng nhập
             </Link>
-            <Link to="/register" className="glass-nav-link px-6 py-3 glass-subtle rounded-2xl font-medium text-blue-100">
+            <Link to="/register" className="glass-nav-link px-6 py-3 glass-subtle rounded-2xl font-medium text-slate-800 dark:text-blue-100">
               Đăng ký
             </Link>
           </div>
@@ -126,7 +126,7 @@ const AIAssistant = () => {
           <div className="p-4 border-b glass-divider">
             <div className="flex items-center gap-2 mb-4">
               <Bot className="text-primary-300" />
-              <h1 className="font-bold text-lg text-white">AI Chatbot GPT</h1>
+              <h1 className="font-bold text-lg text-slate-950 dark:text-white">AI Chatbot GPT</h1>
             </div>
 
             <button
@@ -140,7 +140,7 @@ const AIAssistant = () => {
 
           <div className="flex-1 overflow-y-auto p-3 space-y-1">
             {chats.length === 0 ? (
-              <div className="text-center py-8 text-blue-100/60">
+              <div className="text-center py-8 text-slate-600 dark:text-blue-100/60">
                 <MessageSquare className="w-12 h-12 mx-auto mb-3 opacity-50" />
                 <p className="text-sm">Chưa có lịch sử chat</p>
               </div>
@@ -159,8 +159,8 @@ const AIAssistant = () => {
                   }`}
                 >
                   <div className="flex-1 truncate min-w-0">
-                    <p className="font-medium truncate text-gray-200">{chat.title || 'AI Chatbot GPT'}</p>
-                    <p className="text-xs text-blue-100/55">
+                    <p className="font-semibold truncate text-slate-800 dark:text-gray-200">{chat.title || 'AI Chatbot GPT'}</p>
+                    <p className="text-xs font-medium text-slate-500 dark:text-blue-100/55">
                       {new Date(chat.lastMessageAt || chat.createdAt).toLocaleDateString('vi-VN')}
                     </p>
                   </div>
@@ -170,7 +170,7 @@ const AIAssistant = () => {
                     onKeyDown={(event) => {
                       if (event.key === 'Enter' || event.key === ' ') deleteChat(event, chat._id);
                     }}
-                    className="opacity-0 group-hover:opacity-100 p-1 hover:text-red-300 text-blue-100/50"
+                    className="opacity-0 group-hover:opacity-100 p-1 text-slate-500 hover:text-red-600 dark:text-blue-100/50 dark:hover:text-red-300"
                     aria-label="Xóa chat"
                   >
                     <Trash2 size={16} />
@@ -183,7 +183,7 @@ const AIAssistant = () => {
 
         <main className="flex-1 flex flex-col min-w-0 rounded-r-[inherit]">
           <div className="p-4 border-b glass-divider glass-subtle/40">
-            <h2 className="font-bold text-white">{currentChat?.title || 'AI Chatbot GPT'}</h2>
+            <h2 className="font-bold text-slate-950 dark:text-white">{currentChat?.title || 'AI Chatbot GPT'}</h2>
             <p className="text-sm text-blue-100/60">Hỏi bất kỳ điều gì, chatbot sẽ trả lời bằng GPT.</p>
           </div>
 
@@ -194,7 +194,7 @@ const AIAssistant = () => {
                   <div className="w-20 h-20 glass-subtle rounded-full flex items-center justify-center mx-auto mb-6">
                     <Bot size={40} className="text-primary-300" />
                   </div>
-                  <h2 className="text-2xl font-bold mb-2 text-white">AI Chatbot GPT</h2>
+                  <h2 className="text-2xl font-bold mb-2 text-slate-950 dark:text-white">AI Chatbot GPT</h2>
                   <p className="text-blue-100/70 mb-6">Bạn có thể hỏi về môn học, mentor, tài liệu, code, ý tưởng dự án hoặc bất kỳ điều gì cần hỗ trợ.</p>
                 </div>
               </div>
@@ -213,7 +213,7 @@ const AIAssistant = () => {
                 <div className={`max-w-[76%] px-4 py-3 text-sm leading-relaxed ${
                   message.role === 'user'
                     ? 'chat-bubble-user text-white'
-                    : 'chat-bubble-ai text-gray-100'
+                    : 'chat-bubble-ai text-slate-800 dark:text-gray-100'
                 }`}>
                   <p className="whitespace-pre-wrap">{message.content}</p>
                 </div>
@@ -244,7 +244,7 @@ const AIAssistant = () => {
                 value={input}
                 onChange={(event) => setInput(event.target.value)}
                 placeholder="Hỏi bất kỳ điều gì..."
-                className="flex-1 px-4 py-2.5 bg-transparent text-gray-100 placeholder-blue-100/45 focus:outline-none"
+                className="flex-1 px-4 py-2.5 bg-transparent text-slate-900 placeholder-slate-500 focus:outline-none dark:text-gray-100 dark:placeholder-blue-100/45"
               />
               <button
                 type="submit"

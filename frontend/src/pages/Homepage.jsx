@@ -587,7 +587,7 @@ export default function Homepage() {
               <Zap className="h-4 w-4 fill-blue-300 text-blue-300" />
               Nền tảng học tập #1 cho sinh viên FPT
             </div>
-            <h1 className="mx-auto mb-5 max-w-5xl text-4xl font-black leading-tight text-slate-950 drop-shadow-none sm:text-5xl lg:text-6xl dark:text-white dark:drop-shadow-2xl">
+            <h1 className="mx-auto mb-5 max-w-5xl text-4xl font-black leading-[1.28] text-slate-950 drop-shadow-none sm:text-5xl sm:leading-[1.22] lg:text-6xl lg:leading-[1.18] dark:text-white dark:drop-shadow-2xl">
               Học tập thông minh,{' '}
               <span className="text-blue-700 dark:text-blue-100">
                 Thành công bền vững

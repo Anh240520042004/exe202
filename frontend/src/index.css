@@ -494,6 +494,22 @@ body {
     border-color: var(--glass-border-subtle);
   }
 
+  html:not(.dark) .chat-shell :where(p, span, div)[class*="text-blue-100"] {
+    color: #475569 !important;
+  }
+
+  html:not(.dark) .chat-shell .chat-bubble-ai {
+    color: #1e293b;
+  }
+
+  html:not(.dark) .chat-input-bar input {
+    color: #0f172a;
+  }
+
+  html:not(.dark) .chat-input-bar input::placeholder {
+    color: #64748b;
+  }
+
   .chat-sidebar {
     background: var(--glass-sidebar-bg);
     backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
