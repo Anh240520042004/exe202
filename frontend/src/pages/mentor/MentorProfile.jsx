@@ -204,11 +204,18 @@ export default function MentorProfile() {
             {galleryImages.length ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {galleryImages.map((item, index) => (
-                    <button
+                    <figure
                       key={`${item.url}-${index}`}
-                      type="button"
+                      role="button"
+                      tabIndex={0}
                       onClick={() => setActiveImageIndex(index)}
-                      className="glass-subtle rounded-2xl overflow-hidden text-left hover:-translate-y-0.5 hover:shadow-lg transition-all"
+                      onKeyDown={(event) => {
+                        if (event.key === 'Enter' || event.key === ' ') {
+                          event.preventDefault();
+                          setActiveImageIndex(index);
+                        }
+                      }}
+                      className="glass-subtle rounded-2xl overflow-hidden text-left hover:-translate-y-0.5 hover:shadow-lg transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary-500/50"
                     >
                       <img src={imageSrc(item.url)} alt={item.caption || `Ảnh hồ sơ mentor ${index + 1}`} className="w-full aspect-video object-cover" />
                       {item.caption && (
@@ -216,7 +223,7 @@ export default function MentorProfile() {
                           {item.caption}
                         </figcaption>
                       )}
-                    </button>
+                    </figure>
                 ))}
               </div>
             ) : (
