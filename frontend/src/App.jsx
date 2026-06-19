@@ -1,5 +1,5 @@
-import React, { useEffect } from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
+import React, { useEffect, useRef } from 'react';
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { Layout } from './components/layout';
 import { Login, Register, ForgotPassword, EmailVerification } from './pages/auth';
@@ -27,12 +27,30 @@ import ChatPage from './pages/chat/ChatPage';
 
 export default function App() {
   const dispatch = useDispatch();
+  const location = useLocation();
+  const previousPathRef = useRef(`${location.pathname}${location.search}`);
   const { isAuthenticated, user } = useSelector((state) => state.auth);
   const theme = useSelector((state) => state.ui.theme);
 
   useEffect(() => {
     document.documentElement.classList.toggle('dark', theme === 'dark');
   }, [theme]);
+
+  useEffect(() => {
+    const currentPath = `${location.pathname}${location.search}`;
+
+    if (previousPathRef.current === currentPath) {
+      return;
+    }
+
+    previousPathRef.current = currentPath;
+
+    if (typeof window.gtag === 'function') {
+      window.gtag('config', 'G-1YHJRVQ167', {
+        page_path: currentPath,
+      });
+    }
+  }, [location.pathname, location.search]);
 
   const DashboardComponent = user?.role === 'admin' ? AdminDashboard :
                             user?.role === 'mentor' ? MentorNetwork :
