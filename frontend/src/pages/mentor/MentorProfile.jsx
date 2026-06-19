@@ -8,12 +8,15 @@ import {
   Award,
   BookOpen,
   Briefcase,
+  ChevronLeft,
+  ChevronRight,
   ExternalLink,
   FileText,
   GraduationCap,
   Images,
   Loader2,
   Star,
+  X,
 } from 'lucide-react';
 import { documentService, mentorService } from '../../services/api';
 import { API_ORIGIN } from '../../config/api';
@@ -45,6 +48,7 @@ export default function MentorProfile() {
   const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(true);
   const [followModalType, setFollowModalType] = useState(null);
+  const [activeImageIndex, setActiveImageIndex] = useState(null);
 
   useEffect(() => {
     const loadProfile = async () => {
@@ -89,6 +93,16 @@ export default function MentorProfile() {
   if (!mentor) return null;
 
   const profile = mentor.mentorProfile || {};
+  const galleryImages = (profile.galleryImages || [])
+    .map((image) => (typeof image === 'string' ? { url: image, caption: '' } : image))
+    .filter((image) => image?.url);
+  const activeImage = activeImageIndex !== null ? galleryImages[activeImageIndex] : null;
+  const showPreviousImage = () => setActiveImageIndex((index) => (
+    index === null ? 0 : (index - 1 + galleryImages.length) % galleryImages.length
+  ));
+  const showNextImage = () => setActiveImageIndex((index) => (
+    index === null ? 0 : (index + 1) % galleryImages.length
+  ));
 
   return (
     <div className="min-h-screen">
@@ -187,21 +201,23 @@ export default function MentorProfile() {
           </ProfileSection>
 
           <ProfileSection icon={Images} title="Ảnh hồ sơ mentor">
-            {(profile.galleryImages || []).length ? (
+            {galleryImages.length ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {(profile.galleryImages || []).map((image, index) => {
-                  const item = typeof image === 'string' ? { url: image, caption: '' } : image;
-                  return (
-                    <figure key={`${item.url}-${index}`} className="glass-subtle rounded-2xl overflow-hidden">
+                {galleryImages.map((item, index) => (
+                    <button
+                      key={`${item.url}-${index}`}
+                      type="button"
+                      onClick={() => setActiveImageIndex(index)}
+                      className="glass-subtle rounded-2xl overflow-hidden text-left hover:-translate-y-0.5 hover:shadow-lg transition-all"
+                    >
                       <img src={imageSrc(item.url)} alt={item.caption || `Ảnh hồ sơ mentor ${index + 1}`} className="w-full aspect-video object-cover" />
                       {item.caption && (
                         <figcaption className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">
                           {item.caption}
                         </figcaption>
                       )}
-                    </figure>
-                  );
-                })}
+                    </button>
+                ))}
               </div>
             ) : (
               <p className="text-sm text-gray-550 dark:text-gray-400">Mentor chưa thêm ảnh hồ sơ.</p>
@@ -258,6 +274,60 @@ export default function MentorProfile() {
           </ProfileSection>
         </aside>
       </main>
+
+      {activeImage && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4">
+          <button
+            type="button"
+            aria-label="Đóng ảnh"
+            className="absolute inset-0"
+            onClick={() => setActiveImageIndex(null)}
+          />
+          <div className="relative z-10 w-full max-w-6xl">
+            <button
+              type="button"
+              onClick={() => setActiveImageIndex(null)}
+              className="absolute -top-12 right-0 w-10 h-10 rounded-full bg-white/10 text-white flex items-center justify-center hover:bg-white/20 transition-colors"
+              aria-label="Đóng"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            {galleryImages.length > 1 && (
+              <>
+                <button
+                  type="button"
+                  onClick={showPreviousImage}
+                  className="absolute left-2 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-white/15 text-white flex items-center justify-center hover:bg-white/25 transition-colors"
+                  aria-label="Ảnh trước"
+                >
+                  <ChevronLeft className="w-6 h-6" />
+                </button>
+                <button
+                  type="button"
+                  onClick={showNextImage}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-white/15 text-white flex items-center justify-center hover:bg-white/25 transition-colors"
+                  aria-label="Ảnh tiếp theo"
+                >
+                  <ChevronRight className="w-6 h-6" />
+                </button>
+              </>
+            )}
+
+            <img
+              src={imageSrc(activeImage.url)}
+              alt={activeImage.caption || 'Ảnh hồ sơ mentor'}
+              className="max-h-[82vh] w-full object-contain rounded-2xl"
+            />
+            <div className="mt-4 text-center text-white">
+              {activeImage.caption && <p className="font-medium">{activeImage.caption}</p>}
+              <p className="text-sm text-white/60 mt-1">
+                {(activeImageIndex ?? 0) + 1} / {galleryImages.length}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
