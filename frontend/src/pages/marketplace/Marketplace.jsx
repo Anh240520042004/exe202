@@ -329,38 +329,38 @@ const Marketplace = () => {
 };
 
 const Hero = ({ title, subtitle, backLabel, onBack, children }) => (
-  <div className="glass-hero glass-hero-accent mx-4 mt-2 px-6 py-10 md:px-10">
+  <div className="glass-hero glass-hero-accent mx-4 mt-2 px-6 py-10 md:px-10 bg-white/85 dark:bg-white/10">
     <div className="max-w-7xl mx-auto">
       {backLabel && (
         <button onClick={onBack} className="glass-nav-link flex items-center gap-2 text-primary-600 dark:text-primary-300 mb-4 rounded-ios px-2 py-1">
           ← {backLabel}
         </button>
       )}
-      <h1 className="text-4xl font-bold mb-3 text-white drop-shadow-lg">{title}</h1>
-      <p className="text-lg font-medium text-blue-50/90 drop-shadow">{subtitle}</p>
+      <h1 className="text-4xl font-bold mb-3 text-slate-950 drop-shadow-none dark:text-white dark:drop-shadow-lg">{title}</h1>
+      <p className="text-lg font-medium text-slate-700 drop-shadow-none dark:text-blue-50/90 dark:drop-shadow">{subtitle}</p>
       {children}
     </div>
   </div>
 );
 
 const SectionTitle = ({ title }) => (
-  <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
+  <h2 className="text-2xl font-bold mb-6 flex items-center gap-2 text-slate-950 dark:text-white">
     <Book className="text-primary-600" />
     {title}
   </h2>
 );
 
 const SelectCard = ({ title, subtitle, metric, onClick }) => (
-  <div onClick={onClick} className="glass-card glass-hover-card rounded-2xl group p-6 cursor-pointer">
+  <div onClick={onClick} className="glass-card glass-hover-card rounded-2xl group p-6 cursor-pointer bg-white/85 border border-slate-200 dark:bg-white/10 dark:border-white/10">
     <div className="flex items-start justify-between mb-4">
       <div className="w-14 h-14 bg-primary-200/40 dark:bg-primary-400/12 rounded-2xl flex items-center justify-center">
         <BookOpen className="text-primary-600" size={28} />
       </div>
       <ChevronRight className="text-gray-400 group-hover:text-primary-600 group-hover:translate-x-1 transition-all" size={20} />
     </div>
-    <h3 className="text-xl font-bold mb-1">{title}</h3>
+    <h3 className="text-xl font-bold mb-1 text-slate-950 dark:text-white">{title}</h3>
     <p className="text-gray-600 dark:text-gray-400 text-sm mb-3">{subtitle}</p>
-    <p className="text-xs text-primary-600 mt-2">{metric}</p>
+    <p className="text-xs font-semibold text-primary-600 dark:text-primary-300 mt-2">{metric}</p>
   </div>
 );
 

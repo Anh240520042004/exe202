@@ -207,12 +207,12 @@ export default function MentorNetwork() {
 
   return (
     <div className="min-h-screen">
-      <section className="glass-hero glass-hero-purple mx-4 mt-2 px-6 py-10 md:px-10">
+      <section className="glass-hero glass-hero-purple mx-4 mt-2 px-6 py-10 md:px-10 bg-white/85 dark:bg-white/10">
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6">
             <div>
-              <h1 className="text-4xl font-bold mb-3 text-white drop-shadow-lg">Mentor Network</h1>
-              <p className="text-lg font-medium text-blue-50/90 drop-shadow max-w-3xl">
+              <h1 className="text-4xl font-bold mb-3 text-slate-950 drop-shadow-none dark:text-white dark:drop-shadow-lg">Mentor Network</h1>
+              <p className="text-lg font-medium text-slate-700 drop-shadow-none max-w-3xl dark:text-blue-50/90 dark:drop-shadow">
                 Tìm mentor theo môn học, năng lực thực chiến, dự án mẫu và phản hồi từ các buổi học đã hoàn thành.
               </p>
             </div>
@@ -300,10 +300,10 @@ export default function MentorNetwork() {
 }
 
 const Metric = ({ icon: Icon, label, value }) => (
-  <div className="glass-chip px-4 py-3">
+  <div className="glass-chip px-4 py-3 bg-white/80 border border-slate-200 dark:bg-white/10 dark:border-white/10">
     <Icon className="w-5 h-5 text-primary-500 mb-1" />
-    <div className="text-xl font-bold">{value}</div>
-    <div className="text-xs text-gray-500">{label}</div>
+    <div className="text-xl font-bold text-slate-950 dark:text-white">{value}</div>
+    <div className="text-xs text-gray-500 dark:text-gray-400">{label}</div>
   </div>
 );
 
@@ -339,7 +339,7 @@ const FeatureStrip = ({ topMentors, popularDocs, topRatedDocs, onOpenMentor }) =
             <img src={mentor.avatar || avatarFor(mentor)} alt={mentor.name} className="w-10 h-10 rounded-full object-cover hover:ring-2 hover:ring-blue-200/70" />
           </Link>
           <div className="min-w-0 flex-1">
-            <Link to={profilePath(mentor)} onClick={stopCardClick} className="block font-semibold truncate hover:text-blue-200 transition-colors">
+            <Link to={profilePath(mentor)} onClick={stopCardClick} className="block font-semibold truncate text-slate-900 hover:text-primary-600 transition-colors dark:text-white dark:hover:text-blue-200">
               {mentor.name}
             </Link>
             <p className="text-xs text-gray-500 truncate">{mentor.mentorProfile?.title || 'Mentor'}</p>
@@ -358,18 +358,18 @@ const FeatureStrip = ({ topMentors, popularDocs, topRatedDocs, onOpenMentor }) =
 );
 
 const FeaturePanel = ({ title, icon: Icon, children }) => (
-  <div className="glass-card rounded-2xl p-5">
-    <h3 className="font-bold mb-4 flex items-center gap-2"><Icon className="w-5 h-5 text-primary-500" />{title}</h3>
+  <div className="glass-card rounded-2xl p-5 bg-white/85 border border-slate-200 dark:bg-white/10 dark:border-white/10">
+    <h3 className="font-bold mb-4 flex items-center gap-2 text-slate-950 dark:text-white"><Icon className="w-5 h-5 text-primary-500" />{title}</h3>
     <div className="space-y-2">{children}</div>
   </div>
 );
 
 const DocumentMini = ({ doc, metric }) => (
-  <div className="flex items-center gap-3 glass-subtle rounded-xl p-2">
+  <div className="flex items-center gap-3 glass-subtle rounded-xl p-2 bg-white/65 dark:bg-white/5">
     <img src={doc.previewImages?.[0] || `https://picsum.photos/seed/${doc._id}/80/80`} alt={doc.title} className="w-10 h-10 rounded-lg object-cover" />
     <div className="min-w-0 flex-1">
-      <p className="font-medium text-sm truncate">{doc.title}</p>
-      <p className="text-xs text-gray-500">{doc.subjectCode} - {metric}</p>
+      <p className="font-medium text-sm truncate text-slate-900 dark:text-white">{doc.title}</p>
+      <p className="text-xs text-gray-500 dark:text-gray-400">{doc.subjectCode} - {metric}</p>
     </div>
   </div>
 );
@@ -378,14 +378,14 @@ const MentorCard = ({ mentor, onOpen, compact = false }) => {
   const p = mentor.mentorProfile || {};
   const promoted = p.promotion?.isPromoted && (!p.promotion?.paidUntil || new Date(p.promotion.paidUntil) > new Date());
   return (
-    <div className="glass-card glass-hover-card rounded-2xl p-5 flex flex-col gap-4">
+    <div className="glass-card glass-hover-card rounded-2xl p-5 flex flex-col gap-4 bg-white/85 border border-slate-200 dark:bg-white/10 dark:border-white/10">
       <div className="flex items-start gap-3">
         <Link to={profilePath(mentor)} className="flex-shrink-0">
           <img src={mentor.avatar || avatarFor(mentor)} alt={mentor.name} className="w-14 h-14 rounded-full object-cover hover:ring-2 hover:ring-blue-200/70" />
         </Link>
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
-            <Link to={profilePath(mentor)} className="font-bold truncate hover:text-blue-200 transition-colors">
+            <Link to={profilePath(mentor)} className="font-bold truncate text-slate-950 hover:text-primary-600 transition-colors dark:text-white dark:hover:text-blue-200">
               {mentor.name}
             </Link>
             {promoted && <span className="text-[10px] bg-amber-500 text-white px-2 py-0.5 rounded-full">Ưu tiên</span>}
