@@ -32,7 +32,7 @@ const menuItems = [
   { path: '/forum', icon: MessageSquare, label: 'Diễn đàn' },
   { path: '/chat', icon: PenSquare, label: 'Chat' },
   { path: '/mentors', icon: GraduationCap, label: 'Mentors' },
-  { path: '/ai', icon: Bot, label: 'AI Assistant' },
+  { path: '/ai', icon: Bot, label: 'AI Chatbot GPT' },
   { path: '/gamification', icon: Trophy, label: 'Achievements' },
 ];
 

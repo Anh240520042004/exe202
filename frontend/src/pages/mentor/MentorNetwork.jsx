@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import {
@@ -206,12 +207,12 @@ export default function MentorNetwork() {
 
   return (
     <div className="min-h-screen">
-      <section className="glass-hero glass-hero-purple mx-4 mt-2 px-6 py-10 md:px-10">
+      <section className="glass-hero glass-hero-purple mx-4 mt-2 px-6 py-10 md:px-10 bg-white/85 dark:bg-white/10">
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6">
             <div>
-              <h1 className="text-4xl font-bold mb-3 text-gray-900 dark:text-white">Mentor Network</h1>
-              <p className="text-lg text-gray-600 dark:text-gray-300 max-w-3xl">
+              <h1 className="text-4xl font-bold mb-3 text-slate-950 drop-shadow-none dark:text-white dark:drop-shadow-lg">Mentor Network</h1>
+              <p className="text-lg font-medium text-slate-700 drop-shadow-none max-w-3xl dark:text-blue-50/90 dark:drop-shadow">
                 Tìm mentor theo môn học, năng lực thực chiến, dự án mẫu và phản hồi từ các buổi học đã hoàn thành.
               </p>
             </div>
@@ -299,10 +300,10 @@ export default function MentorNetwork() {
 }
 
 const Metric = ({ icon: Icon, label, value }) => (
-  <div className="glass-chip px-4 py-3">
+  <div className="glass-chip px-4 py-3 bg-white/80 border border-slate-200 dark:bg-white/10 dark:border-white/10">
     <Icon className="w-5 h-5 text-primary-500 mb-1" />
-    <div className="text-xl font-bold">{value}</div>
-    <div className="text-xs text-gray-500">{label}</div>
+    <div className="text-xl font-bold text-slate-950 dark:text-white">{value}</div>
+    <div className="text-xs text-gray-500 dark:text-gray-400">{label}</div>
   </div>
 );
 
@@ -313,19 +314,38 @@ const SectionTitle = ({ icon: Icon, title }) => (
   </h2>
 );
 
+const profilePath = (user) => `/profile/${user?._id || user?.id}`;
+
+const stopCardClick = (event) => {
+  event.stopPropagation();
+};
+
 const FeatureStrip = ({ topMentors, popularDocs, topRatedDocs, onOpenMentor }) => (
   <section className="grid grid-cols-1 xl:grid-cols-3 gap-5">
     <FeaturePanel title="Top mentor" icon={Crown}>
       {topMentors.slice(0, 4).map((mentor, index) => (
-        <button key={mentor._id} onClick={() => onOpenMentor(mentor)} className="w-full flex items-center gap-3 text-left glass-nav-hover rounded-xl p-2">
+        <div
+          key={mentor._id}
+          role="button"
+          tabIndex={0}
+          onClick={() => onOpenMentor(mentor)}
+          onKeyDown={(event) => {
+            if (event.key === 'Enter' || event.key === ' ') onOpenMentor(mentor);
+          }}
+          className="w-full flex items-center gap-3 text-left glass-nav-hover rounded-xl p-2 cursor-pointer"
+        >
           <span className="w-7 h-7 rounded-full bg-amber-500 text-white flex items-center justify-center text-sm font-bold">{index + 1}</span>
-          <img src={mentor.avatar || avatarFor(mentor)} alt={mentor.name} className="w-10 h-10 rounded-full object-cover" />
+          <Link to={profilePath(mentor)} onClick={stopCardClick} className="flex-shrink-0">
+            <img src={mentor.avatar || avatarFor(mentor)} alt={mentor.name} className="w-10 h-10 rounded-full object-cover hover:ring-2 hover:ring-blue-200/70" />
+          </Link>
           <div className="min-w-0 flex-1">
-            <p className="font-semibold truncate">{mentor.name}</p>
+            <Link to={profilePath(mentor)} onClick={stopCardClick} className="block font-semibold truncate text-slate-900 hover:text-primary-600 transition-colors dark:text-white dark:hover:text-blue-200">
+              {mentor.name}
+            </Link>
             <p className="text-xs text-gray-500 truncate">{mentor.mentorProfile?.title || 'Mentor'}</p>
           </div>
           <Rating value={mentor.mentorProfile?.documentRating || 0} />
-        </button>
+        </div>
       ))}
     </FeaturePanel>
     <FeaturePanel title="Tài liệu xem nhiều" icon={BookOpen}>
@@ -338,18 +358,18 @@ const FeatureStrip = ({ topMentors, popularDocs, topRatedDocs, onOpenMentor }) =
 );
 
 const FeaturePanel = ({ title, icon: Icon, children }) => (
-  <div className="glass-card rounded-2xl p-5">
-    <h3 className="font-bold mb-4 flex items-center gap-2"><Icon className="w-5 h-5 text-primary-500" />{title}</h3>
+  <div className="glass-card rounded-2xl p-5 bg-white/85 border border-slate-200 dark:bg-white/10 dark:border-white/10">
+    <h3 className="font-bold mb-4 flex items-center gap-2 text-slate-950 dark:text-white"><Icon className="w-5 h-5 text-primary-500" />{title}</h3>
     <div className="space-y-2">{children}</div>
   </div>
 );
 
 const DocumentMini = ({ doc, metric }) => (
-  <div className="flex items-center gap-3 glass-subtle rounded-xl p-2">
+  <div className="flex items-center gap-3 glass-subtle rounded-xl p-2 bg-white/65 dark:bg-white/5">
     <img src={doc.previewImages?.[0] || `https://picsum.photos/seed/${doc._id}/80/80`} alt={doc.title} className="w-10 h-10 rounded-lg object-cover" />
     <div className="min-w-0 flex-1">
-      <p className="font-medium text-sm truncate">{doc.title}</p>
-      <p className="text-xs text-gray-500">{doc.subjectCode} - {metric}</p>
+      <p className="font-medium text-sm truncate text-slate-900 dark:text-white">{doc.title}</p>
+      <p className="text-xs text-gray-500 dark:text-gray-400">{doc.subjectCode} - {metric}</p>
     </div>
   </div>
 );
@@ -358,12 +378,16 @@ const MentorCard = ({ mentor, onOpen, compact = false }) => {
   const p = mentor.mentorProfile || {};
   const promoted = p.promotion?.isPromoted && (!p.promotion?.paidUntil || new Date(p.promotion.paidUntil) > new Date());
   return (
-    <div className="glass-card glass-hover-card rounded-2xl p-5 flex flex-col gap-4">
+    <div className="glass-card glass-hover-card rounded-2xl p-5 flex flex-col gap-4 bg-white/85 border border-slate-200 dark:bg-white/10 dark:border-white/10">
       <div className="flex items-start gap-3">
-        <img src={mentor.avatar || avatarFor(mentor)} alt={mentor.name} className="w-14 h-14 rounded-full object-cover" />
+        <Link to={profilePath(mentor)} className="flex-shrink-0">
+          <img src={mentor.avatar || avatarFor(mentor)} alt={mentor.name} className="w-14 h-14 rounded-full object-cover hover:ring-2 hover:ring-blue-200/70" />
+        </Link>
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
-            <h3 className="font-bold truncate">{mentor.name}</h3>
+            <Link to={profilePath(mentor)} className="font-bold truncate text-slate-950 hover:text-primary-600 transition-colors dark:text-white dark:hover:text-blue-200">
+              {mentor.name}
+            </Link>
             {promoted && <span className="text-[10px] bg-amber-500 text-white px-2 py-0.5 rounded-full">Ưu tiên</span>}
           </div>
           <p className="text-sm text-gray-500 truncate">{p.title || p.major || 'Mentor'}</p>
@@ -459,9 +483,13 @@ const MentorDetailModal = ({ mentor, onClose, navigate }) => {
       <div className="glass-modal rounded-3xl max-w-5xl mx-auto my-6">
         <div className="p-6 border-b glass-divider flex items-start justify-between gap-4">
           <div className="flex items-center gap-4">
-            <img src={mentor.avatar || avatarFor(mentor)} alt={mentor.name} className="w-20 h-20 rounded-full object-cover" />
+            <Link to={profilePath(mentor)}>
+              <img src={mentor.avatar || avatarFor(mentor)} alt={mentor.name} className="w-20 h-20 rounded-full object-cover hover:ring-2 hover:ring-blue-200/70" />
+            </Link>
             <div>
-              <h2 className="text-2xl font-bold">{mentor.name}</h2>
+              <Link to={profilePath(mentor)} className="text-2xl font-bold hover:text-blue-200 transition-colors">
+                {mentor.name}
+              </Link>
               <p className="text-gray-500">{p.title || p.major}</p>
               <div className="flex flex-wrap gap-3 mt-2 text-sm">
                 <Rating value={p.documentRating || 0} />
@@ -574,28 +602,28 @@ const MentorDetailModal = ({ mentor, onClose, navigate }) => {
 };
 
 const DetailSection = ({ icon: Icon, title, children }) => (
-  <section className="glass-card rounded-2xl p-5">
-    <h3 className="font-bold mb-3 flex items-center gap-2"><Icon className="w-5 h-5 text-primary-500" />{title}</h3>
+  <section className="glass-card rounded-2xl p-5 bg-white/85 border border-slate-200 dark:bg-white/10 dark:border-white/10">
+    <h3 className="font-bold mb-3 flex items-center gap-2 text-slate-950 dark:text-white"><Icon className="w-5 h-5 text-primary-500" />{title}</h3>
     {children}
   </section>
 );
 
 const ItemList = ({ items = [], empty, render }) => (
   <div className="space-y-3">
-    {items.length ? items.map((item, index) => <div key={item._id || `${item.title}-${index}`}>{render(item)}</div>) : <p className="text-sm text-gray-500">{empty}</p>}
+    {items.length ? items.map((item, index) => <div key={item._id || `${item.title}-${index}`}>{render(item)}</div>) : <p className="text-sm text-slate-600 dark:text-gray-500">{empty}</p>}
   </div>
 );
 
 const RichItem = ({ title, meta, description, link }) => (
-  <div className="glass-subtle rounded-xl p-3">
+  <div className="glass-subtle rounded-xl p-3 bg-white/70 dark:bg-white/5">
     <div className="flex items-start justify-between gap-3">
       <div>
-        <p className="font-semibold">{title || 'Untitled'}</p>
-        {meta && <p className="text-xs text-gray-500">{meta}</p>}
+        <p className="font-semibold text-slate-950 dark:text-white">{title || 'Untitled'}</p>
+        {meta && <p className="text-xs text-slate-600 dark:text-gray-500">{meta}</p>}
       </div>
       {link && <a href={link} target="_blank" rel="noreferrer" className="glass-nav-link p-1 rounded-lg"><ExternalLink className="w-4 h-4" /></a>}
     </div>
-    {description && <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">{description}</p>}
+    {description && <p className="text-sm text-slate-600 dark:text-gray-400 mt-2">{description}</p>}
   </div>
 );
 

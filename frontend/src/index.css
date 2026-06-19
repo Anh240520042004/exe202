@@ -65,18 +65,69 @@
 body {
   margin: 0;
   min-height: 100vh;
+  background: #f8fafc;
+}
+
+.dark body {
+  background: #020617;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+.fedtech-app-bg {
+  position: relative;
+  min-height: 100vh;
+  isolation: isolate;
+  background-color: #f8fafc;
+  background-image:
+    linear-gradient(180deg, rgba(248, 250, 252, 0.9), rgba(239, 246, 255, 0.88)),
+    var(--fedtech-bg-image);
+  background-size: cover;
+  background-position: center top;
+  background-attachment: fixed;
+}
+
+.dark .fedtech-app-bg {
+  background-color: #020617;
+  background-image:
+    linear-gradient(180deg, rgba(2, 6, 23, 0.82), rgba(15, 23, 42, 0.88)),
+    var(--fedtech-bg-image);
+}
+
+.fedtech-app-bg::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 50% 18%, rgba(59, 130, 246, 0.18), transparent 34%),
+    linear-gradient(180deg, transparent 0%, rgba(219, 234, 254, 0.22) 100%);
+}
+
+.dark .fedtech-app-bg::before {
+  background:
+    radial-gradient(circle at 50% 18%, rgba(59, 130, 246, 0.26), transparent 34%),
+    linear-gradient(180deg, transparent 0%, rgba(2, 6, 23, 0.28) 100%);
 }
 
 @layer components {
   .ios-bg {
     position: relative;
     min-height: 100vh;
-    background: linear-gradient(135deg, #f8fbff 0%, #edf7ff 52%, #f5f8ff 100%);
+    background: transparent;
     isolation: isolate;
   }
 
   .dark .ios-bg {
-    background: #020816;
+    background: transparent;
+  }
+
+  .fedtech-app-bg .ios-bg::before,
+  .fedtech-app-bg .ios-bg::after {
+    display: none;
   }
 
   .ios-bg::before {
@@ -189,6 +240,34 @@ body {
 
   .glass-hero-purple {
     background: linear-gradient(135deg, rgba(255, 255, 255, 0.84), color-mix(in srgb, #c4b5fd 20%, rgba(255, 255, 255, 0.74)));
+  }
+
+  .dark .fedtech-app-bg :where(.glass-hero, .glass-card, .glass-panel, .glass-subtle, .glass-header, .glass-sidebar) :where(h1, h2, h3, h4, h5, h6, [class*="text-gray-900"], [class*="text-gray-800"]) {
+    color: rgba(255, 255, 255, 0.98) !important;
+    text-shadow: 0 2px 12px rgba(2, 6, 23, 0.35);
+  }
+
+  .dark .fedtech-app-bg :where(.glass-hero, .glass-card, .glass-panel, .glass-subtle, .glass-header, .glass-sidebar) :where([class*="text-gray-300"], [class*="text-gray-400"], [class*="text-gray-500"], [class*="text-gray-600"], [class*="text-gray-700"]) {
+    color: rgba(219, 234, 254, 0.86) !important;
+  }
+
+  .dark .fedtech-app-bg :where(.glass-hero, .glass-card, .glass-panel, .glass-subtle, .glass-header, .glass-sidebar) :where(p[class*="text-gray-"], span[class*="text-gray-"], label[class*="text-gray-"], td[class*="text-gray-"], th[class*="text-gray-"]) {
+    color: rgba(219, 234, 254, 0.86) !important;
+  }
+
+  .dark .fedtech-app-bg :where(.glass-hero, .glass-card, .glass-panel, .glass-subtle, .glass-header, .glass-sidebar) :where(svg[class*="text-gray-"]) {
+    color: rgba(191, 219, 254, 0.82) !important;
+  }
+
+  .dark .fedtech-app-bg :where(p, span, label, small, th, td, a, svg)[class*="text-gray-400"],
+  .dark .fedtech-app-bg :where(p, span, label, small, th, td, a, svg)[class*="text-gray-500"],
+  .dark .fedtech-app-bg :where(p, span, label, small, th, td, a, svg)[class*="text-gray-600"] {
+    color: rgba(219, 234, 254, 0.82) !important;
+  }
+
+  .dark .fedtech-app-bg :where(h1, h2, h3)[class*="text-gray-900"] {
+    color: rgba(255, 255, 255, 0.98) !important;
+    text-shadow: 0 2px 12px rgba(2, 6, 23, 0.35);
   }
 
   .glass-nav-link {

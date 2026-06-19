@@ -120,7 +120,7 @@ export default function PaymentResult() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary-100 via-primary-200 to-accent-100 flex items-center justify-center p-4">
+    <div className="min-h-screen flex items-center justify-center p-4">
       <div className="max-w-3xl w-full">
         <div className={`bg-white/10 backdrop-blur-xl rounded-3xl shadow-xl p-8 border ${isSuccess ? 'border-green-500/50' : 'border-red-500/50'}`}>
           <div className="text-center mb-8">

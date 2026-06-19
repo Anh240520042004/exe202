@@ -24,6 +24,7 @@ import Forum from './pages/forum/Forum';
 import CreatePost from './pages/forum/CreatePost';
 import PostDetail from './pages/forum/PostDetail';
 import ChatPage from './pages/chat/ChatPage';
+import fedtechBackground from './assets/Screenshot 2026-06-02 153820.png';
 
 export default function App() {
   const dispatch = useDispatch();
@@ -57,7 +58,11 @@ export default function App() {
                             StudentDashboard;
 
   return (
-    <Routes>
+    <div
+      className="fedtech-app-bg"
+      style={{ '--fedtech-bg-image': `url(${fedtechBackground})` }}
+    >
+      <Routes>
       {/* Public pages */}
       <Route path="/" element={<Homepage />} />
       <Route path="/login" element={
@@ -109,6 +114,7 @@ export default function App() {
       </Route>
 
       <Route path="*" element={<Navigate to="/dashboard" replace />} />
-    </Routes>
+      </Routes>
+    </div>
   );
 }

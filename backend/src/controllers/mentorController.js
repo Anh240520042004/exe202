@@ -163,6 +163,7 @@ export const updateMentorProfile = async (req, res, next) => {
       'mentorProfile.major',
       'mentorProfile.passedSubjects',
       'mentorProfile.experience',
+      'mentorProfile.galleryImages',
       'mentorProfile.achievements',
       'mentorProfile.demoMaterials',
       'mentorProfile.exerciseTemplates',
