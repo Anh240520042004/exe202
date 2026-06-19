@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import FollowListModal from '../../components/user/FollowListModal';
 import MentorProfileEditor from '../../components/user/MentorProfileEditor';
 import { useDispatch, useSelector } from 'react-redux';
@@ -214,6 +215,17 @@ export default function Profile() {
                   Tham gia: {profile?.createdAt ? new Date(profile.createdAt).toLocaleDateString('vi-VN') : 'N/A'}
                 </span>
               </div>
+              {profile?.role === 'mentor' && (
+                <div className="mt-5 flex justify-center md:justify-start">
+                  <Link
+                    to={`/mentors/${profile?._id || profile?.id}`}
+                    className="inline-flex items-center gap-2 px-5 py-2.5 bg-primary-500/10 border border-primary-500/20 text-primary-700 dark:text-primary-300 rounded-xl font-semibold hover:bg-primary-500/20 transition-all"
+                  >
+                    <ArrowUpRight className="w-4 h-4" />
+                    Xem hồ sơ chi tiết
+                  </Link>
+                </div>
+              )}
             </div>
           </div>
         </div>

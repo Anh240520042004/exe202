@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Link } from 'react-router-dom';
-import { Heart, MessageCircle, Eye, User, Clock, Shield } from 'lucide-react';
+import { Heart, MessageCircle, Eye, User, Clock, Shield, ExternalLink } from 'lucide-react';
 import axios from 'axios';
 import { useSelector } from 'react-redux';
 import toast from 'react-hot-toast';
@@ -185,6 +185,15 @@ export default function UserProfile() {
                     >
                       Nhắn tin
                     </button>
+                    {profile.role === 'mentor' && (
+                      <Link
+                        to={`/mentors/${profile._id || userId}`}
+                        className="inline-flex items-center gap-2 px-5 py-2.5 bg-primary-500/10 border border-primary-500/20 text-primary-700 dark:text-primary-300 rounded-xl font-semibold hover:bg-primary-500/20 transition-all"
+                      >
+                        <ExternalLink className="w-4 h-4" />
+                        Xem hồ sơ chi tiết
+                      </Link>
+                    )}
                   </div>
                 )}
               </div>
