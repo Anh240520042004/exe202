@@ -671,8 +671,8 @@ export default function Homepage() {
           <div className="grid lg:grid-cols-3 gap-6">
 
             {/* ── Section 1: Khóa học / Tài liệu ── */}
-            <div className="bg-gradient-to-b from-violet-50/40 to-white dark:from-slate-800 dark:to-slate-900 rounded-2xl border border-violet-200/80 dark:border-violet-500/20 shadow-xl shadow-violet-200/40 dark:shadow-none hover:shadow-2xl hover:shadow-violet-300/40 hover:-translate-y-1 transition-all duration-300 overflow-hidden">
-              <div className="p-4 border-b border-violet-100 bg-violet-50/60 dark:border-white/10 dark:bg-white/5">
+            <div className="bg-gradient-to-b from-violet-50/40 to-white dark:from-violet-950/40 dark:to-violet-950/10 rounded-2xl border border-violet-200/80 dark:border-violet-500/30 shadow-xl shadow-violet-200/40 dark:shadow-violet-900/20 hover:shadow-2xl hover:shadow-violet-300/40 dark:hover:shadow-violet-800/40 hover:-translate-y-1 transition-all duration-300 overflow-hidden">
+              <div className="p-4 border-b border-violet-100 bg-violet-50/60 dark:border-violet-500/20 dark:bg-violet-500/10">
                 <SectionHeader
                   icon={BookOpen}
                   title="Khóa học & Tài liệu"
@@ -711,8 +711,8 @@ export default function Homepage() {
             </div>
 
             {/* ── Section 2: Mentor ── */}
-            <div className="bg-gradient-to-b from-emerald-50/40 to-white dark:from-slate-800 dark:to-slate-900 rounded-2xl border border-emerald-200/80 dark:border-emerald-500/20 shadow-xl shadow-emerald-200/40 dark:shadow-none hover:shadow-2xl hover:shadow-emerald-300/40 hover:-translate-y-1 transition-all duration-300 overflow-hidden">
-              <div className="p-4 border-b border-emerald-100 bg-emerald-50/60 dark:border-white/10 dark:bg-white/5">
+            <div className="bg-gradient-to-b from-emerald-50/40 to-white dark:from-emerald-950/40 dark:to-emerald-950/10 rounded-2xl border border-emerald-200/80 dark:border-emerald-500/30 shadow-xl shadow-emerald-200/40 dark:shadow-emerald-900/20 hover:shadow-2xl hover:shadow-emerald-300/40 dark:hover:shadow-emerald-800/40 hover:-translate-y-1 transition-all duration-300 overflow-hidden">
+              <div className="p-4 border-b border-emerald-100 bg-emerald-50/60 dark:border-emerald-500/20 dark:bg-emerald-500/10">
                 <SectionHeader
                   icon={GraduationCap}
                   title="Mentor Nổi Bật"
@@ -751,8 +751,8 @@ export default function Homepage() {
             </div>
 
             {/* ── Section 3: Diễn đàn ── */}
-            <div className="bg-gradient-to-b from-orange-50/40 to-white dark:from-slate-800 dark:to-slate-900 rounded-2xl border border-orange-200/80 dark:border-orange-500/20 shadow-xl shadow-orange-200/40 dark:shadow-none hover:shadow-2xl hover:shadow-orange-300/40 hover:-translate-y-1 transition-all duration-300 overflow-hidden">
-              <div className="p-4 border-b border-orange-100 bg-orange-50/60 dark:border-white/10 dark:bg-white/5">
+            <div className="bg-gradient-to-b from-orange-50/40 to-white dark:from-orange-950/40 dark:to-orange-950/10 rounded-2xl border border-orange-200/80 dark:border-orange-500/30 shadow-xl shadow-orange-200/40 dark:shadow-orange-900/20 hover:shadow-2xl hover:shadow-orange-300/40 dark:hover:shadow-orange-800/40 hover:-translate-y-1 transition-all duration-300 overflow-hidden">
+              <div className="p-4 border-b border-orange-100 bg-orange-50/60 dark:border-orange-500/20 dark:bg-orange-500/10">
                 <SectionHeader
                   icon={MessageSquare}
                   title="Diễn Đàn Cộng Đồng"
@@ -796,7 +796,7 @@ export default function Homepage() {
           <div className="mt-16 grid sm:grid-cols-2 gap-6 mb-8">
             <Link
               to="/ai"
-              className="group flex items-center gap-4 p-4 bg-gradient-to-r from-cyan-50/80 to-blue-50/80 rounded-2xl text-slate-950 border border-cyan-200/80 shadow-xl shadow-cyan-200/40 hover:from-cyan-100 hover:to-blue-100 hover:shadow-2xl hover:shadow-cyan-300/50 hover:-translate-y-1 transition-all duration-300 dark:from-slate-800 dark:to-slate-900 dark:hover:from-slate-700 dark:hover:to-slate-800 dark:shadow-none dark:text-white dark:border-cyan-500/20"
+              className="group flex items-center gap-4 p-4 bg-gradient-to-r from-cyan-50/80 to-blue-50/80 rounded-2xl text-slate-950 border border-cyan-200/80 shadow-xl shadow-cyan-200/40 hover:from-cyan-100 hover:to-blue-100 hover:shadow-2xl hover:shadow-cyan-300/50 hover:-translate-y-1 transition-all duration-300 dark:from-cyan-950/50 dark:to-blue-950/30 dark:hover:from-cyan-900/60 dark:hover:to-blue-900/40 dark:shadow-cyan-900/20 dark:hover:shadow-cyan-800/40 dark:text-white dark:border-cyan-500/30"
             >
               <div className="w-12 h-12 rounded-xl bg-blue-50 backdrop-blur-sm flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform dark:bg-white/20">
                 <Bot className="w-6 h-6 text-blue-700 dark:text-white" />
@@ -810,7 +810,7 @@ export default function Homepage() {
 
             <Link
               to="/register"
-              className="group flex items-center gap-4 p-4 bg-gradient-to-r from-blue-50/80 to-indigo-50/80 rounded-2xl border border-blue-200/80 shadow-xl shadow-blue-200/40 hover:from-blue-100 hover:to-indigo-100 hover:shadow-2xl hover:shadow-blue-300/50 hover:-translate-y-1 transition-all duration-300 dark:from-slate-800 dark:to-slate-900 dark:hover:from-slate-700 dark:hover:to-slate-800 dark:shadow-none dark:text-white dark:border-blue-500/20"
+              className="group flex items-center gap-4 p-4 bg-gradient-to-r from-blue-50/80 to-indigo-50/80 rounded-2xl border border-blue-200/80 shadow-xl shadow-blue-200/40 hover:from-blue-100 hover:to-indigo-100 hover:shadow-2xl hover:shadow-blue-300/50 hover:-translate-y-1 transition-all duration-300 dark:from-blue-950/50 dark:to-indigo-950/30 dark:hover:from-blue-900/60 dark:hover:to-indigo-900/40 dark:shadow-blue-900/20 dark:hover:shadow-blue-800/40 dark:text-white dark:border-blue-500/30"
             >
               <div className="w-12 h-12 rounded-xl bg-blue-50 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform dark:bg-white/15">
                 <Shield className="w-6 h-6 text-blue-700 dark:text-blue-200" />
