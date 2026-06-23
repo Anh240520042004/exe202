@@ -46,13 +46,7 @@ export default function Header() {
 
         {/* Center: Social links and Home button */}
         <div className="hidden lg:flex items-center gap-3 mx-4">
-          <Link
-            to="/"
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-violet-600 dark:text-violet-400 bg-violet-50 hover:bg-violet-100 dark:bg-violet-500/10 dark:hover:bg-violet-500/20 rounded-lg transition-all duration-200 border border-violet-200 dark:border-violet-800"
-          >
-            <Home className="w-3.5 h-3.5" />
-            <span>Trang chủ</span>
-          </Link>
+
           <a
             href={LINKS.support}
             target="_blank"

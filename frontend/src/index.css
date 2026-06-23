@@ -82,7 +82,7 @@ body {
   isolation: isolate;
   background-color: #f8fafc;
   background-image:
-    linear-gradient(180deg, rgba(248, 250, 252, 0.9), rgba(239, 246, 255, 0.88)),
+    linear-gradient(180deg, rgba(248, 250, 252, 0.65), rgba(239, 246, 255, 0.55)),
     var(--fedtech-bg-image);
   background-size: cover;
   background-position: center top;
@@ -92,7 +92,7 @@ body {
 .dark .fedtech-app-bg {
   background-color: #020617;
   background-image:
-    linear-gradient(180deg, rgba(2, 6, 23, 0.82), rgba(15, 23, 42, 0.88)),
+    linear-gradient(180deg, rgba(2, 6, 23, 0.65), rgba(15, 23, 42, 0.65)),
     var(--fedtech-bg-image);
 }
 

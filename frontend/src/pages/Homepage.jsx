@@ -8,7 +8,7 @@ import {
   Facebook, HeartHandshake, Building2, TrendingUp,
   ThumbsUp, Eye, Download, Clock, Zap,
   ExternalLink, Menu, X, Shield,
-  LogOut, User,
+  LogOut, User, Mail, MapPin, Home,
 } from 'lucide-react';
 import { API_BASE } from '../config/api';
 import { ThemeToggle } from '../components/ui';
@@ -22,17 +22,36 @@ const LINKS = {
 };
 
 const NAV_LINKS = [
-  { to: '/marketplace', icon: ShoppingBag, label: 'Marketplace' },
-  { to: '/mentors', icon: GraduationCap, label: 'Mentors' },
-  { to: '/forum', icon: MessageSquare, label: 'Diễn đàn' },
-  { to: '/ai', icon: Bot, label: 'AI Chatbot GPT' },
+  { to: '/marketplace', icon: ShoppingBag, label: 'Tài liệu', color: 'bg-violet-50 text-violet-700 border-violet-200 hover:bg-violet-100 dark:bg-violet-500/10 dark:text-violet-300 dark:border-violet-500/20 dark:hover:bg-violet-500/20', iconColor: 'text-violet-600 dark:text-violet-300' },
+  { to: '/mentors', icon: GraduationCap, label: 'Gia sư & Mentor', color: 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100 dark:bg-emerald-500/10 dark:text-emerald-300 dark:border-emerald-500/20 dark:hover:bg-emerald-500/20', iconColor: 'text-emerald-600 dark:text-emerald-300' },
+  { to: '/forum', icon: MessageSquare, label: 'Diễn đàn', color: 'bg-orange-50 text-orange-700 border-orange-200 hover:bg-orange-100 dark:bg-orange-500/10 dark:text-orange-300 dark:border-orange-500/20 dark:hover:bg-orange-500/20', iconColor: 'text-orange-500 dark:text-orange-300' },
+  { to: '/ai', icon: Bot, label: 'Trợ lý AI', color: 'bg-cyan-50 text-cyan-700 border-cyan-200 hover:bg-cyan-100 dark:bg-cyan-500/10 dark:text-cyan-300 dark:border-cyan-500/20 dark:hover:bg-cyan-500/20', iconColor: 'text-cyan-600 dark:text-cyan-300' },
 ];
 
 const SOCIAL_BUTTONS = [
-  { id: 'support', href: LINKS.support, icon: HeartHandshake, label: 'Ho Tro', color: 'bg-blue-50 text-blue-700 hover:bg-blue-100 border-blue-200 dark:bg-white/10 dark:text-blue-100 dark:hover:bg-white/18 dark:border-white/15' },
-  { id: 'fpt-university', href: LINKS.fptUniversity, icon: Building2, label: 'DH FPT', color: 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border-emerald-200 dark:bg-white/10 dark:text-emerald-100 dark:hover:bg-white/18 dark:border-white/15' },
-  { id: 'fanpage', href: LINKS.fanpage, icon: Facebook, label: 'Trang Cua Chung Toi', color: 'bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border-indigo-200 dark:bg-white/10 dark:text-indigo-100 dark:hover:bg-white/18 dark:border-white/15' },
+  {
+    id: 'support',
+    href: LINKS.support,
+    icon: HeartHandshake,
+    label: 'Hỗ Trợ',
+    color: 'bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100 dark:bg-blue-500/10 dark:text-blue-300 dark:border-blue-500/20 dark:hover:bg-blue-500/20'
+  },
+  {
+    id: 'fpt-university',
+    href: LINKS.fptUniversity,
+    icon: Building2,
+    label: 'ĐH FPT',
+    color: 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100 dark:bg-emerald-500/10 dark:text-emerald-300 dark:border-emerald-500/20 dark:hover:bg-emerald-500/20'
+  },
+  {
+    id: 'fanpage',
+    href: LINKS.fanpage,
+    icon: Facebook,
+    label: 'Trang Của Chúng Tôi',
+    color: 'bg-indigo-50 text-indigo-700 border-indigo-200 hover:bg-indigo-100 dark:bg-indigo-500/10 dark:text-indigo-300 dark:border-indigo-500/20 dark:hover:bg-indigo-500/20'
+  },
 ];
+
 
 // ─── Helper Components ──────────────────────────────────────────────────────
 function Avatar({ src, name, size = 'sm', userId }) {
@@ -352,21 +371,27 @@ export default function Homepage() {
 
 
   return (
-    <div className="relative min-h-screen overflow-hidden text-slate-950 dark:text-white">
-      <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_50%_18%,rgba(59,130,246,0.14),transparent_34%)] dark:bg-[radial-gradient(circle_at_50%_18%,rgba(59,130,246,0.26),transparent_34%)]" />
+    <div className="relative min-h-screen bg-slate-50/70 dark:bg-slate-950/40 overflow-hidden text-slate-950 dark:text-white">
+      <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_50%_18%,rgba(59,130,246,0.12),transparent_34%)] dark:bg-[radial-gradient(circle_at_50%_18%,rgba(59,130,246,0.20),transparent_34%)]" />
+      
+      {/* Background ambient glow shapes to reduce harsh white space */}
+      <div className="pointer-events-none fixed -top-40 -left-40 w-96 h-96 bg-blue-400/10 rounded-full blur-3xl dark:bg-blue-900/15" />
+      <div className="pointer-events-none fixed top-1/3 -right-40 w-96 h-96 bg-violet-400/8 rounded-full blur-3xl dark:bg-violet-900/15" />
+      <div className="pointer-events-none fixed -bottom-40 left-1/3 w-[500px] h-[500px] bg-emerald-400/5 rounded-full blur-3xl dark:bg-emerald-900/10" />
 
       {/* ── Announcement Banner ── */}
-      <div className="relative z-20 bg-white/80 text-slate-800 text-center py-2 px-4 text-xs font-medium backdrop-blur-xl border-b border-slate-200 dark:bg-white/10 dark:text-white dark:border-white/10">
+      <div className="relative z-20 bg-gradient-to-r from-blue-500/10 via-violet-500/10 to-indigo-500/10 text-slate-800 text-center py-2 px-4 text-xs font-semibold backdrop-blur-xl border-b border-blue-100/50 dark:from-blue-950/40 dark:via-violet-950/40 dark:to-indigo-950/40 dark:text-blue-100 dark:border-white/5">
         🎉 Nền tảng học tập số 1 dành cho sinh viên FPT —{' '}
-        <Link to="/register" className="underline font-bold hover:text-violet-200 transition-colors">
+        <Link to="/register" className="underline font-bold text-blue-700 hover:text-blue-600 dark:text-blue-300 dark:hover:text-blue-200 transition-colors inline-flex items-center gap-0.5 ml-1">
           Đăng ký miễn phí ngay!
+          <ChevronRight className="w-3.5 h-3.5" />
         </Link>
       </div>
 
       {/* ── Top Navbar ── */}
       <nav className={`sticky top-0 z-50 transition-all duration-300 ${scrolled
-        ? 'bg-white/80 backdrop-blur-xl shadow-lg shadow-slate-200/60 border-b border-slate-200 dark:bg-slate-950/55 dark:shadow-blue-950/20 dark:border-white/15'
-        : 'bg-white/65 backdrop-blur-md border-b border-slate-200/80 dark:bg-slate-950/35 dark:border-white/10'
+        ? 'bg-white/90 backdrop-blur-xl shadow-md shadow-slate-200/50 border-b border-slate-200/80 dark:bg-slate-950/80 dark:shadow-black/25 dark:border-white/10'
+        : 'bg-white/70 backdrop-blur-md border-b border-slate-200/50 dark:bg-slate-950/50 dark:border-white/5'
         }`}>
         <div className="max-w-screen-xl mx-auto px-4 lg:px-6">
           <div className="flex items-center justify-between h-14 gap-3">
@@ -376,50 +401,55 @@ export default function Homepage() {
               to="/"
               className="flex items-center gap-2 flex-shrink-0 group"
             >
-              <div className="w-10 h-10 rounded-xl bg-white/90 flex items-center justify-center shadow-md shadow-blue-500/20 group-hover:shadow-blue-500/40 transition-shadow overflow-hidden border border-white/40">
+              <div className="w-10 h-10 rounded-xl bg-white/95 flex items-center justify-center shadow-md shadow-blue-500/10 group-hover:shadow-blue-500/30 group-hover:scale-105 transition-all duration-300 overflow-hidden border border-white/50">
                 <img
                   src={heroLogo}
                   alt="F.EdTech"
-                  className="h-full w-full object-contain p-1"
+                  className="h-full w-full object-contain p-1 group-hover:rotate-3 transition-transform duration-300"
                   draggable="false"
                 />
               </div>
               <div className="hidden sm:block">
-                <span className="text-base font-bold text-slate-950 dark:text-white leading-none">
+                <span className="text-base font-bold text-slate-950 dark:text-white leading-none transition-colors group-hover:text-blue-600 dark:group-hover:text-blue-300">
                   F.<span className="text-blue-600 dark:text-blue-200">EdTech</span>
                 </span>
-                <p className="text-[10px] text-slate-500 dark:text-blue-100/70 leading-none font-medium">Nền tảng học tập</p>
+                <p className="text-[10px] text-slate-500 dark:text-blue-200/60 leading-none font-medium mt-0.5">Nền tảng học tập số</p>
               </div>
             </Link>
 
             {/* Center: Nav Links + Social Buttons */}
-            <div className="hidden lg:flex items-center gap-0.5">
+            <div className="hidden lg:flex items-center gap-1.5">
               {NAV_LINKS.map((item) => (
                 <Link
                   key={item.to}
                   to={item.to}
-                  className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-slate-700 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-all duration-200 dark:text-blue-50/85 dark:hover:text-white dark:hover:bg-white/10"
+                  className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg border transition-all duration-200 ${item.color}`}
                 >
-                  <item.icon className="w-4 h-4" />
+                  <item.icon className="w-3.5 h-3.5" />
                   {item.label}
                 </Link>
               ))}
 
               <div className="h-4 w-px bg-slate-200 dark:bg-white/20 mx-1" />
 
-              {SOCIAL_BUTTONS.map((item) => (
-                <a
-                  key={item.id}
-                  href={item.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={`flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-semibold rounded-lg border transition-all duration-200 ${item.color}`}
-                  title={item.label}
-                >
-                  <item.icon className="w-3.5 h-3.5" />
-                  <span className="hidden xl:inline">{item.label}</span>
-                </a>
-              ))}
+              {SOCIAL_BUTTONS.map((item) => {
+                const isInternal = item.href.startsWith('/');
+                const LinkComponent = isInternal ? Link : 'a';
+                const extraProps = isInternal ? { onClick: () => setMobileOpen(false) } : { target: '_blank', rel: 'noopener noreferrer' };
+                return (
+                  <LinkComponent
+                    key={item.id}
+                    to={isInternal ? item.href : undefined}
+                    href={isInternal ? undefined : item.href}
+                    {...extraProps}
+                    className={`flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-semibold rounded-lg border transition-all duration-200 ${item.color}`}
+                    title={item.label}
+                  >
+                    <item.icon className="w-3.5 h-3.5" />
+                    <span className="hidden xl:inline">{item.label}</span>
+                  </LinkComponent>
+                );
+              })}
             </div>
 
             {/* Right: Auth area */}
@@ -557,19 +587,24 @@ export default function Homepage() {
               )}
             </div>
 
-            <div className="pt-2 border-t border-slate-200 dark:border-white/10 grid grid-cols-3 gap-2">
-              {SOCIAL_BUTTONS.map((item) => (
-                <a
-                  key={item.id}
-                  href={item.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={`flex flex-col items-center gap-1 p-2 text-xs font-semibold rounded-xl border text-center ${item.color}`}
-                >
-                  <item.icon className="w-4 h-4" />
-                  {item.label}
-                </a>
-              ))}
+            <div className="pt-2 border-t border-slate-200 dark:border-white/10 grid grid-cols-2 gap-2">
+              {SOCIAL_BUTTONS.map((item) => {
+                const isInternal = item.href.startsWith('/');
+                const LinkComponent = isInternal ? Link : 'a';
+                const extraProps = isInternal ? { onClick: () => setMobileOpen(false) } : { target: '_blank', rel: 'noopener noreferrer' };
+                return (
+                  <LinkComponent
+                    key={item.id}
+                    to={isInternal ? item.href : undefined}
+                    href={isInternal ? undefined : item.href}
+                    {...extraProps}
+                    className={`flex flex-col items-center gap-1 p-2 text-xs font-semibold rounded-xl border text-center ${item.color}`}
+                  >
+                    <item.icon className="w-4 h-4" />
+                    {item.label}
+                  </LinkComponent>
+                );
+              })}
             </div>
           </div>
         )}
@@ -577,25 +612,29 @@ export default function Homepage() {
 
       {/* ── Hero Section ── */}
       <section className="relative min-h-[420px] overflow-hidden px-4 py-14 sm:min-h-[480px] lg:min-h-[500px] lg:py-20">
-        <div className="absolute inset-0 bg-white/45 dark:bg-slate-950/28" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(59,130,246,0.16),transparent_42%)] dark:bg-[radial-gradient(circle_at_center,rgba(59,130,246,0.20),transparent_42%)]" />
-        <div className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-white/70 to-transparent dark:from-slate-950/60" />
-
+        <div className="absolute inset-0 bg-white/45 dark:bg-slate-950/10" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(59,130,246,0.16),transparent_42%)] dark:bg-[radial-gradient(circle_at_center,rgba(59,130,246,0.15),transparent_42%)]" />
+        <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-white/70 to-transparent dark:from-slate-950/20" />
+        
         <div className={`relative z-10 mx-auto flex min-h-[320px] max-w-screen-xl items-center justify-center transition-all duration-700 sm:min-h-[370px] lg:min-h-[390px] ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
           <div className="mx-auto max-w-5xl text-center">
-            <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-blue-100 bg-white/80 px-4 py-2 text-xs font-bold text-blue-700 shadow-lg shadow-slate-200/70 backdrop-blur-md sm:text-sm dark:border-white/25 dark:bg-white/14 dark:text-blue-50 dark:shadow-black/20">
-              <Zap className="h-4 w-4 fill-blue-300 text-blue-300" />
+            <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-blue-100 bg-white/80 px-4 py-2 text-xs font-bold text-blue-700 shadow-lg shadow-slate-200/70 backdrop-blur-md sm:text-sm dark:border-blue-500/20 dark:bg-white/5 dark:text-blue-100 dark:shadow-blue-900/10">
+              <Zap className="h-4 w-4 fill-amber-400 text-amber-500 dark:fill-amber-300 dark:text-amber-400" />
               Nền tảng học tập #1 cho sinh viên FPT
             </div>
+            
             <h1 className="mx-auto mb-5 max-w-5xl text-4xl font-black leading-[1.28] text-slate-950 drop-shadow-none sm:text-5xl sm:leading-[1.22] lg:text-6xl lg:leading-[1.18] dark:text-white dark:drop-shadow-2xl">
               Học tập thông minh,{' '}
-              <span className="text-blue-700 dark:text-blue-100">
+              <br className="hidden sm:inline" />
+              <span className="bg-gradient-to-r from-blue-600 via-indigo-600 to-violet-600 bg-clip-text text-transparent dark:from-blue-400 dark:to-violet-400">
                 Thành công bền vững
               </span>
             </h1>
+            
             <p className="mx-auto mb-8 max-w-3xl text-base font-medium leading-7 text-slate-700 drop-shadow-none sm:text-lg dark:text-blue-50 dark:drop-shadow-lg">
-              Khám phá kho tài liệu, kết nối mentor và tham gia diễn đàn - tất cả trong một nền tảng dành riêng cho sinh viên FPT.
+              Khám phá kho tài liệu, kết nối mentor và tham gia diễn đàn - tất cả trong một nền tảng học tập số hiện đại dành riêng cho sinh viên FPT.
             </p>
+            
             <div className="flex flex-col justify-center gap-3 sm:flex-row">
               {isAuthenticated ? (
                 <Link
@@ -627,13 +666,13 @@ export default function Homepage() {
       </section>
 
       {/* ── 3 Main Sections ── */}
-      <section className="px-4 pb-12">
-        <div className="max-w-screen-xl mx-auto">
-          <div className="grid lg:grid-cols-3 gap-5">
+      <section className="px-4 pb-12 pt-16 mt-6 relative z-20">
+        <div className="max-w-[1440px] mx-auto">
+          <div className="grid lg:grid-cols-3 gap-6">
 
             {/* ── Section 1: Khóa học / Tài liệu ── */}
-            <div className="bg-white/85 backdrop-blur-xl rounded-2xl border border-slate-200 shadow-2xl shadow-slate-200/60 overflow-hidden dark:bg-white/10 dark:border-white/15 dark:shadow-blue-950/20">
-              <div className="p-4 border-b border-slate-200 bg-slate-50/80 dark:border-white/10 dark:bg-white/5">
+            <div className="bg-gradient-to-b from-violet-50/40 to-white dark:from-slate-800 dark:to-slate-900 rounded-2xl border border-violet-200/80 dark:border-violet-500/20 shadow-xl shadow-violet-200/40 dark:shadow-none hover:shadow-2xl hover:shadow-violet-300/40 hover:-translate-y-1 transition-all duration-300 overflow-hidden">
+              <div className="p-4 border-b border-violet-100 bg-violet-50/60 dark:border-white/10 dark:bg-white/5">
                 <SectionHeader
                   icon={BookOpen}
                   title="Khóa học & Tài liệu"
@@ -672,8 +711,8 @@ export default function Homepage() {
             </div>
 
             {/* ── Section 2: Mentor ── */}
-            <div className="bg-white/85 backdrop-blur-xl rounded-2xl border border-slate-200 shadow-2xl shadow-slate-200/60 overflow-hidden dark:bg-white/10 dark:border-white/15 dark:shadow-blue-950/20">
-              <div className="p-4 border-b border-slate-200 bg-slate-50/80 dark:border-white/10 dark:bg-white/5">
+            <div className="bg-gradient-to-b from-emerald-50/40 to-white dark:from-slate-800 dark:to-slate-900 rounded-2xl border border-emerald-200/80 dark:border-emerald-500/20 shadow-xl shadow-emerald-200/40 dark:shadow-none hover:shadow-2xl hover:shadow-emerald-300/40 hover:-translate-y-1 transition-all duration-300 overflow-hidden">
+              <div className="p-4 border-b border-emerald-100 bg-emerald-50/60 dark:border-white/10 dark:bg-white/5">
                 <SectionHeader
                   icon={GraduationCap}
                   title="Mentor Nổi Bật"
@@ -712,8 +751,8 @@ export default function Homepage() {
             </div>
 
             {/* ── Section 3: Diễn đàn ── */}
-            <div className="bg-white/85 backdrop-blur-xl rounded-2xl border border-slate-200 shadow-2xl shadow-slate-200/60 overflow-hidden dark:bg-white/10 dark:border-white/15 dark:shadow-blue-950/20">
-              <div className="p-4 border-b border-slate-200 bg-slate-50/80 dark:border-white/10 dark:bg-white/5">
+            <div className="bg-gradient-to-b from-orange-50/40 to-white dark:from-slate-800 dark:to-slate-900 rounded-2xl border border-orange-200/80 dark:border-orange-500/20 shadow-xl shadow-orange-200/40 dark:shadow-none hover:shadow-2xl hover:shadow-orange-300/40 hover:-translate-y-1 transition-all duration-300 overflow-hidden">
+              <div className="p-4 border-b border-orange-100 bg-orange-50/60 dark:border-white/10 dark:bg-white/5">
                 <SectionHeader
                   icon={MessageSquare}
                   title="Diễn Đàn Cộng Đồng"
@@ -754,10 +793,10 @@ export default function Homepage() {
           </div>
 
           {/* ── AI + Quick Feature Banner ── */}
-          <div className="mt-5 grid sm:grid-cols-2 gap-4">
+          <div className="mt-16 grid sm:grid-cols-2 gap-6 mb-8">
             <Link
               to="/ai"
-              className="group flex items-center gap-4 p-4 bg-white/85 backdrop-blur-xl rounded-2xl text-slate-950 border border-slate-200 hover:bg-blue-50 hover:shadow-xl hover:shadow-slate-200/70 hover:-translate-y-0.5 transition-all duration-300 dark:bg-white/10 dark:text-white dark:border-white/15 dark:hover:bg-white/18 dark:hover:shadow-blue-950/30"
+              className="group flex items-center gap-4 p-4 bg-gradient-to-r from-cyan-50/80 to-blue-50/80 rounded-2xl text-slate-950 border border-cyan-200/80 shadow-xl shadow-cyan-200/40 hover:from-cyan-100 hover:to-blue-100 hover:shadow-2xl hover:shadow-cyan-300/50 hover:-translate-y-1 transition-all duration-300 dark:from-slate-800 dark:to-slate-900 dark:hover:from-slate-700 dark:hover:to-slate-800 dark:shadow-none dark:text-white dark:border-cyan-500/20"
             >
               <div className="w-12 h-12 rounded-xl bg-blue-50 backdrop-blur-sm flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform dark:bg-white/20">
                 <Bot className="w-6 h-6 text-blue-700 dark:text-white" />
@@ -771,7 +810,7 @@ export default function Homepage() {
 
             <Link
               to="/register"
-              className="group flex items-center gap-4 p-4 bg-white/85 backdrop-blur-xl rounded-2xl border border-slate-200 hover:bg-blue-50 hover:shadow-lg hover:shadow-slate-200/70 hover:-translate-y-0.5 transition-all duration-300 dark:bg-white/10 dark:border-white/15 dark:hover:bg-white/18 dark:hover:shadow-blue-950/20"
+              className="group flex items-center gap-4 p-4 bg-gradient-to-r from-blue-50/80 to-indigo-50/80 rounded-2xl border border-blue-200/80 shadow-xl shadow-blue-200/40 hover:from-blue-100 hover:to-indigo-100 hover:shadow-2xl hover:shadow-blue-300/50 hover:-translate-y-1 transition-all duration-300 dark:from-slate-800 dark:to-slate-900 dark:hover:from-slate-700 dark:hover:to-slate-800 dark:shadow-none dark:text-white dark:border-blue-500/20"
             >
               <div className="w-12 h-12 rounded-xl bg-blue-50 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform dark:bg-white/15">
                 <Shield className="w-6 h-6 text-blue-700 dark:text-blue-200" />
@@ -787,60 +826,121 @@ export default function Homepage() {
       </section>
 
       {/* ── Footer ── */}
-      <footer className="relative z-10 bg-white/80 backdrop-blur-xl text-slate-950 py-8 px-4 mt-4 border-t border-slate-200 dark:bg-slate-950/45 dark:text-white dark:border-white/10">
+      <footer className="relative z-10 bg-slate-200/80 text-slate-900 pt-16 pb-12 px-4 mt-24 border-t border-slate-300 backdrop-blur-md dark:bg-slate-900 dark:text-white dark:border-white/10">
         <div className="max-w-screen-xl mx-auto">
-          <div className="flex flex-col md:flex-row items-start justify-between gap-6 mb-6">
-            {/* Brand */}
-            <div>
-              <Link to="/" className="flex items-center gap-2 mb-3">
-                <div className="w-10 h-10 rounded-xl bg-white/90 flex items-center justify-center overflow-hidden border border-white/30">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
+
+            {/* Column 1: Brand & About */}
+            <div className="space-y-5">
+              <Link to="/" className="flex items-center gap-3 group w-fit">
+                <div className="w-16 h-16 rounded-2xl bg-white flex items-center justify-center overflow-hidden border-2 border-blue-100 shadow-md group-hover:shadow-blue-500/20 transition-all duration-300 group-hover:scale-105 dark:border-white/20">
                   <img
                     src={heroLogo}
-                    alt="F.EdTech"
-                    className="h-full w-full object-contain p-1"
+                    alt="F.EdTech Logo"
+                    className="h-full w-full object-contain p-1.5 group-hover:rotate-3 transition-transform duration-300"
                     draggable="false"
                   />
                 </div>
-                <span className="text-lg font-bold">F.<span className="text-blue-600 dark:text-blue-200">EdTech</span></span>
+                <div>
+                  <span className="text-3xl font-black tracking-tight text-slate-900 dark:text-white block leading-none mb-1.5">
+                    F.<span className="text-blue-600 dark:text-blue-400">EdTech</span>
+                  </span>
+                  <span className="text-xs font-black text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full dark:text-blue-200 dark:bg-blue-500/20 uppercase tracking-widest border border-blue-200 dark:border-blue-500/30">Nền tảng học tập số</span>
+                </div>
               </Link>
-              <p className="text-slate-600 dark:text-blue-100/70 text-xs max-w-xs leading-relaxed">
-                Nền tảng học tập số dành cho sinh viên FPT — chia sẻ tài liệu, kết nối mentor, và học cùng AI.
+              <p className="text-slate-600 dark:text-blue-100/80 text-base leading-relaxed max-w-sm font-medium">
+                Nền tảng học tập số toàn diện dành riêng cho sinh viên FPT — Nơi chia sẻ tài liệu chất lượng, kết nối mentor giàu kinh nghiệm và học hỏi hiệu quả cùng Trợ lý AI.
               </p>
-              <div className="flex items-center gap-2 mt-3">
+              <div className="flex items-center gap-2.5 pt-1">
                 {SOCIAL_BUTTONS.map((item) => (
                   <a
                     key={item.id}
                     href={item.href}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-1.5 px-2.5 py-1.5 bg-blue-50 hover:bg-blue-100 rounded-lg text-xs font-medium text-blue-700 hover:text-blue-800 transition-all duration-200 border border-blue-100 dark:bg-white/10 dark:hover:bg-white/18 dark:text-blue-100/80 dark:hover:text-white dark:border-white/10"
+                    className="flex items-center justify-center w-9 h-9 rounded-xl bg-white border border-slate-200/80 shadow-sm text-slate-600 hover:text-white hover:bg-blue-600 hover:border-blue-600 hover:shadow-blue-500/30 hover:-translate-y-1 transition-all duration-300 dark:bg-white/5 dark:border-white/10 dark:text-slate-300 dark:hover:bg-blue-500 dark:hover:border-blue-500"
                     title={item.label}
                   >
-                    <item.icon className="w-3.5 h-3.5" />
-                    <span className="hidden sm:inline">{item.label}</span>
+                    <item.icon className="w-4 h-4" />
                   </a>
                 ))}
               </div>
             </div>
 
-            {/* Quick links */}
-            <div className="grid grid-cols-2 gap-x-12 gap-y-1 text-sm">
-              <p className="col-span-2 text-xs font-semibold text-slate-500 dark:text-blue-100/70 uppercase mb-1">Tính năng</p>
-              {NAV_LINKS.map((item) => (
-                <Link key={item.to} to={item.to} className="text-slate-600 hover:text-blue-700 transition-colors flex items-center gap-1.5 py-0.5 dark:text-blue-100/70 dark:hover:text-white">
-                  <item.icon className="w-3.5 h-3.5" />
-                  {item.label}
-                </Link>
-              ))}
+            {/* Column 2: Quick Links */}
+            <div className="space-y-4 md:pl-8">
+              <p className="text-sm md:text-base font-bold text-slate-900 dark:text-white uppercase tracking-wider">Tính năng nổi bật</p>
+              <ul className="space-y-3.5 text-base text-slate-600 dark:text-blue-100/70">
+                <li className="flex items-center gap-2.5">
+                  <ShoppingBag className="w-5 h-5 text-violet-600 dark:text-violet-400 shrink-0" />
+                  <Link to="/marketplace" className="text-base hover:text-violet-600 dark:hover:text-white font-semibold transition-colors">Tài liệu học tập</Link>
+                </li>
+                <li className="flex items-center gap-2.5">
+                  <GraduationCap className="w-5 h-5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                  <Link to="/mentors" className="text-base hover:text-emerald-600 dark:hover:text-white font-semibold transition-colors">Gia sư & Mentor</Link>
+                </li>
+                <li className="flex items-center gap-2.5">
+                  <MessageSquare className="w-5 h-5 text-orange-500 dark:text-orange-400 shrink-0" />
+                  <Link to="/forum" className="text-base hover:text-orange-500 dark:hover:text-white font-semibold transition-colors">Diễn đàn cộng đồng</Link>
+                </li>
+                <li className="flex items-center gap-2.5">
+                  <Bot className="w-5 h-5 text-cyan-600 dark:text-cyan-400 shrink-0" />
+                  <Link to="/ai" className="text-base hover:text-cyan-600 dark:hover:text-white font-semibold transition-colors">Trợ lý AI thông minh</Link>
+                </li>
+              </ul>
             </div>
+
+            {/* Column 3: Contact & Support */}
+            <div className="space-y-4">
+              <p className="text-sm md:text-base font-bold text-slate-900 dark:text-white uppercase tracking-wider">Liên hệ & Hỗ trợ</p>
+              <ul className="space-y-4 text-base text-slate-600 dark:text-blue-100/70">
+                <li className="flex items-start gap-3">
+                  <Mail className="w-5 h-5 text-sky-500 dark:text-sky-400 shrink-0 mt-1" />
+                  <div>
+                    <p className="text-sm text-slate-500 dark:text-slate-400 font-medium leading-none mb-1.5">Email hỗ trợ</p>
+                    <a href="mailto:support@fedtech.online" className="text-base hover:text-blue-600 dark:hover:text-white font-semibold transition-colors">
+                      support@fedtech.online
+                    </a>
+                  </div>
+                </li>
+                <li className="flex items-start gap-3">
+                  <MapPin className="w-5 h-5 text-rose-500 dark:text-rose-400 shrink-0 mt-1" />
+                  <div>
+                    <p className="text-sm text-slate-500 dark:text-slate-400 font-medium leading-none mb-1.5">Vị trí</p>
+                    <span className="text-base font-semibold leading-relaxed">
+                      Đại học FPT Hà Nội, Khu Công nghệ cao Hòa Lạc, Thạch Thất, Hà Nội
+                    </span>
+                  </div>
+                </li>
+                <li className="flex items-start gap-3">
+                  <HeartHandshake className="w-5 h-5 text-emerald-500 dark:text-emerald-400 shrink-0 mt-1" />
+                  <div>
+                    <p className="text-sm text-slate-500 dark:text-slate-400 font-medium leading-none mb-1.5">Kênh liên hệ</p>
+                    <a
+                      href={LINKS.support}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-base hover:text-blue-600 dark:hover:text-white font-semibold underline transition-colors"
+                    >
+                      Gửi yêu cầu hỗ trợ qua Fanpage
+                    </a>
+                  </div>
+                </li>
+              </ul>
+            </div>
+
           </div>
 
-          <div className="pt-5 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-slate-500 dark:border-white/10 dark:text-blue-100/55">
-            <p>© 2026 F.EdTech. Nền tảng quản lý học tập thông minh.</p>
-            <p>Được xây dựng với ❤️ bởi sinh viên FPT</p>
+          <div className="pt-6 border-t border-slate-200/80 flex flex-col sm:flex-row items-center justify-between gap-3 text-sm text-slate-500 dark:border-white/10 dark:text-blue-100/50">
+            <p>© 2026 F.EdTech. Bảo lưu mọi quyền.</p>
+            <p className="flex items-center gap-1">
+              Được thiết kế và phát triển với <span className="text-red-500 animate-pulse text-base">❤️</span> bởi sinh viên FPT
+            </p>
           </div>
         </div>
       </footer>
+
+
     </div>
   );
 }
