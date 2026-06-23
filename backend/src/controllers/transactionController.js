@@ -55,6 +55,115 @@ class TransactionController {
     }
   }
 
+  // Admin: get ALL transactions with user info populated
+  async getAllAdmin(req, res, next) {
+    try {
+      const {
+        page = 1,
+        limit = 20,
+        category,
+        status,
+        search,
+        sortBy = 'createdAt',
+        sortOrder = 'desc',
+      } = req.query;
+
+      const query = {};
+
+      if (category) query.category = category;
+      if (status) query.status = status;
+
+      if (search) {
+        query['$or'] = [
+          { description: { $regex: escapeRegex(search), $options: 'i' } },
+          { transactionCode: { $regex: escapeRegex(search), $options: 'i' } },
+        ];
+      }
+
+      const skip = (parseInt(page) - 1) * parseInt(limit);
+      const sort = { [sortBy]: sortOrder === 'desc' ? -1 : 1 };
+
+      const [transactions, total] = await Promise.all([
+        Transaction.find(query)
+          .populate('user', 'name email role avatar')
+          .sort(sort)
+          .skip(skip)
+          .limit(parseInt(limit)),
+        Transaction.countDocuments(query),
+      ]);
+
+      ApiResponse.paginated(res, transactions, {
+        page: parseInt(page),
+        limit: parseInt(limit),
+        total,
+      }, 'Lấy toàn bộ giao dịch thành công');
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  // User/Mentor: get their own payment transactions (purchases, top suggestions, donations)
+  async getMyPayments(req, res, next) {
+    try {
+      const {
+        page = 1,
+        limit = 20,
+        category,
+        status,
+        search,
+        sortBy = 'createdAt',
+        sortOrder = 'desc',
+      } = req.query;
+
+      // Chỉ 3 loại giao dịch thanh toán hợp lệ trên hệ thống:
+      // document_purchase: User mua tài liệu (đã có)
+      // top_suggestion:   Mentor trả gói ưu tiên đề xuất (sắp ra)
+      // donate:           Mentor donate cho nền tảng (sắp ra)
+      const PAYMENT_CATEGORIES = ['document_purchase', 'top_suggestion', 'donate'];
+
+      const query = { user: req.user._id };
+
+      if (category) {
+        // Validate: chỉ cho phép lọc theo các category hợp lệ
+        if (!PAYMENT_CATEGORIES.includes(category)) {
+          return ApiResponse.badRequest(res, 'Loại giao dịch không hợp lệ');
+        }
+        query.category = category;
+      } else {
+        query.category = { $in: PAYMENT_CATEGORIES };
+      }
+
+      if (status) query.status = status;
+
+      if (search) {
+        query['$or'] = [
+          { description: { $regex: escapeRegex(search), $options: 'i' } },
+          { transactionCode: { $regex: escapeRegex(search), $options: 'i' } },
+        ];
+      }
+
+      const skip = (parseInt(page) - 1) * parseInt(limit);
+      const sort = { [sortBy]: sortOrder === 'desc' ? -1 : 1 };
+
+      const [transactions, total] = await Promise.all([
+        Transaction.find(query)
+          .populate('user', 'name email role avatar')
+          .sort(sort)
+          .skip(skip)
+          .limit(parseInt(limit)),
+        Transaction.countDocuments(query),
+      ]);
+
+      ApiResponse.paginated(res, transactions, {
+        page: parseInt(page),
+        limit: parseInt(limit),
+        total,
+      }, 'Lấy lịch sử thanh toán thành công');
+    } catch (error) {
+      next(error);
+    }
+  }
+
   async getById(req, res, next) {
     try {
       const transaction = await Transaction.findOne({
@@ -163,6 +272,23 @@ class TransactionController {
         byCategory,
         recentTransactions: recent,
       }, 'Lấy thống kê thành công');
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  // Admin: bulk delete transactions by IDs
+  async bulkDelete(req, res, next) {
+    try {
+      const { ids } = req.body;
+
+      if (!Array.isArray(ids) || ids.length === 0) {
+        return ApiResponse.badRequest(res, 'Vui lòng cung cấp danh sách ID cần xóa');
+      }
+
+      const result = await Transaction.deleteMany({ _id: { $in: ids } });
+
+      ApiResponse.success(res, { deletedCount: result.deletedCount }, `Đã xóa ${result.deletedCount} giao dịch thành công`);
     } catch (error) {
       next(error);
     }

@@ -527,17 +527,44 @@ export const getMentorSuggestions = async (req, res, next) => {
 export const getTopMentors = async (req, res, next) => {
   try {
     const { limit = 10 } = req.query;
+    const parsedLimit = Number(limit) || 10;
 
-    const mentors = await User.find({ role: 'mentor', 'mentorProfile.isAvailable': true })
+    // 1. Fetch featured mentors (rank 1 to 10)
+    const featuredMentors = await User.find({
+      role: 'mentor',
+      'mentorProfile.isAvailable': true,
+      'mentorProfile.featuredRank': { $ne: null, $gte: 1, $lte: 10 }
+    })
       .select(mentorSelect)
-      .sort({
-        'mentorProfile.promotion.isPromoted': -1,
-        'mentorProfile.promotion.priorityScore': -1,
-        'mentorProfile.documentRating': -1,
-        'mentorProfile.documentReviewCount': -1,
-        'mentorProfile.totalSessions': -1,
+      .sort({ 'mentorProfile.featuredRank': 1 });
+
+    let mentors = [...featuredMentors];
+
+    // 2. If we need more mentors to reach the limit
+    if (mentors.length < parsedLimit) {
+      const remainingLimit = parsedLimit - mentors.length;
+      const featuredIds = featuredMentors.map(m => m._id);
+
+      const standardMentors = await User.find({
+        role: 'mentor',
+        'mentorProfile.isAvailable': true,
+        _id: { $nin: featuredIds }
       })
-      .limit(Number(limit));
+        .select(mentorSelect)
+        .sort({
+          'mentorProfile.promotion.isPromoted': -1,
+          'mentorProfile.promotion.priorityScore': -1,
+          'mentorProfile.documentRating': -1,
+          'mentorProfile.documentReviewCount': -1,
+          'mentorProfile.totalSessions': -1,
+        })
+        .limit(remainingLimit);
+
+      mentors = mentors.concat(standardMentors);
+    } else {
+      // If we already have enough, slice to limit
+      mentors = mentors.slice(0, parsedLimit);
+    }
 
     res.json(apiSuccess(mentors));
   } catch (error) {

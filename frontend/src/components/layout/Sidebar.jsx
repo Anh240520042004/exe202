@@ -24,6 +24,7 @@ import {
   ShieldOff,
   PenSquare,
   FileText,
+  Crown,
 } from 'lucide-react';
 
 const menuItems = [
@@ -69,6 +70,13 @@ export default function Sidebar({ isOpen, onToggle }) {
   const isAdmin = user?.role === 'admin';
   const isMentor = user?.role === 'mentor' || user?.role === 'admin';
 
+  const displayMenuItems = menuItems.map((item) => {
+    if (item.path === '/gamification' && isAdmin) {
+      return { path: '/admin/mentor-suggestions', icon: Crown, label: 'Mentor đề xuất' };
+    }
+    return item;
+  });
+
   return (
     <aside
       className={`
@@ -92,7 +100,7 @@ export default function Sidebar({ isOpen, onToggle }) {
                 Menu chính
               </p>
             )}
-            {menuItems.map((item) => (
+            {displayMenuItems.map((item) => (
               <NavLink
                 key={item.path}
                 to={item.path}

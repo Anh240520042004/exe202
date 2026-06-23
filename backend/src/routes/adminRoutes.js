@@ -33,4 +33,7 @@ router.put(
 router.delete('/users/:id', adminController.deleteUser);
 router.get('/transactions', adminController.getAllTransactions);
 
+router.get('/mentors/suggestions', adminController.getFeaturedMentors);
+router.put('/mentors/:id/suggestion-rank', adminController.updateMentorFeaturedRank);
+
 export default router;

@@ -193,6 +193,8 @@ export const mentorService = {
   updateBookingStatus: (id, data) => api.put(`/mentors/bookings/${id}/status`, data),
   addReview: (id, data) => api.post(`/mentors/${id}/reviews`, data),
   addBookingReview: (id, data) => api.post(`/mentors/bookings/${id}/review`, data),
+  getAdminSuggestions: () => api.get('/admin/mentors/suggestions'),
+  updateSuggestionRank: (id, rank) => api.put(`/admin/mentors/${id}/suggestion-rank`, { rank }),
 };
 
 export const aiService = {
@@ -217,6 +219,12 @@ export const rewardService = {
   getLeaderboard: (params) => api.get('/rewards/leaderboard', { params }),
   getPointsRequired: (orderId) => api.get('/rewards/required', { params: { orderId } }),
   redeem: (data) => api.post('/rewards/redeem', data),
+};
+
+export const paymentService = {
+  createMentorPromotion: (planId) => api.post('/payments/mentor-promotion/create', { planId }),
+  checkStatus: (transactionCode) => api.get(`/payments/check/${transactionCode}`),
+  createDocumentPayment: (orderId) => api.post('/payments/create', { orderId, paymentMethod: 'sepay' }),
 };
 
 export const dashboardService = {

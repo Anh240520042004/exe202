@@ -320,6 +320,13 @@ const userSchema = new mongoose.Schema(
         campaignName: { type: String, trim: true },
       },
 
+      featuredRank: {
+        type: Number,
+        default: null,
+        min: 1,
+        max: 10,
+      },
+
       pricePerHour: {
         type: Number,
         default: 0,

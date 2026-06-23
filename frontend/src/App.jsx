@@ -20,6 +20,7 @@ import AdminDocuments from './pages/admin/AdminDocuments';
 import PaymentResult from './pages/payment/PaymentResult';
 import AdminPayments from './pages/admin/AdminPayments';
 import AdminForumPosts from './pages/admin/AdminForumPosts';
+import AdminMentorSuggestions from './pages/admin/AdminMentorSuggestions';
 import Forum from './pages/forum/Forum';
 import CreatePost from './pages/forum/CreatePost';
 import PostDetail from './pages/forum/PostDetail';
@@ -109,6 +110,7 @@ export default function App() {
             <Route path="/admin/documents" element={<AdminDocuments />} />
             <Route path="/admin/payments" element={<AdminPayments />} />
             <Route path="/admin/forum-posts" element={<AdminForumPosts />} />
+            <Route path="/admin/mentor-suggestions" element={<AdminMentorSuggestions />} />
           </>
         )}
       </Route>

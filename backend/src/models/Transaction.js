@@ -34,6 +34,8 @@ const transactionSchema = new mongoose.Schema(
         'mentor_session',
         'subscription',
         'refund',
+        'top_suggestion',
+        'donate',
         'other',
       ],
     },

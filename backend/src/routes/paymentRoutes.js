@@ -345,8 +345,8 @@ router.post('/mentor-promotion/create', protect, async (req, res, next) => {
       user: req.user.id,
       amount: plan.amount,
       type: 'expense',
-      category: 'subscription',
-      description: `Thanh toan goi uu tien mentor - ${plan.name}`,
+      category: 'top_suggestion',
+      description: `Thanh toan goi de xuat mentor - ${plan.name}`,
       status: 'pending',
       paymentId: payment._id,
       transactionCode: transactionId,
@@ -609,12 +609,31 @@ router.post('/sepay-webhook', async (req, res) => {
       transaction.providerTransactionCode = `SEPAY_${transactionCode}`;
       await transaction.save();
 
+      // Tính số tháng/ngày từ plan
+      let durationDisplay = '7 ngày';
+      if (plan.id === '30_days') durationDisplay = '1 tháng';
+      if (plan.id === 'yearly') durationDisplay = '12 tháng';
+
+      // Notify mentor
       await createNotification(
         mentor._id,
-        'Da kich hoat uu tien!',
-        `Goi ${plan.name} da duoc thanh toan thanh cong. Ho so cua ban se co nhan Uu tien den ${new Date(mentor.mentorProfile.promotion.paidUntil).toLocaleDateString('vi-VN')}.`,
+        '🎉 Thanh toán gói đề xuất thành công!',
+        `bạn đã thanh toán thành công gói đề xuất ${durationDisplay}, vị trí đã được admin đề xuất.`,
         'success'
       );
+
+      // Notify all admins
+      try {
+        const admins = await User.find({ role: 'admin', isActive: true });
+        await Promise.all(admins.map(admin =>
+          createNotification(
+            admin._id,
+            '💰 Mentor thanh toán gói đề xuất',
+            `mentor ${mentor.name} thanh toán thành công gói đề xuất ${durationDisplay}`,
+            'success'
+          )
+        ));
+      } catch (e) { console.error('Admin notify error (mentor promotion):', e); }
 
       return res.status(200).json({
         success: true,

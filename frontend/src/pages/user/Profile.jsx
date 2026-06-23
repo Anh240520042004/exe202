@@ -2,8 +2,9 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import FollowListModal from '../../components/user/FollowListModal';
 import MentorProfileEditor from '../../components/user/MentorProfileEditor';
+import MentorPromotionModal from '../../components/user/MentorPromotionModal';
 import { useDispatch, useSelector } from 'react-redux';
-import { Camera, User, Mail, Lock, Save, Download, BookOpen, Users, Receipt, CreditCard, ArrowUpRight, ArrowDownRight, TrendingUp, TrendingDown, Calendar } from 'lucide-react';
+import { Camera, User, Mail, Lock, Save, Download, BookOpen, Users, Receipt, CreditCard, ArrowUpRight, ArrowDownRight, TrendingUp, TrendingDown, Calendar, Zap, Star, Crown } from 'lucide-react';
 import toast from 'react-hot-toast';
 import {
   fetchProfile,
@@ -109,6 +110,7 @@ export default function Profile() {
 
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [followModalType, setFollowModalType] = useState(null);
+  const [showPromotionModal, setShowPromotionModal] = useState(false);
 
   useEffect(() => {
     dispatch(fetchProfile());
@@ -305,6 +307,60 @@ export default function Profile() {
               <MentorProfileEditor user={profile} onSaved={() => dispatch(fetchProfile())} />
             )}
 
+            {/* Mentor Promotion Packages */}
+            {profile?.role === 'mentor' && (
+              <div className="glass-card overflow-hidden">
+                <div className="p-6">
+                  <div className="flex items-center justify-between mb-5">
+                    <div>
+                      <h2 className="text-lg font-bold text-gray-900 dark:text-white">Gói đề xuất Mentor</h2>
+                      <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">Tăng hiển thị trong Top Mentor &amp; Mentor Nổi Bật</p>
+                    </div>
+                    {profile?.mentorProfile?.promotion?.isPromoted && profile?.mentorProfile?.promotion?.paidUntil && new Date(profile.mentorProfile.promotion.paidUntil) > new Date() && (
+                      <span className="px-3 py-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded-full text-xs font-bold">
+                        ✓ Đang hoạt động đến {new Date(profile.mentorProfile.promotion.paidUntil).toLocaleDateString('vi-VN')}
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-5">
+                    {[
+                      { id: '7_days', label: '7 Ngày', price: '19.000 VNĐ', icon: Zap, color: 'from-blue-400 to-cyan-500', desc: 'Dùng thử' },
+                      { id: '30_days', label: '30 Ngày', price: '49.000 VNĐ', icon: Star, color: 'from-violet-500 to-purple-600', desc: 'Phổ biến', highlight: true },
+                      { id: 'yearly', label: '1 Năm', price: '299.000 VNĐ', icon: Crown, color: 'from-amber-400 to-orange-500', desc: 'Tiết kiệm' },
+                    ].map((plan) => {
+                      const Icon = plan.icon;
+                      return (
+                        <div
+                          key={plan.id}
+                          className={`rounded-2xl border-2 p-4 text-center ${
+                            plan.highlight
+                              ? 'border-violet-400 dark:border-violet-500 bg-violet-50/70 dark:bg-violet-900/20'
+                              : 'border-gray-200 dark:border-white/10 bg-white/40 dark:bg-white/5'
+                          }`}
+                        >
+                          <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${plan.color} flex items-center justify-center mx-auto mb-2`}>
+                            <Icon className="w-5 h-5 text-white" />
+                          </div>
+                          <p className="font-bold text-gray-900 dark:text-white">{plan.label}</p>
+                          <p className="text-sm font-semibold text-primary-600 dark:text-primary-400">{plan.price}</p>
+                          <p className="text-xs text-gray-400 mt-0.5">{plan.desc}</p>
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  <button
+                    onClick={() => setShowPromotionModal(true)}
+                    className="w-full py-3 rounded-2xl bg-gradient-to-r from-primary-500 to-violet-500 text-white font-semibold hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
+                  >
+                    <TrendingUp className="w-5 h-5" />
+                    Đăng ký gói đề xuất
+                  </button>
+                </div>
+              </div>
+            )}
+
             {/* Transaction History Section */}
             <Card title="Lịch sử giao dịch">
               {!showTransactionHistory ? (
@@ -451,6 +507,12 @@ export default function Profile() {
           userId={profile?._id}
           type={followModalType || 'followers'}
           currentUserId={profile?._id}
+        />
+
+        <MentorPromotionModal
+          isOpen={showPromotionModal}
+          onClose={() => setShowPromotionModal(false)}
+          mentorName={profile?.name}
         />
 
         {/* Change Password Modal */}

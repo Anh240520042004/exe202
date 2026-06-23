@@ -136,6 +136,72 @@ class AdminController {
       next(error);
     }
   }
+
+  async getFeaturedMentors(req, res, next) {
+    try {
+      const mentors = await User.find({ role: 'mentor' })
+        .select('name email avatar mentorProfile.featuredRank mentorProfile.title mentorProfile.isAvailable mentorProfile.expertise');
+
+      // Sort with featuredRank 1-10 first, then null/undefined last
+      mentors.sort((a, b) => {
+        const rankA = a.mentorProfile?.featuredRank;
+        const rankB = b.mentorProfile?.featuredRank;
+        
+        const hasRankA = rankA !== null && rankA !== undefined && rankA >= 1 && rankA <= 10;
+        const hasRankB = rankB !== null && rankB !== undefined && rankB >= 1 && rankB <= 10;
+        
+        if (hasRankA && hasRankB) {
+          return rankA - rankB;
+        }
+        if (hasRankA) return -1;
+        if (hasRankB) return 1;
+        return 0;
+      });
+
+      ApiResponse.success(res, mentors, 'Lấy danh sách mentor đề xuất thành công');
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async updateMentorFeaturedRank(req, res, next) {
+    try {
+      const { rank } = req.body;
+      const mentorId = req.params.id;
+
+      if (rank !== null && (typeof rank !== 'number' || rank < 1 || rank > 10)) {
+        return ApiResponse.badRequest(res, 'Vị trí đề xuất phải từ 1 đến 10 hoặc null');
+      }
+
+      // If assigning a rank, any other mentor currently holding this rank is set to null
+      if (rank !== null) {
+        await User.updateMany(
+          {
+            role: 'mentor',
+            _id: { $ne: mentorId },
+            'mentorProfile.featuredRank': rank
+          },
+          {
+            $set: { 'mentorProfile.featuredRank': null }
+          }
+        );
+      }
+
+      const mentor = await User.findOneAndUpdate(
+        { _id: mentorId, role: 'mentor' },
+        { $set: { 'mentorProfile.featuredRank': rank } },
+        { new: true }
+      ).select('-refreshToken');
+
+      if (!mentor) {
+        return ApiResponse.notFound(res, 'Không tìm thấy mentor');
+      }
+
+      ApiResponse.success(res, mentor, 'Cập nhật vị trí đề xuất thành công');
+    } catch (error) {
+      next(error);
+    }
+  }
 }
 
 export default new AdminController();
