@@ -212,7 +212,7 @@ export default function MentorNetwork() {
           <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6">
             <div>
               <h1 className="text-4xl font-bold mb-3 text-slate-950 drop-shadow-none dark:text-white dark:drop-shadow-lg">Mentor Network</h1>
-              <p className="text-lg font-medium text-slate-700 drop-shadow-none max-w-3xl dark:text-blue-50/90 dark:drop-shadow">
+              <p className="text-lg font-bold text-slate-700 drop-shadow-none max-w-3xl dark:text-white dark:drop-shadow">
                 Tìm mentor theo môn học, năng lực thực chiến, dự án mẫu và phản hồi từ các buổi học đã hoàn thành.
               </p>
             </div>
@@ -300,10 +300,10 @@ export default function MentorNetwork() {
 }
 
 const Metric = ({ icon: Icon, label, value }) => (
-  <div className="glass-chip px-4 py-3 bg-white/80 border border-slate-200 dark:bg-white/10 dark:border-white/10">
-    <Icon className="w-5 h-5 text-primary-500 mb-1" />
-    <div className="text-xl font-bold text-slate-950 dark:text-white">{value}</div>
-    <div className="text-xs text-gray-500 dark:text-gray-400">{label}</div>
+  <div className="glass-chip px-5 py-4 bg-white/85 border border-slate-200 shadow-sm dark:bg-slate-900/55 dark:border-white/20 dark:shadow-black/30">
+    <Icon className="w-6 h-6 text-primary-600 mb-1.5 dark:text-primary-200" />
+    <div className="text-3xl font-black leading-none text-slate-950 dark:text-white">{value}</div>
+    <div className="mt-1 text-sm font-extrabold tracking-wide text-slate-700 dark:text-white">{label}</div>
   </div>
 );
 

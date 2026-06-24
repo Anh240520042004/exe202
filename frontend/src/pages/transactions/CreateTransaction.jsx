@@ -88,7 +88,7 @@ export default function CreateTransaction() {
         </button>
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Thêm giao dịch mới</h1>
-          <p className="text-gray-500 dark:text-gray-400 mt-1">Nhập thông tin giao dịch của bạn</p>
+          <p className="text-slate-600 dark:text-slate-300 mt-1 font-medium">Nhập thông tin giao dịch của bạn</p>
         </div>
       </div>
 

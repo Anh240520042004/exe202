@@ -337,7 +337,7 @@ const Hero = ({ title, subtitle, backLabel, onBack, children }) => (
         </button>
       )}
       <h1 className="text-4xl font-bold mb-3 text-slate-950 drop-shadow-none dark:text-white dark:drop-shadow-lg">{title}</h1>
-      <p className="text-lg font-medium text-slate-700 drop-shadow-none dark:text-blue-50/90 dark:drop-shadow">{subtitle}</p>
+      <p className="text-lg font-bold text-slate-700 drop-shadow-none dark:text-white dark:drop-shadow">{subtitle}</p>
       {children}
     </div>
   </div>
@@ -359,8 +359,8 @@ const SelectCard = ({ title, subtitle, metric, onClick }) => (
       <ChevronRight className="text-gray-400 group-hover:text-primary-600 group-hover:translate-x-1 transition-all" size={20} />
     </div>
     <h3 className="text-xl font-bold mb-1 text-slate-950 dark:text-white">{title}</h3>
-    <p className="text-gray-600 dark:text-gray-400 text-sm mb-3">{subtitle}</p>
-    <p className="text-xs font-semibold text-primary-600 dark:text-primary-300 mt-2">{metric}</p>
+    <p className="text-sm font-bold text-gray-700 dark:text-white mb-3">{subtitle}</p>
+    <p className="text-sm font-bold text-primary-600 dark:text-primary-100 mt-2">{metric}</p>
   </div>
 );
 

@@ -1,6 +1,55 @@
-import { Transaction } from '../models/index.js';
+import { Order, Transaction } from '../models/index.js';
 import ApiResponse from '../utils/apiResponse.js';
 import { escapeRegex } from '../utils/security.js';
+
+const buildAdminTransactionQuery = ({ category, status, search }) => {
+  const query = {};
+
+  if (category) query.category = category;
+  if (status) query.status = status;
+
+  if (search) {
+    query.$or = [
+      { description: { $regex: escapeRegex(search), $options: 'i' } },
+      { transactionCode: { $regex: escapeRegex(search), $options: 'i' } },
+    ];
+  }
+
+  return query;
+};
+
+const getAdminTransactionStats = async (query) => {
+  const [transactionStats, paidOrderRevenue] = await Promise.all([
+    Transaction.aggregate([
+      { $match: query },
+      {
+        $group: {
+          _id: null,
+          totalTransactions: { $sum: 1 },
+          completedTransactions: {
+            $sum: { $cond: [{ $eq: ['$status', 'completed'] }, 1, 0] },
+          },
+          pendingTransactions: {
+            $sum: { $cond: [{ $eq: ['$status', 'pending'] }, 1, 0] },
+          },
+        },
+      },
+    ]),
+    Order.aggregate([
+      { $match: { paymentStatus: 'paid' } },
+      { $group: { _id: null, total: { $sum: '$totalAmount' } } },
+    ]),
+  ]);
+
+  const stats = transactionStats[0];
+
+  return {
+    totalTransactions: stats?.totalTransactions || 0,
+    completedTransactions: stats?.completedTransactions || 0,
+    pendingTransactions: stats?.pendingTransactions || 0,
+    completedRevenue: paidOrderRevenue[0]?.total || 0,
+  };
+};
 
 class TransactionController {
   async getAll(req, res, next) {
@@ -68,35 +117,36 @@ class TransactionController {
         sortOrder = 'desc',
       } = req.query;
 
-      const query = {};
-
-      if (category) query.category = category;
-      if (status) query.status = status;
-
-      if (search) {
-        query['$or'] = [
-          { description: { $regex: escapeRegex(search), $options: 'i' } },
-          { transactionCode: { $regex: escapeRegex(search), $options: 'i' } },
-        ];
-      }
-
-      const skip = (parseInt(page) - 1) * parseInt(limit);
+      const query = buildAdminTransactionQuery({ category, status, search });
+      const pageNumber = parseInt(page);
+      const pageSize = parseInt(limit);
+      const skip = (pageNumber - 1) * pageSize;
       const sort = { [sortBy]: sortOrder === 'desc' ? -1 : 1 };
 
-      const [transactions, total] = await Promise.all([
+      const [transactions, total, stats] = await Promise.all([
         Transaction.find(query)
           .populate('user', 'name email role avatar')
           .sort(sort)
           .skip(skip)
-          .limit(parseInt(limit)),
+          .limit(pageSize),
         Transaction.countDocuments(query),
+        getAdminTransactionStats(query),
       ]);
 
-      ApiResponse.paginated(res, transactions, {
-        page: parseInt(page),
-        limit: parseInt(limit),
-        total,
-      }, 'Lấy toàn bộ giao dịch thành công');
+      return res.status(200).json({
+        success: true,
+        message: 'Lấy toàn bộ giao dịch thành công',
+        data: transactions,
+        stats,
+        pagination: {
+          currentPage: pageNumber,
+          totalPages: Math.ceil(total / pageSize),
+          totalItems: total,
+          itemsPerPage: pageSize,
+          hasNextPage: pageNumber < Math.ceil(total / pageSize),
+          hasPrevPage: pageNumber > 1,
+        },
+      });
     } catch (error) {
       next(error);
     }

@@ -103,14 +103,14 @@ const getInitials = (name = '') =>
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
 const StatCard = ({ label, value, sub, gradient, Icon }) => (
-  <div className="glass-card rounded-2xl p-5 flex items-center gap-4">
+  <div className="glass-card rounded-2xl p-5 flex items-center gap-4 bg-white/95 border border-slate-200/90 dark:bg-slate-900/85 dark:border-white/10">
     <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${gradient} flex items-center justify-center flex-shrink-0`}>
       <Icon className="w-6 h-6 text-white" />
     </div>
     <div>
-      <p className="text-xs text-gray-400 mb-0.5">{label}</p>
-      <p className="text-xl font-bold text-white">{value}</p>
-      {sub && <p className="text-xs text-gray-500">{sub}</p>}
+      <p className="text-xs font-medium text-slate-600 dark:text-slate-300 mb-0.5">{label}</p>
+      <p className="text-xl font-bold text-slate-900 dark:text-white">{value}</p>
+      {sub && <p className="text-xs text-slate-500 dark:text-slate-400">{sub}</p>}
     </div>
   </div>
 );
@@ -255,16 +255,22 @@ export default function PaymentHistory() {
 
       const data = response?.data ?? [];
       const paginationData = response?.pagination ?? null;
+      const responseStats = response?.stats ?? null;
 
       setTransactions(Array.isArray(data) ? data : []);
       setPagination(paginationData);
 
-      // Build simple stats from fetched data
-      if (page === 1) {
+      if (isAdmin) {
+        setStats({
+          total: responseStats?.totalTransactions ?? paginationData?.totalItems ?? data.length,
+          completed: responseStats?.completedTransactions ?? 0,
+          pending: responseStats?.pendingTransactions ?? 0,
+          revenue: responseStats?.completedRevenue ?? 0,
+        });
+      } else if (page === 1) {
         const completed = data.filter((t) => t.status === 'completed');
         const pending = data.filter((t) => t.status === 'pending');
         const totalRevenue = completed.reduce((s, t) => s + (t.amount || 0), 0);
-        // Backend ApiResponse.paginated returns totalItems
         setStats({ total: paginationData?.totalItems ?? data.length, completed: completed.length, pending: pending.length, revenue: totalRevenue });
       }
     } catch (error) {
@@ -292,11 +298,11 @@ export default function PaymentHistory() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-white flex items-center gap-2">
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
             <Receipt className="w-7 h-7 text-primary-400" />
             {isAdmin ? 'Lịch sử giao dịch thanh toán' : 'Lịch sử thanh toán của tôi'}
           </h1>
-          <p className="text-gray-400 mt-1 text-sm">
+          <p className="text-slate-600 dark:text-slate-300 mt-1 text-sm font-medium">
             {isAdmin
               ? 'Toàn bộ giao dịch của tất cả người dùng trên hệ thống'
               : 'Các giao dịch thanh toán của tài khoản bạn'}
@@ -304,7 +310,7 @@ export default function PaymentHistory() {
         </div>
         <button
           onClick={handleRefresh}
-          className="flex items-center gap-2 px-4 py-2 rounded-xl glass-card text-gray-400 hover:text-white transition-colors text-sm"
+          className="flex items-center gap-2 px-4 py-2 rounded-xl glass-card bg-white/95 border border-slate-200/90 text-slate-700 hover:text-slate-900 dark:bg-slate-900/85 dark:border-white/10 dark:text-slate-300 dark:hover:text-white transition-colors text-sm font-medium"
         >
           <RefreshCw className="w-4 h-4" />
           Làm mới
@@ -363,18 +369,18 @@ export default function PaymentHistory() {
         {/* Search & filter bar */}
         <div className="flex flex-col sm:flex-row gap-3">
           <div className="flex-1 relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 dark:text-slate-300" />
             <input
               type="text"
               placeholder={isAdmin ? 'Tìm theo mô tả, mã giao dịch...' : 'Tìm kiếm giao dịch...'}
               value={filters.search}
               onChange={(e) => setFilters((f) => ({ ...f, search: e.target.value }))}
-              className="w-full pl-9 pr-4 py-2.5 glass-card rounded-xl text-sm text-white placeholder-gray-500 border border-white/10 focus:border-primary-500/50 focus:ring-1 focus:ring-primary-500/30 outline-none transition"
+              className="w-full pl-9 pr-4 py-2.5 glass-card rounded-xl bg-white/95 border border-slate-200/90 text-sm text-slate-900 placeholder-slate-500 dark:bg-slate-900/85 dark:border-white/10 dark:text-white dark:placeholder-slate-400 focus:border-primary-500/50 focus:ring-1 focus:ring-primary-500/30 outline-none transition"
             />
           </div>
           <button
             onClick={() => setShowFilters((v) => !v)}
-            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border text-sm transition ${showFilters ? 'bg-primary-500/20 border-primary-500/50 text-primary-400' : 'glass-card border-white/10 text-gray-400 hover:text-white'}`}
+            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border text-sm font-medium transition ${showFilters ? 'bg-primary-500/20 border-primary-500/50 text-primary-700 dark:text-primary-300' : 'glass-card bg-white/95 border-slate-200/90 text-slate-700 hover:text-slate-900 dark:bg-slate-900/85 dark:border-white/10 dark:text-slate-300 dark:hover:text-white'}`}
           >
             <Filter className="w-4 h-4" />
             Bộ lọc
@@ -383,13 +389,13 @@ export default function PaymentHistory() {
 
         {/* Expanded filters */}
         {showFilters && (
-          <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 glass-subtle rounded-xl border border-white/5">
+          <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 glass-subtle rounded-xl bg-slate-50/80 border border-slate-200/80 dark:bg-slate-900/60 dark:border-white/10">
             <div>
-              <label className="block text-xs text-gray-400 mb-1.5">Loại giao dịch</label>
+              <label className="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1.5">Loại giao dịch</label>
               <select
                 value={filters.category}
                 onChange={(e) => setFilters((f) => ({ ...f, category: e.target.value }))}
-                className="w-full glass-card rounded-xl px-3 py-2 text-sm text-white border border-white/10 focus:border-primary-500/50 outline-none bg-transparent"
+                className="w-full glass-card rounded-xl px-3 py-2 text-sm bg-white/95 border border-slate-200/90 text-slate-900 dark:bg-slate-900/85 dark:border-white/10 dark:text-white focus:border-primary-500/50 outline-none"
               >
                 <option value="" className="bg-gray-900">Tất cả</option>
                 <option value="document_purchase" className="bg-gray-900">Mua tài liệu</option>
@@ -398,11 +404,11 @@ export default function PaymentHistory() {
               </select>
             </div>
             <div>
-              <label className="block text-xs text-gray-400 mb-1.5">Trạng thái</label>
+              <label className="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1.5">Trạng thái</label>
               <select
                 value={filters.status}
                 onChange={(e) => setFilters((f) => ({ ...f, status: e.target.value }))}
-                className="w-full glass-card rounded-xl px-3 py-2 text-sm text-white border border-white/10 focus:border-primary-500/50 outline-none bg-transparent"
+                className="w-full glass-card rounded-xl px-3 py-2 text-sm bg-white/95 border border-slate-200/90 text-slate-900 dark:bg-slate-900/85 dark:border-white/10 dark:text-white focus:border-primary-500/50 outline-none"
               >
                 <option value="" className="bg-gray-900">Tất cả</option>
                 <option value="completed" className="bg-gray-900">Hoàn thành</option>
@@ -414,7 +420,7 @@ export default function PaymentHistory() {
             <div className="sm:col-span-2 flex justify-end gap-2">
               <button
                 onClick={() => setFilters({ search: '', category: '', status: '' })}
-                className="px-4 py-2 rounded-xl glass-card text-gray-400 hover:text-white text-sm transition"
+                className="px-4 py-2 rounded-xl glass-card bg-white/95 border border-slate-200/90 text-slate-700 hover:text-slate-900 dark:bg-slate-900/85 dark:border-white/10 dark:text-slate-300 dark:hover:text-white text-sm font-medium transition"
               >
                 Xóa bộ lọc
               </button>
@@ -434,10 +440,10 @@ export default function PaymentHistory() {
         ) : transactions.length === 0 ? (
           <div className="text-center py-16">
             <div className="w-16 h-16 mx-auto mb-4 rounded-full glass-subtle flex items-center justify-center">
-              <Receipt className="w-8 h-8 text-gray-500" />
+              <Receipt className="w-8 h-8 text-slate-500 dark:text-slate-300" />
             </div>
-            <h3 className="text-lg font-semibold text-white mb-2">Chưa có giao dịch nào</h3>
-            <p className="text-gray-500 text-sm">
+            <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">Chưa có giao dịch nào</h3>
+            <p className="text-slate-600 dark:text-slate-300 text-sm font-medium">
               {isAdmin ? 'Chưa có giao dịch thanh toán nào trên hệ thống.' : 'Bạn chưa có giao dịch thanh toán nào.'}
             </p>
           </div>
@@ -458,14 +464,14 @@ export default function PaymentHistory() {
                       />
                     </th>
                   )}
-                  <th className="text-left py-3 px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                  <th className="text-left py-3 px-4 text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
                     {isAdmin ? 'Người dùng' : 'Giao dịch'}
                   </th>
-                  <th className="text-left py-3 px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Loại</th>
-                  <th className="text-left py-3 px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Phương thức</th>
-                  <th className="text-right py-3 px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Số tiền</th>
-                  <th className="text-center py-3 px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Trạng thái</th>
-                  <th className="text-left py-3 px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Ngày</th>
+                  <th className="text-left py-3 px-4 text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">Loại</th>
+                  <th className="text-left py-3 px-4 text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">Phương thức</th>
+                  <th className="text-right py-3 px-4 text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">Số tiền</th>
+                  <th className="text-center py-3 px-4 text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">Trạng thái</th>
+                  <th className="text-left py-3 px-4 text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">Ngày</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/5">
@@ -494,23 +500,23 @@ export default function PaymentHistory() {
                             <UserAvatar user={tx.user} />
                             <div className="min-w-0">
                               <div className="flex items-center gap-2 flex-wrap">
-                                <span className="font-medium text-white text-sm truncate">
+                                <span className="font-semibold text-slate-900 dark:text-white text-sm truncate">
                                   {tx.user?.name || 'Người dùng'}
                                 </span>
                                 <RoleBadge role={tx.user?.role} />
                               </div>
-                              <span className="text-xs text-gray-500 truncate block">
+                              <span className="text-xs text-slate-600 dark:text-slate-400 truncate block font-medium">
                                 {tx.user?.email || '—'}
                               </span>
                             </div>
                           </div>
                         ) : (
                           <div className="min-w-0">
-                            <p className="text-sm text-white font-medium line-clamp-1">
+                            <p className="text-sm text-slate-900 dark:text-white font-semibold line-clamp-1">
                               {tx.description || '—'}
                             </p>
                             {tx.transactionCode && (
-                              <code className="text-[10px] text-gray-500">
+                              <code className="text-[10px] text-slate-600 dark:text-slate-400 font-medium">
                                 #{tx.transactionCode.slice(-10)}
                               </code>
                             )}
@@ -522,7 +528,7 @@ export default function PaymentHistory() {
                       <td className="py-4 px-4">
                         <CategoryBadge category={tx.category} />
                         {isAdmin && tx.description && (
-                          <p className="text-[10px] text-gray-500 mt-1 line-clamp-1 max-w-[180px]">
+                          <p className="text-[10px] text-slate-600 dark:text-slate-400 mt-1 line-clamp-1 max-w-[180px] font-medium">
                             {tx.description}
                           </p>
                         )}
@@ -530,7 +536,7 @@ export default function PaymentHistory() {
 
                       {/* Payment method */}
                       <td className="py-4 px-4">
-                        <span className="text-sm text-gray-400">
+                        <span className="text-sm text-slate-700 dark:text-slate-300 font-medium">
                           {PAYMENT_METHOD_LABELS[tx.paymentMethod] || tx.paymentMethod || '—'}
                         </span>
                       </td>
@@ -550,7 +556,7 @@ export default function PaymentHistory() {
 
                       {/* Date */}
                       <td className="py-4 px-4">
-                        <span className="text-xs text-gray-400 whitespace-nowrap">
+                        <span className="text-xs text-slate-600 dark:text-slate-300 whitespace-nowrap font-medium">
                           {formatDate(tx.createdAt || tx.date)}
                         </span>
                       </td>
@@ -565,14 +571,14 @@ export default function PaymentHistory() {
         {/* Pagination */}
         {pagination && pagination.totalPages > 1 && (
           <div className="flex items-center justify-between mt-6 pt-4 border-t border-white/10">
-            <p className="text-xs text-gray-500">
+            <p className="text-xs text-slate-600 dark:text-slate-300 font-medium">
               Hiển thị {(currentPage - 1) * 20 + 1}–{Math.min(currentPage * 20, pagination.totalItems)} / {pagination.totalItems} giao dịch
             </p>
             <div className="flex items-center gap-2">
               <button
                 onClick={() => handlePageChange(currentPage - 1)}
                 disabled={!pagination.hasPrevPage}
-                className="p-2 rounded-xl glass-card disabled:opacity-40 disabled:cursor-not-allowed text-gray-400 hover:text-white transition"
+                className="p-2 rounded-xl glass-card bg-white/95 border border-slate-200/90 disabled:opacity-40 disabled:cursor-not-allowed text-slate-700 hover:text-slate-900 dark:bg-slate-900/85 dark:border-white/10 dark:text-slate-300 dark:hover:text-white transition"
               >
                 <ChevronLeft className="w-4 h-4" />
               </button>
@@ -582,7 +588,7 @@ export default function PaymentHistory() {
               <button
                 onClick={() => handlePageChange(currentPage + 1)}
                 disabled={!pagination.hasNextPage}
-                className="p-2 rounded-xl glass-card disabled:opacity-40 disabled:cursor-not-allowed text-gray-400 hover:text-white transition"
+                className="p-2 rounded-xl glass-card bg-white/95 border border-slate-200/90 disabled:opacity-40 disabled:cursor-not-allowed text-slate-700 hover:text-slate-900 dark:bg-slate-900/85 dark:border-white/10 dark:text-slate-300 dark:hover:text-white transition"
               >
                 <ChevronRight className="w-4 h-4" />
               </button>
@@ -595,7 +601,7 @@ export default function PaymentHistory() {
       {isAdmin && selectedIds.length > 0 && (
         <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 animate-fade-in">
           <div className="flex items-center gap-3 px-5 py-3 rounded-2xl glass-card border border-white/15 shadow-2xl shadow-black/40">
-            <span className="text-sm text-white font-medium">
+            <span className="text-sm text-slate-900 dark:text-white font-medium">
               Đã chọn{' '}
               <span className="text-primary-400 font-bold">{selectedIds.length}</span>{' '}
               giao dịch
@@ -603,7 +609,7 @@ export default function PaymentHistory() {
             <div className="w-px h-5 bg-white/20" />
             <button
               onClick={() => setSelectedIds([])}
-              className="flex items-center gap-1.5 text-xs text-gray-400 hover:text-white transition px-2 py-1 rounded-lg hover:bg-white/10"
+              className="flex items-center gap-1.5 text-xs text-slate-700 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white transition px-2 py-1 rounded-lg hover:bg-slate-100 dark:hover:bg-white/10 font-medium"
             >
               <X className="w-3.5 h-3.5" />
               Bỏ chọn

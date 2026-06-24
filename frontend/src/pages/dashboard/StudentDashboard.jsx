@@ -82,17 +82,17 @@ const StudentDashboard = () => {
             />
             <div className="flex-1 min-w-[200px]">
               <h1 className="text-3xl font-bold text-slate-900 dark:text-white drop-shadow-sm">Welcome back, {profile.name}!</h1>
-              <p className="text-slate-600 dark:text-gray-400 mt-1 font-medium">GPA: {profile.gpa} | Level {profile.level}</p>
+              <p className="text-slate-700 dark:text-white mt-1 font-bold">GPA: {profile.gpa} | Level {profile.level}</p>
             </div>
             <div className="text-center glass-chip px-6 py-4 rounded-2xl bg-white/70 dark:bg-white/5">
               <Flame className="mx-auto text-orange-400 mb-1" size={24} />
               <p className="text-2xl font-bold text-slate-900 dark:text-white">{profile.studyStreak}</p>
-              <p className="text-xs font-medium text-slate-500 dark:text-gray-400">day streak</p>
+              <p className="text-sm font-bold text-slate-600 dark:text-white">day streak</p>
             </div>
             <div className="text-center glass-chip px-6 py-4 rounded-2xl bg-white/70 dark:bg-white/5">
               <Coins className="mx-auto text-amber-400 mb-1" size={24} />
               <p className="text-2xl font-bold text-slate-900 dark:text-white">{new Intl.NumberFormat('vi-VN').format(profile.rewardPoints || 0)}</p>
-              <p className="text-xs font-medium text-slate-500 dark:text-gray-400">reward points</p>
+              <p className="text-sm font-bold text-slate-600 dark:text-white">reward points</p>
             </div>
           </div>
         </div>
@@ -325,8 +325,8 @@ const StatCard = React.memo(({ icon, label, value, color }) => {
           {icon}
         </div>
         <div>
-          <p className="text-sm text-gray-500">{label}</p>
-          <p className="text-2xl font-bold">{value || 0}</p>
+          <p className="text-sm font-bold text-gray-600 dark:text-white">{label}</p>
+          <p className="text-2xl font-bold text-slate-900 dark:text-white">{value || 0}</p>
         </div>
       </div>
     </div>

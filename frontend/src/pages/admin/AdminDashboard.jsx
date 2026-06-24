@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchAdminDashboard } from '../../store/dashboardSlice';
 import { documentService } from '../../services/api';
-import { Link } from 'react-router-dom';
 import {
   Users,
   ShoppingCart,
@@ -13,6 +12,54 @@ import {
   Clock,
   CalendarDays,
 } from 'lucide-react';
+
+const ORDER_STATUS_LABELS = {
+  pending: 'Chờ xử lý',
+  processing: 'Đang xử lý',
+  completed: 'Hoàn thành',
+  failed: 'Thất bại',
+  refunded: 'Đã hoàn tiền',
+  paid: 'Đã thanh toán',
+};
+
+const ORDER_STATUS_CLASSES = {
+  pending: 'bg-yellow-100 text-yellow-700',
+  processing: 'bg-blue-100 text-blue-700',
+  completed: 'bg-green-100 text-green-700',
+  failed: 'bg-red-100 text-red-700',
+  refunded: 'bg-gray-100 text-gray-700',
+  paid: 'bg-emerald-100 text-emerald-700',
+};
+
+const formatCurrency = (value) => new Intl.NumberFormat('vi-VN', {
+  style: 'currency',
+  currency: 'VND',
+  maximumFractionDigits: 0,
+}).format(value || 0);
+
+const formatCompactCurrency = (value) => {
+  const amount = Number(value) || 0;
+
+  if (amount >= 1000000000) {
+    return `${(amount / 1000000000).toFixed(1)} tỷ`;
+  }
+
+  if (amount >= 1000000) {
+    return `${(amount / 1000000).toFixed(1)} triệu`;
+  }
+
+  if (amount >= 1000) {
+    return `${Math.round(amount / 1000)} nghìn`;
+  }
+
+  return amount.toLocaleString('vi-VN');
+};
+
+const formatCount = (value) => (Number(value) || 0).toLocaleString('vi-VN');
+
+const getOrderStatusKey = (order) => order?.status || order?.paymentStatus || 'pending';
+const getOrderStatusLabel = (order) => ORDER_STATUS_LABELS[getOrderStatusKey(order)] || 'Không xác định';
+const getOrderStatusClassName = (order) => ORDER_STATUS_CLASSES[getOrderStatusKey(order)] || 'bg-gray-100 text-gray-700';
 
 const AdminDashboard = () => {
   const dispatch = useDispatch();
@@ -68,61 +115,56 @@ const AdminDashboard = () => {
     charts,
     recentOrders,
     popularDocuments,
-    popularMentors,
   } = admin;
 
   return (
     <div className="min-h-screen">
-      {/* Header */}
       <div className="glass-card border-b dark:border-gray-700 px-8 py-6">
-        <h1 className="text-2xl font-bold">Admin Dashboard</h1>
+        <h1 className="text-2xl font-bold">Bảng điều khiển quản trị</h1>
         <p className="text-gray-500">
-          Overview of your platform
+          Tổng quan hoạt động của nền tảng
         </p>
       </div>
 
       <div className="p-8">
-        {/* Overview Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
           <OverviewCard
             icon={<Users />}
-            label="Total Users"
-            value={overview?.totalUsers || 0}
-            subtext={`${overview?.activeUsers || 0} active`}
+            label="Tổng người dùng"
+            value={formatCount(overview?.totalUsers || 0)}
+            subtext={`${formatCount(overview?.activeUsers || 0)} đang hoạt động`}
             color="blue"
           />
 
           <OverviewCard
             icon={<BookOpen />}
-            label="Documents"
-            value={marketplaceDocumentTotal ?? stats?.documentStats?.activeMarketplace ?? stats?.documentStats?.total ?? overview?.totalDocuments ?? 0}
-            subtext={`${stats?.documentStats?.totalDownloads || overview?.documentStats?.totalDownloads || 0} downloads`}
+            label="Tài liệu"
+            value={formatCount(marketplaceDocumentTotal ?? stats?.documentStats?.activeMarketplace ?? stats?.documentStats?.total ?? overview?.totalDocuments ?? 0)}
+            subtext={`${formatCount(stats?.documentStats?.totalDownloads || overview?.documentStats?.totalDownloads || 0)} lượt tải`}
             color="purple"
           />
 
           <OverviewCard
             icon={<Clock />}
-            label="Pending Orders"
-            value={stats?.orderStats?.pending || overview?.orderStats?.pending || 0}
-            subtext="Chờ xác nhận"
+            label="Đơn chờ xử lý"
+            value={formatCount(stats?.orderStats?.pending || overview?.orderStats?.pending || 0)}
+            subtext="Đang chờ xác nhận"
             color="yellow"
           />
 
           <OverviewCard
             icon={<ShoppingCart />}
-            label="Total Orders"
-            value={overview?.totalOrders || 0}
-            subtext={`${stats?.orderStats?.completed || overview?.orderStats?.completed || 0} completed`}
+            label="Tổng đơn hàng"
+            value={formatCount(overview?.totalOrders || 0)}
+            subtext={`${formatCount(stats?.orderStats?.completed || overview?.orderStats?.completed || 0)} đã hoàn thành`}
             color="green"
           />
 
           <OverviewCard
             icon={<DollarSign />}
-            label="Revenue"
-            value={`${(
-              (overview?.totalRevenue || 0) / 1000000
-            ).toFixed(1)}M`}
-            subtext="VND"
+            label="Doanh thu"
+            value={formatCurrency(overview?.totalRevenue || 0)}
+            subtext="Từ các đơn hàng đã thanh toán"
             color="orange"
           />
         </div>
@@ -130,67 +172,68 @@ const AdminDashboard = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
           <OverviewCard
             icon={<CalendarDays />}
-            label="Users Today"
-            value={overview?.usersToday || 0}
-            subtext="New accounts today"
+            label="Người dùng mới hôm nay"
+            value={formatCount(overview?.usersToday || 0)}
+            subtext="Tài khoản tạo mới trong ngày"
             color="blue"
           />
           <OverviewCard
             icon={<Users />}
-            label="Users This Month"
-            value={overview?.usersThisMonth || 0}
-            subtext={`${overview?.totalUsers || 0} total users`}
+            label="Người dùng mới tháng này"
+            value={formatCount(overview?.usersThisMonth || 0)}
+            subtext={`${formatCount(overview?.totalUsers || 0)} tổng người dùng`}
             color="purple"
           />
         </div>
 
-        {/* Charts */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
           <MetricBarChart
-            title="Revenue (Last 6 Months)"
+            title="Doanh thu 6 tháng gần nhất"
             icon={<TrendingUp className="text-green-500" />}
             data={charts?.monthlyRevenue || []}
             labelKey="month"
             valueKey="revenue"
             barClassName="bg-gradient-to-t from-green-600 via-green-500 to-emerald-300 shadow-green-500/25"
-            legend="Revenue"
-            valueFormatter={formatCurrencyShort}
+            legend="Doanh thu"
+            valueFormatter={formatCompactCurrency}
+            summaryLabel="Tổng cộng"
+            summaryFormatter={formatCurrency}
           />
 
           <MetricBarChart
-            title="User Growth (Last 6 Months)"
+            title="Tăng trưởng người dùng 6 tháng gần nhất"
             icon={<Users className="text-blue-500" />}
             data={charts?.userGrowth || []}
             labelKey="month"
             valueKey="users"
             barClassName="bg-gradient-to-t from-blue-600 via-blue-500 to-cyan-300 shadow-blue-500/25"
-            legend="New users"
+            legend="Người dùng mới"
+            valueFormatter={formatCount}
+            summaryLabel="Tổng mới"
           />
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
           <UserBarChart
-            title="New Users By Day"
-            subtitle="Last 30 days"
+            title="Người dùng mới theo ngày"
+            subtitle="30 ngày gần nhất"
             data={charts?.dailyUserSignups || []}
             labelKey="date"
             minColumnWidth={34}
           />
           <UserBarChart
-            title="New Users By Month"
-            subtitle="Last 24 months"
+            title="Người dùng mới theo tháng"
+            subtitle="24 tháng gần nhất"
             data={charts?.monthlyUserSignups || charts?.userGrowth || []}
             labelKey="month"
             minColumnWidth={54}
           />
         </div>
 
-        {/* Tables */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Recent Orders */}
           <div className="glass-card rounded-2xl overflow-hidden">
             <div className="p-6 border-b dark:border-gray-700">
-              <h2 className="font-bold">Recent Orders</h2>
+              <h2 className="font-bold">Đơn hàng gần đây</h2>
             </div>
 
             <div className="divide-y dark:divide-gray-700">
@@ -212,25 +255,20 @@ const AdminDashboard = () => {
                       </p>
 
                       <p className="text-sm text-gray-500">
-                        {order.documents?.length || 0} items
+                        {formatCount(order.documents?.length || 0)} tài liệu
                       </p>
                     </div>
                   </div>
 
                   <div className="text-right">
                     <p className="font-bold">
-                      {order.totalAmount?.toLocaleString()}đ
+                      {formatCurrency(order.totalAmount || 0)}
                     </p>
 
                     <span
-                      className={`text-xs px-2 py-0.5 rounded-full ${order.status === 'completed'
-                          ? 'bg-green-100 text-green-700'
-                          : order.status === 'pending'
-                            ? 'bg-yellow-100 text-yellow-700'
-                            : 'bg-gray-100 text-gray-700'
-                        }`}
+                      className={`text-xs px-2 py-0.5 rounded-full ${getOrderStatusClassName(order)}`}
                     >
-                      {order.status}
+                      {getOrderStatusLabel(order)}
                     </span>
                   </div>
                 </div>
@@ -239,17 +277,16 @@ const AdminDashboard = () => {
               {(!recentOrders ||
                 recentOrders.length === 0) && (
                   <div className="p-8 text-center text-gray-500">
-                    No recent orders
+                    Chưa có đơn hàng gần đây
                   </div>
                 )}
             </div>
           </div>
 
-          {/* Popular Documents */}
           <div className="glass-card rounded-2xl overflow-hidden">
             <div className="p-6 border-b dark:border-gray-700">
               <h2 className="font-bold">
-                Popular Documents
+                Tài liệu phổ biến
               </h2>
             </div>
 
@@ -286,12 +323,12 @@ const AdminDashboard = () => {
 
                     <div className="text-right">
                       <p className="font-bold text-orange-500">
-                        {doc.salesCount} sales
+                        {formatCount(doc.salesCount)} lượt bán
                       </p>
 
-                      <p className="text-xs text-gray-400 flex items-center gap-1">
+                      <p className="text-xs text-gray-400 flex items-center gap-1 justify-end">
                         <Download size={12} />
-                        {doc.downloads}
+                        {formatCount(doc.downloads)} lượt tải
                       </p>
                     </div>
                   </div>
@@ -300,7 +337,7 @@ const AdminDashboard = () => {
               {(!popularDocuments ||
                 popularDocuments.length === 0) && (
                   <div className="p-8 text-center text-gray-500">
-                    No popular documents
+                    Chưa có tài liệu phổ biến
                   </div>
                 )}
             </div>
@@ -327,40 +364,31 @@ const OverviewCard = ({
   };
 
   return (
-    <div className="glass-card rounded-2xl p-6 shadow-sm">
-      <div className="flex items-center gap-4">
-        <div
-          className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${colorClasses[color]} flex items-center justify-center`}
-        >
-          {React.cloneElement(icon, {
-            className: 'text-white',
-            size: 24,
-          })}
-        </div>
+    <div className="glass-card rounded-2xl p-5 flex items-center gap-4 bg-white/95 border border-slate-200/90 dark:bg-slate-900/85 dark:border-white/10 shadow-sm">
+      <div
+        className={`w-12 h-12 rounded-xl bg-gradient-to-br ${colorClasses[color]} flex items-center justify-center flex-shrink-0`}
+      >
+        {React.cloneElement(icon, {
+          className: 'text-white',
+          size: 24,
+        })}
+      </div>
 
-        <div>
-          <p className="text-sm text-gray-500">
-            {label}
-          </p>
+      <div className="min-w-0 flex-1">
+        <p className="text-xs font-medium text-slate-600 dark:text-slate-300 mb-0.5">
+          {label}
+        </p>
 
-          <p className="text-2xl font-bold">
-            {value}
-          </p>
+        <p className="text-xl font-bold text-slate-900 dark:text-white whitespace-nowrap leading-tight overflow-hidden text-ellipsis">
+          {value}
+        </p>
 
-          <p className="text-xs text-gray-400">
-            {subtext}
-          </p>
-        </div>
+        <p className="text-xs text-slate-500 dark:text-slate-400 truncate mt-1">
+          {subtext}
+        </p>
       </div>
     </div>
   );
-};
-
-const formatCurrencyShort = (value) => {
-  if (!value) return '0';
-  if (value >= 1000000) return `${(value / 1000000).toFixed(1)}M`;
-  if (value >= 1000) return `${Math.round(value / 1000)}K`;
-  return value.toLocaleString('vi-VN');
 };
 
 const buildAxisTicks = (maxValue) => {
@@ -378,18 +406,20 @@ const MetricBarChart = ({
   barClassName,
   legend,
   valueFormatter = (value) => value,
+  summaryLabel = 'Tổng cộng',
+  summaryFormatter = valueFormatter,
 }) => {
   const maxValue = Math.max(...(data?.map((item) => item[valueKey] || 0) || [0]), 1);
   const total = data?.reduce((sum, item) => sum + (item[valueKey] || 0), 0) || 0;
 
   return (
     <div className="glass-card rounded-2xl p-6 overflow-hidden">
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex items-center justify-between mb-4 gap-4">
         <h2 className="text-lg font-bold flex items-center gap-2">
           {icon}
           {title}
         </h2>
-        <span className="text-xs text-gray-500">{valueFormatter(total)} total</span>
+        <span className="text-xs text-gray-500 text-right">{summaryLabel}: {summaryFormatter(total)}</span>
       </div>
 
       <div className="h-64 grid grid-cols-[2rem_minmax(0,1fr)] gap-3">
@@ -442,7 +472,7 @@ const MetricBarChart = ({
         </span>
         <span className="inline-flex items-center gap-2 text-xs text-gray-500">
           <span className="w-3 h-3 rounded bg-gray-700" />
-          No data
+          Không có dữ liệu
         </span>
       </div>
     </div>
@@ -466,7 +496,7 @@ const UserBarChart = ({ title, subtitle, data, labelKey, minColumnWidth = 42 }) 
       <div className="h-64 grid grid-cols-[2rem_minmax(0,1fr)] gap-3">
         <div className="flex flex-col justify-between pb-7 text-[10px] text-gray-500">
           {buildAxisTicks(maxUsers).map((value) => (
-            <span key={value} className="text-right">{value}</span>
+            <span key={value} className="text-right">{formatCount(value)}</span>
           ))}
         </div>
 
@@ -489,7 +519,7 @@ const UserBarChart = ({ title, subtitle, data, labelKey, minColumnWidth = 42 }) 
                 return (
                   <div key={`${item[labelKey]}-${i}`} className="h-full flex flex-col items-center justify-end gap-2 min-w-0 group relative">
                     <span className="absolute -top-5 left-1/2 -translate-x-1/2 whitespace-nowrap text-xs font-medium text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity">
-                      {item.users || 0}
+                      {formatCount(item.users || 0)}
                     </span>
                     <div className="h-full w-full min-w-0 flex items-end justify-center gap-0.5">
                       <div
@@ -499,7 +529,7 @@ const UserBarChart = ({ title, subtitle, data, labelKey, minColumnWidth = 42 }) 
                             : 'bg-gray-700/45 shadow-none'
                         }`}
                         style={{ height: `${item.users ? Math.max(height, 14) : 6}%` }}
-                        title={`${item.users || 0} users`}
+                        title={`${formatCount(item.users || 0)} người dùng`}
                       />
                       <div
                         className={`w-[18%] max-w-2 rounded-t transition-all ${
@@ -508,7 +538,7 @@ const UserBarChart = ({ title, subtitle, data, labelKey, minColumnWidth = 42 }) 
                             : 'bg-gray-700/45'
                         }`}
                         style={{ height: `${item.mentors ? Math.max(mentorHeight, 14) : 6}%` }}
-                        title={`${item.mentors || 0} mentors`}
+                        title={`${formatCount(item.mentors || 0)} cố vấn`}
                       />
                     </div>
                     <span className="text-[10px] font-semibold text-gray-500 truncate max-w-full">{item[labelKey]}</span>
@@ -521,8 +551,8 @@ const UserBarChart = ({ title, subtitle, data, labelKey, minColumnWidth = 42 }) 
       </div>
 
       <div className="flex items-center justify-center gap-4 mt-4 pt-4 border-t dark:border-gray-700 text-xs text-gray-500">
-        <span className="inline-flex items-center gap-1"><span className="w-3 h-3 rounded bg-blue-500" />Total</span>
-        <span className="inline-flex items-center gap-1"><span className="w-3 h-3 rounded bg-purple-500" />Mentor</span>
+        <span className="inline-flex items-center gap-1"><span className="w-3 h-3 rounded bg-blue-500" />Người dùng</span>
+        <span className="inline-flex items-center gap-1"><span className="w-3 h-3 rounded bg-purple-500" />Cố vấn</span>
       </div>
     </div>
   );

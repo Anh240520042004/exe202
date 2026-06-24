@@ -51,10 +51,8 @@ const mentorItems = [
 const adminItems = [
   { path: '/admin', icon: Users, label: 'Admin Dashboard' },
   { path: '/admin/documents', icon: FileText, label: 'Tài liệu Marketplace' },
-  { path: '/admin/users', icon: Users, label: 'Quản lý Users' },
   { path: '/admin/forum-posts', icon: ShieldOff, label: 'Quản lý bài diễn đàn' },
   { path: '/admin/payments', icon: CreditCard, label: 'Duyệt thanh toán' },
-  { path: '/admin/settings', icon: Settings, label: 'Cài đặt hệ thống' },
 ];
 
 const navLinkClass = (isActive) => `

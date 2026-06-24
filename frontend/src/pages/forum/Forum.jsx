@@ -21,7 +21,7 @@ const SORT_OPTIONS = [
 const TagBadge = ({ tag, onClick }) => (
   <button
     onClick={onClick}
-    className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-primary-50 dark:bg-white/5 hover:bg-primary-100 dark:hover:bg-primary-500/20 border border-primary-100 dark:border-white/10 rounded-full text-xs font-semibold text-primary-700 dark:text-white/70 hover:text-primary-800 dark:hover:text-primary-300 transition-all duration-200"
+    className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-primary-50 dark:bg-slate-800/80 hover:bg-primary-100 dark:hover:bg-primary-500/20 border border-primary-200 dark:border-white/10 rounded-full text-xs font-semibold text-primary-800 dark:text-white/85 hover:text-primary-900 dark:hover:text-primary-300 transition-all duration-200"
   >
     <Tag className="w-3 h-3" />
     {tag}
@@ -32,7 +32,7 @@ const PostCard = ({ post, onLike }) => {
   const { isAuthenticated } = useSelector(state => state.auth);
 
   return (
-    <article className="glass-card p-6 hover:shadow-lg transition-all duration-300">
+    <article className="glass-card p-6 bg-white/95 border border-slate-200/90 shadow-sm hover:shadow-lg dark:bg-slate-900/85 dark:border-white/10 transition-all duration-300">
       {/* Author info */}
       <div className="flex items-center gap-3 mb-4">
         <Link
@@ -49,11 +49,11 @@ const PostCard = ({ post, onLike }) => {
           <Link
             to={`/profile/${post.author?._id}`}
             onClick={e => e.stopPropagation()}
-            className="font-bold text-gray-900 dark:text-white hover:text-primary-600 dark:hover:text-primary-300 transition-colors text-sm"
+            className="font-bold text-slate-900 dark:text-white hover:text-primary-600 dark:hover:text-primary-300 transition-colors text-sm"
           >
             {post.author?.name || 'Unknown'}
           </Link>
-          <p className="text-gray-500 dark:text-gray-400 text-xs">
+          <p className="text-slate-600 dark:text-slate-300 text-xs font-medium">
             {new Date(post.createdAt).toLocaleDateString('vi-VN', { day: '2-digit', month: 'short', year: 'numeric' })}
           </p>
         </div>
@@ -61,10 +61,10 @@ const PostCard = ({ post, onLike }) => {
 
       {/* Content */}
       <Link to={`/forum/${post._id}`}>
-        <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-2 hover:text-primary-600 dark:hover:text-primary-300 transition-colors line-clamp-2">
+        <h2 className="text-lg font-extrabold text-slate-900 dark:text-white mb-2 hover:text-primary-600 dark:hover:text-primary-300 transition-colors line-clamp-2">
           {post.title}
         </h2>
-        <p className="text-gray-600 dark:text-gray-300 text-sm mb-4 line-clamp-3 leading-relaxed">
+        <p className="text-slate-700 dark:text-slate-200 text-sm font-medium mb-4 line-clamp-3 leading-relaxed">
           {post.content}
         </p>
       </Link>
@@ -87,7 +87,7 @@ const PostCard = ({ post, onLike }) => {
             );
           })}
           {post.images.length > 3 && (
-            <div className="w-24 h-24 rounded-lg bg-gray-100 dark:bg-white/5 flex items-center justify-center flex-shrink-0 text-gray-500 dark:text-white/40 text-sm font-semibold">
+            <div className="w-24 h-24 rounded-lg bg-slate-100 dark:bg-slate-800/80 flex items-center justify-center flex-shrink-0 text-slate-700 dark:text-white/75 text-sm font-semibold border border-slate-200 dark:border-white/10">
               +{post.images.length - 3}
             </div>
           )}
@@ -98,7 +98,7 @@ const PostCard = ({ post, onLike }) => {
       {post.tags?.length > 0 && (
         <div className="flex flex-wrap gap-1.5 mb-4">
           {post.tags.map(tag => (
-            <span key={tag} className="px-2.5 py-0.5 bg-primary-100 dark:bg-primary-500/10 text-primary-600 dark:text-primary-300 text-xs font-semibold rounded-full border border-primary-200 dark:border-primary-500/20">
+            <span key={tag} className="px-2.5 py-0.5 bg-primary-100 dark:bg-primary-500/15 text-primary-700 dark:text-primary-200 text-xs font-semibold rounded-full border border-primary-200 dark:border-primary-400/25">
               #{tag}
             </span>
           ))}
@@ -106,10 +106,10 @@ const PostCard = ({ post, onLike }) => {
       )}
 
       {/* Actions */}
-      <div className="flex items-center gap-4 pt-3 border-t border-gray-100 dark:border-white/5">
+      <div className="flex items-center gap-4 pt-3 border-t border-slate-200 dark:border-white/10">
         <button
           onClick={() => isAuthenticated && onLike(post._id)}
-          className={`flex items-center gap-1.5 text-sm font-medium transition-colors ${post.isLiked ? 'text-red-500' : 'text-gray-500 hover:text-red-500 dark:text-gray-400'}`}
+          className={`flex items-center gap-1.5 text-sm font-semibold transition-colors ${post.isLiked ? 'text-red-500' : 'text-slate-600 hover:text-red-500 dark:text-slate-200'}`}
         >
           <Heart className={`w-4 h-4 ${post.isLiked ? 'fill-current text-red-500' : ''}`} />
           <span>{post.likeCount}</span>
@@ -117,13 +117,13 @@ const PostCard = ({ post, onLike }) => {
 
         <Link
           to={`/forum/${post._id}`}
-          className="flex items-center gap-1.5 text-gray-500 hover:text-primary-600 dark:text-gray-400 dark:hover:text-primary-400 text-sm font-medium transition-colors"
+          className="flex items-center gap-1.5 text-slate-600 hover:text-primary-600 dark:text-slate-200 dark:hover:text-primary-300 text-sm font-semibold transition-colors"
         >
           <MessageCircle className="w-4 h-4" />
           <span>{post.commentCount}</span>
         </Link>
 
-        <div className="flex items-center gap-1.5 text-gray-400 dark:text-gray-500 text-sm ml-auto">
+        <div className="flex items-center gap-1.5 text-slate-500 dark:text-slate-300 text-sm ml-auto font-medium">
           <Eye className="w-4 h-4" />
           <span>{post.viewCount}</span>
         </div>
@@ -228,7 +228,7 @@ export default function Forum() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Diễn đàn</h1>
-          <p className="text-gray-500 dark:text-gray-400 text-sm">Chia sẻ kiến thức, kết nối cộng đồng học tập</p>
+          <p className="text-slate-600 dark:text-slate-300 text-sm font-medium">Chia sẻ kiến thức, kết nối cộng đồng học tập</p>
         </div>
         {isAuthenticated && (
           <button
@@ -247,27 +247,27 @@ export default function Forum() {
           {/* Search & Sort */}
           <div className="flex flex-col sm:flex-row gap-3">
             <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-gray-500" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500 dark:text-slate-300" />
               <input
                 type="text"
                 placeholder="Tìm kiếm bài viết..."
                 value={search}
                 onChange={e => setSearch(e.target.value)}
-                className="w-full pl-10 pr-10 py-2.5 bg-white/70 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:border-primary-500/50 transition-colors"
+                className="w-full pl-10 pr-10 py-2.5 bg-white/90 dark:bg-slate-900/80 border border-slate-200 dark:border-white/10 rounded-xl text-slate-900 dark:text-white placeholder-slate-500 dark:placeholder-slate-400 focus:outline-none focus:border-primary-500/50 transition-colors"
               />
               {search && (
                 <button onClick={() => setSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2">
-                  <X className="w-4 h-4 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300" />
+                  <X className="w-4 h-4 text-slate-500 hover:text-slate-700 dark:text-slate-300 dark:hover:text-white" />
                 </button>
               )}
             </div>
 
-            <div className="flex items-center gap-1 p-1 bg-white/70 dark:bg-white/5 rounded-xl border border-gray-200 dark:border-white/10">
+            <div className="flex items-center gap-1 p-1 bg-white/90 dark:bg-slate-900/80 rounded-xl border border-slate-200 dark:border-white/10 shadow-sm">
               {SORT_OPTIONS.map(opt => (
                 <button
                   key={opt.value}
                   onClick={() => setSort(opt.value)}
-                  className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-all ${sort === opt.value ? 'bg-primary-600 text-white shadow-sm' : 'text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white'}`}
+                  className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-semibold transition-all ${sort === opt.value ? 'bg-primary-600 text-white shadow-sm' : 'text-slate-600 hover:text-slate-900 dark:text-slate-200 dark:hover:text-white'}`}
                 >
                   <opt.icon className="w-4 h-4" />
                   <span className="inline-block">{opt.label}</span>
@@ -278,9 +278,9 @@ export default function Forum() {
 
           {/* Active Tag Filter */}
           {activeTag && (
-            <div className="flex items-center gap-2 p-3 bg-primary-50 dark:bg-primary-500/10 border border-primary-100 dark:border-primary-500/20 rounded-xl">
-              <span className="text-sm text-primary-700 dark:text-primary-300">Lọc theo:</span>
-              <span className="px-2.5 py-0.5 bg-primary-100 dark:bg-primary-500/20 text-primary-700 dark:text-primary-300 text-sm font-semibold rounded-full">#{activeTag}</span>
+            <div className="flex items-center gap-2 p-3 bg-primary-50 dark:bg-slate-800/80 border border-primary-200 dark:border-primary-500/25 rounded-xl">
+              <span className="text-sm font-medium text-primary-800 dark:text-primary-200">Lọc theo:</span>
+              <span className="px-2.5 py-0.5 bg-primary-100 dark:bg-primary-500/20 text-primary-800 dark:text-primary-100 text-sm font-semibold rounded-full border border-primary-200 dark:border-primary-400/25">#{activeTag}</span>
               <button onClick={() => setActiveTag(null)} className="ml-auto">
                 <X className="w-4 h-4 text-primary-700 dark:text-primary-300 hover:opacity-85" />
               </button>
