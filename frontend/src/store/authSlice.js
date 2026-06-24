@@ -5,12 +5,8 @@ export const register = createAsyncThunk(
   'auth/register',
   async (userData, { rejectWithValue }) => {
     try {
-      const response = await authService.register(userData);
-
-      localStorage.setItem('token', response.data.token);
-      localStorage.setItem('user', JSON.stringify(response.data.user));
-
-      return response.data;
+      const result = await authService.register(userData);
+      return result;
     } catch (error) {
       return rejectWithValue(
         error.response?.data?.message || 'Registration failed'
@@ -23,12 +19,12 @@ export const login = createAsyncThunk(
   'auth/login',
   async (credentials, { rejectWithValue }) => {
     try {
-      const response = await authService.login(credentials);
+      const result = await authService.login(
+        credentials.email,
+        credentials.password
+      );
 
-      localStorage.setItem('token', response.data.token);
-      localStorage.setItem('user', JSON.stringify(response.data.user));
-
-      return response.data;
+      return result;
     } catch (error) {
       return rejectWithValue(
         error.response?.data?.message || 'Login failed'
@@ -67,8 +63,8 @@ export const getProfile = createAsyncThunk(
 
 const initialState = {
   user: JSON.parse(localStorage.getItem('user')) || null,
-  token: localStorage.getItem('token') || null,
-  isAuthenticated: !!localStorage.getItem('token'),
+  token: localStorage.getItem('accessToken') || null,
+  isAuthenticated: !!localStorage.getItem('accessToken'),
   isLoading: false,
   error: null,
   success: false,
@@ -79,7 +75,8 @@ const authSlice = createSlice({
   initialState,
   reducers: {
     logout: (state) => {
-      localStorage.removeItem('token');
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('refreshToken');
       localStorage.removeItem('user');
 
       state.user = null;
@@ -102,11 +99,11 @@ const authSlice = createSlice({
         state.success = false;
       })
 
-      .addCase(register.fulfilled, (state, action) => {
+      .addCase(register.fulfilled, (state) => {
         state.isLoading = false;
-        state.isAuthenticated = true;
-        state.user = action.payload.user;
-        state.token = action.payload.token;
+        state.isAuthenticated = false;
+        state.user = null;
+        state.token = null;
         state.success = true;
         state.error = null;
       })
