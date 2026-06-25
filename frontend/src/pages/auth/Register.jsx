@@ -12,7 +12,7 @@ import {
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
-import { register, clearError } from '../../store/slices/authSlice';
+import { register, clearError, resetAuth } from '../../store/slices/authSlice';
 import { Button, Input } from '../../components/ui';
 import AuthLayout from '../../components/auth/AuthLayout';
 
@@ -99,10 +99,7 @@ export default function Register() {
         })
       ).unwrap();
 
-      // Nếu đăng ký xong muốn quay về login thì xóa token được lưu sau register
-      localStorage.removeItem('accessToken');
-      localStorage.removeItem('refreshToken');
-      localStorage.removeItem('user');
+      dispatch(resetAuth());
 
       toast.success('Đăng ký thành công! Vui lòng đăng nhập.');
       navigate('/login');

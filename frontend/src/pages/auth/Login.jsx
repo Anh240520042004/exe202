@@ -28,7 +28,7 @@ export default function Login() {
     const timeoutId = setTimeout(() => {
       setLocalError('');
       if (error) dispatch(clearError());
-    }, 5000);
+    }, 8000);
 
     return () => clearTimeout(timeoutId);
   }, [dispatch, error, displayError]);

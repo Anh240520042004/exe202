@@ -29,11 +29,9 @@ class AuthService {
     await user.save();
 
     // Send welcome email (non-blocking)
-    try {
-      await emailService.sendWelcomeEmail(user);
-    } catch (err) {
+    void emailService.sendWelcomeEmail(user).catch((err) => {
       console.error('Failed to send welcome email:', err);
-    }
+    });
 
     return {
       user: this.sanitizeUser(user),
@@ -281,4 +279,4 @@ class AuthService {
   }
 }
 
-export default new AuthService();
+export default AuthService();
