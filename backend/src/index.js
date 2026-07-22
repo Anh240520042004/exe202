@@ -14,6 +14,7 @@ import { apiLimiter } from './middleware/index.js';
 import { notFound } from './middleware/errorHandler.js';
 import errorHandler from './middleware/errorHandler.js';
 import { initSocket } from './services/socketService.js';
+import { getUploadedImage } from './routes/uploadRoutes.js';
 import {
   authRoutes,
   userRoutes,
@@ -68,6 +69,10 @@ app.use('/uploads', express.static(path.join(__dirname, '../uploads'), {
     res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
   },
 }));
+
+// Render's filesystem is ephemeral. New images are stored in MongoDB GridFS
+// and served as a fallback under the same public URL prefix.
+app.get('/uploads/images/:id', getUploadedImage);
 
 app.use('/api', apiLimiter);
 
