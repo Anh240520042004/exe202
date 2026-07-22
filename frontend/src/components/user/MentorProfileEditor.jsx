@@ -89,6 +89,10 @@ const imageSrc = (url) => {
   return `${API_ORIGIN}${url.startsWith('/') ? url : `/${url}`}`;
 };
 
+const isLegacyDiskImage = (url) => (
+  /^\/uploads\/images\/\d+-\d+\.(?:jpe?g|png)$/i.test(String(url || ''))
+);
+
 const normalizeGpa = (value) => {
   const gpa = Number(value);
   if (!Number.isFinite(gpa)) return 0;
@@ -252,6 +256,24 @@ export default function MentorProfileEditor({ user, onSaved }) {
 
   const update = (key, value) => setForm((prev) => ({ ...prev, [key]: value }));
 
+  const syncStoredUser = (updatedUser) => {
+    const storedUser = JSON.parse(localStorage.getItem('user') || 'null');
+    localStorage.setItem('user', JSON.stringify({ ...storedUser, ...updatedUser }));
+  };
+
+  const persistGalleryImages = async (galleryImages) => {
+    const normalizedImages = galleryImages.map((item) => ({
+      url: item.url,
+      caption: item.caption || '',
+    })).filter((item) => item.url);
+    const response = await mentorService.updateProfile(user._id, {
+      'mentorProfile.galleryImages': normalizedImages,
+    });
+    const updatedUser = response.data?.data;
+    if (updatedUser) syncStoredUser(updatedUser);
+    return normalizedImages;
+  };
+
   const uploadGalleryImages = async (event) => {
     const files = Array.from(event.target.files || []);
     event.target.value = '';
@@ -267,14 +289,17 @@ export default function MentorProfileEditor({ user, onSaved }) {
         toast.error('Không nhận được ảnh đã upload');
         return;
       }
-      setForm((prev) => ({
-        ...prev,
-        galleryImages: [
-          ...(prev.galleryImages || []),
-          ...urls.map((url) => ({ url, caption: '' })),
-        ],
-      }));
-      toast.success(`Đã upload ${urls.length} ảnh`);
+
+      // Ảnh kiểu cũ nằm trên ổ đĩa tạm của Render và không thể khôi phục
+      // sau restart. Thay các bản ghi hỏng đó khi mentor upload ảnh mới.
+      const retainedImages = (form.galleryImages || []).filter((item) => !isLegacyDiskImage(item.url));
+      const galleryImages = await persistGalleryImages([
+        ...retainedImages,
+        ...urls.map((url) => ({ url, caption: '' })),
+      ]);
+
+      setForm((prev) => ({ ...prev, galleryImages }));
+      toast.success(`Đã upload và lưu ${urls.length} ảnh`);
     } catch (error) {
       toast.error(error.response?.data?.message || 'Không thể upload ảnh');
     } finally {
@@ -291,16 +316,18 @@ export default function MentorProfileEditor({ user, onSaved }) {
     }));
   };
 
-  const removeGalleryImage = (index) => {
-    setForm((prev) => ({
-      ...prev,
-      galleryImages: (prev.galleryImages || []).filter((_, itemIndex) => itemIndex !== index),
-    }));
-  };
-
-  const syncStoredUser = (updatedUser) => {
-    const storedUser = JSON.parse(localStorage.getItem('user') || 'null');
-    localStorage.setItem('user', JSON.stringify({ ...storedUser, ...updatedUser }));
+  const removeGalleryImage = async (index) => {
+    const galleryImages = (form.galleryImages || []).filter((_, itemIndex) => itemIndex !== index);
+    setUploadingImages(true);
+    try {
+      const savedImages = await persistGalleryImages(galleryImages);
+      setForm((prev) => ({ ...prev, galleryImages: savedImages }));
+      toast.success('Đã xóa ảnh khỏi hồ sơ');
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Không thể xóa ảnh');
+    } finally {
+      setUploadingImages(false);
+    }
   };
 
   const submit = async (event) => {
@@ -441,7 +468,8 @@ export default function MentorProfileEditor({ user, onSaved }) {
                     <button
                       type="button"
                       onClick={() => removeGalleryImage(index)}
-                      className="absolute top-2 right-2 w-8 h-8 rounded-xl bg-white/90 dark:bg-gray-900/80 text-red-600 dark:text-red-300 flex items-center justify-center shadow-sm hover:bg-red-50 dark:hover:bg-red-950/40 transition-colors"
+                      disabled={uploadingImages}
+                      className="absolute top-2 right-2 w-8 h-8 rounded-xl bg-white/90 dark:bg-gray-900/80 text-red-600 dark:text-red-300 flex items-center justify-center shadow-sm hover:bg-red-50 dark:hover:bg-red-950/40 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                       title="Xóa ảnh"
                     >
                       <Trash2 className="w-4 h-4" />
